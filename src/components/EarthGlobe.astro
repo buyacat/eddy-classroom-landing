@@ -1,0 +1,423 @@
+---
+import { t, tArray } from '../utils/i18n';
+import type { Locale } from '../utils/i18n';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+
+/*
+ * The hero used to be a screenshot of a 3D lesson. Now it is one: a real,
+ * draggable cut-away Earth, the same thing a teacher opens from the library.
+ *
+ * There is deliberately no poster image behind it. A still that gets swapped
+ * for the live model just makes the panel jump on load, and the only still we
+ * had was a different model entirely. Until the first rendered frame exists,
+ * the panel simply holds its own light — nothing to flash and nothing to
+ * replace. Geometry and materials live in the module; this file only carries
+ * the localised labels.
+ */
+const layers = tArray<{ name: string; meta?: string }>(locale, 'classroom_hero_globe_layers');
+
+/*
+ * The second beat. Pulling the model apart used to be the end of the hero;
+ * now it is the invitation — it hands over "Ask the class", and the product's
+ * whole loop plays out inside this one panel. Copy is passed to the module as
+ * one payload so the sequence has no strings of its own.
+ */
+const lesson = {
+  ask: t(locale, 'classroom_lesson_ask'),
+  question: t(locale, 'classroom_lesson_question'),
+  answered: t(locale, 'classroom_lesson_answered'),
+  result: t(locale, 'classroom_lesson_result'),
+  insight: t(locale, 'classroom_lesson_insight'),
+  offlineState: t(locale, 'classroom_lesson_offline_state'),
+  offlineChip: t(locale, 'classroom_lesson_offline_chip'),
+  again: t(locale, 'classroom_lesson_again')
+};
+---
+
+<div class="globe" data-globe data-layers={JSON.stringify(layers)}
+     data-lesson={JSON.stringify(lesson)}
+     role="img" aria-label={t(locale, 'classroom_hero_globe_alt')}>
+  <canvas class="globe-canvas"></canvas>
+  <div class="globe-tags" aria-hidden="true"></div>
+  <span class="globe-hint">{t(locale, 'classroom_hero_globe_hint')}</span>
+
+  <div class="globe-foot">
+    <p class="globe-note">{t(locale, 'classroom_hero_globe_scale_note')}</p>
+
+    <div class="lesson-bar" data-lesson-bar>
+      <p class="lesson-q" data-q></p>
+      <p class="lesson-class">
+        <span class="lesson-dots" data-dots aria-hidden="true"></span>
+        <span class="lesson-count"><b data-answered>0</b>/22 {lesson.answered}</span>
+      </p>
+      <p class="lesson-result" data-result aria-live="polite"></p>
+    </div>
+
+    <button class="lesson-ask" type="button" data-ask></button>
+    <span class="lesson-chip" data-chip></span>
+  </div>
+</div>
+
+<style>
+  .globe {
+    position: relative;
+    aspect-ratio: 1080 / 1071;
+    /* the soft halo the flat model sits in — cheaper than a real light rig */
+    background:
+      /* This plate was the first ambient wash on the site, written by hand
+         before there were tokens. Its .09 and .16 landed almost exactly on
+         --amb-1 and --amb-2, which is the best evidence the tiers are set
+         right — so it consumes them now instead of restating them. */
+      radial-gradient(circle at 52% 46%,
+        rgba(var(--amb-blue), var(--amb-1)) 0%,
+        rgba(var(--amb-blue), 0) 58%),
+      /* The yellow used to sit at 68%/70% — dead under the lesson strip, so
+         the ask button and the caveat line looked like they were bleeding
+         into a stain. It backs the model now, not the controls. */
+      radial-gradient(circle at 74% 28%,
+        rgba(var(--amb-yellow), var(--amb-1)) 0%,
+        rgba(var(--amb-yellow), 0) 58%);
+  }
+
+  .globe-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    opacity: 0;
+    transition: opacity 620ms var(--ease-out);
+  }
+
+  .globe.is-live .globe-canvas { opacity: 1; }
+
+  /* the drag surface itself */
+  .globe-canvas { touch-action: none; cursor: grab; }
+  .globe.is-grabbed .globe-canvas { cursor: grabbing; }
+
+  /* ---- layer tags ---- */
+  .globe-tags { position: absolute; inset: 0; pointer-events: none; }
+
+  .globe-tags :global(.globe-tag) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px 7px 4px;
+    overflow: hidden;
+    background: #fff;
+    border-radius: var(--r-pill);
+    box-shadow: var(--e3);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 160ms linear;
+  }
+  .globe-tags :global(.globe-tag span) {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+  }
+  .globe-tags :global(.globe-tag b) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 12px;
+    color: var(--ink);
+  }
+  /* the depth and the state of matter — the half of the tag that teaches */
+  .globe-tags :global(.globe-tag em) {
+    font-style: normal;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .globe-tags :global(.globe-tag em:empty) { display: none; }
+
+  /* --- the tag doubles as the answer option and its own histogram bar --- */
+  .globe.is-quiz .globe-tags { pointer-events: auto; }
+  .globe.is-quiz .globe-tags :global(.globe-tag) {
+    pointer-events: auto;
+    cursor: pointer;
+    transition: opacity 160ms linear, transform 160ms var(--ease-out);
+  }
+  .globe.is-quiz .globe-tags :global(.globe-tag:hover) { filter: brightness(1.04); }
+
+  .globe-tags :global(.globe-tag-count) {
+    margin-left: 2px;
+    min-width: 13px;
+    text-align: right;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .globe-tags :global(.globe-tag-bar) {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 3px;
+    background: var(--surface-sunken);
+    border-radius: 0 0 var(--r-pill) var(--r-pill);
+    overflow: hidden;
+  }
+  .globe-tags :global(.globe-tag-bar i) {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--blue);
+    transition: width 220ms var(--ease-out), background 260ms var(--ease-out);
+  }
+  .globe-tags :global(.globe-tag.is-correct) {
+    box-shadow: 0 0 0 2px var(--green-deep), var(--e3);
+  }
+  .globe-tags :global(.globe-tag.is-correct .globe-tag-bar i) { background: var(--green-deep); }
+  .globe-tags :global(.globe-tag.is-correct .globe-tag-count) { color: var(--green-deep); }
+  .globe-tags :global(.globe-tag-dot) {
+    width: 19px; height: 19px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 800;
+    font-style: normal;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- hint ---- */
+  .globe-hint {
+    position: absolute;
+    left: 50%;
+    top: 5%;
+    translate: -50% 0;
+    padding: 7px 15px;
+    border-radius: var(--r-pill);
+    background: rgba(13, 13, 15, .82);
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .01em;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 420ms var(--ease-out);
+  }
+  .globe.is-live .globe-hint { opacity: 1; animation: hint-bob 3.4s var(--ease-in-out) infinite; }
+  .globe.is-touched .globe-hint { opacity: 0; animation: none; }
+
+  @keyframes hint-bob { 0%, 100% { translate: -50% 0; } 50% { translate: -50% -4px; } }
+
+  /* ---- everything that stacks along the bottom of the panel ---- */
+  .globe-foot {
+    position: absolute;
+    left: 5%;
+    right: 5%;
+    bottom: 4%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* ---- the honest caveat, shown only once the layers are apart ---- */
+  .globe-note {
+    display: none;
+    margin: 0;
+    text-align: center;
+    font-size: 10.5px;
+    line-height: 1.4;
+    font-weight: 600;
+    color: var(--ink-4);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 300ms var(--ease-out);
+  }
+  .globe.is-open .globe-note { display: block; opacity: 1; }
+  /* the lesson owns the foot once it starts */
+  .globe.is-polling .globe-note { display: none; }
+
+  /* ---- ask / run again ---- */
+  .lesson-ask {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: 0;
+    border-radius: var(--r-pill);
+    background: var(--blue);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 13.5px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: var(--e-blue);
+    pointer-events: auto;
+    transition: transform var(--t-hover) var(--ease-out), background var(--t-hover) linear;
+  }
+  .lesson-ask:hover { background: var(--blue-deep); transform: translateY(-1px); }
+  .lesson-ask:focus-visible { outline: none; box-shadow: var(--focus-ring), var(--e-blue); }
+  .globe.is-invited .lesson-ask,
+  .globe.is-again .lesson-ask { display: inline-flex; animation: ask-in 420ms var(--ease-spring) both; }
+
+  @keyframes ask-in {
+    from { opacity: 0; transform: translateY(10px) scale(.92); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ---- the class answering ---- */
+  .lesson-bar {
+    display: none;
+    width: 100%;
+    padding: 12px 16px 13px;
+    border-radius: var(--r-lg);
+    background: rgba(255, 255, 255, .92);
+    box-shadow: var(--e3);
+    backdrop-filter: blur(6px);
+    text-align: center;
+  }
+  .globe.is-polling .lesson-bar { display: block; animation: ask-in 380ms var(--ease-out) both; }
+
+  .lesson-q {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--ink);
+  }
+  .lesson-class {
+    margin: 9px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .lesson-dots { display: flex; gap: 3px; }
+  /* one dot per pupil — the roster stops being three decorative initials */
+  .lesson-dots :global(i) {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--line);
+    transition: background 200ms var(--ease-out), transform 200ms var(--ease-spring);
+  }
+  .lesson-dots :global(i.is-in) { background: var(--blue); transform: scale(1.2); }
+
+  .lesson-count {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .lesson-count b { color: var(--ink); }
+
+  .lesson-result {
+    display: none;
+    margin: 10px 0 0;
+    padding-top: 9px;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--ink);
+  }
+  .globe.is-result .lesson-result { display: block; animation: ask-in 360ms var(--ease-out) both; }
+
+  /* ---- the beat that sells it here: the line drops, the lesson doesn't ---- */
+  .lesson-chip {
+    display: none;
+    padding: 8px 16px;
+    border-radius: var(--r-pill);
+    background: var(--green);
+    color: #000;
+    font-family: var(--font-display);
+    font-size: 12.5px;
+    font-weight: 800;
+  }
+  .globe.is-offline .lesson-chip { display: inline-flex; animation: ask-in 380ms var(--ease-spring) both; }
+
+  /* On a narrow panel the model shrinks with the camera but the tags do not,
+     so four full captions would pile up. The depth line is the first thing to
+     go: the name and the order still carry the lesson. */
+  @media (max-width: 760px) {
+    .globe-tags :global(.globe-tag) { gap: 4px; padding: 3px 9px 6px 3px; }
+    .globe-tags :global(.globe-tag b) { font-size: 10.5px; }
+    .globe-tags :global(.globe-tag em) { display: none; }
+    .globe-tags :global(.globe-tag-dot) { width: 16px; height: 16px; font-size: 9.5px; }
+    .globe-tags :global(.globe-tag-count) { font-size: 10px; min-width: 11px; }
+
+    .lesson-q { font-size: 12.5px; }
+    .lesson-bar { padding: 10px 12px 11px; }
+    .lesson-dots :global(i) { width: 5px; height: 5px; }
+    .lesson-result { font-size: 12px; }
+    .lesson-ask { padding: 9px 16px; font-size: 12.5px; }
+    .globe-note { font-size: 9.5px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .globe.is-invited .lesson-ask,
+    .globe.is-again .lesson-ask,
+    .globe.is-polling .lesson-bar,
+    .globe.is-result .lesson-result,
+    .globe.is-offline .lesson-chip { animation: none; }
+    .lesson-dots :global(i) { transition: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .globe.is-live .globe-hint { animation: none; }
+  }
+</style>
+
+<script>
+  import type { LayerSpec } from '../scripts/earth';
+  import type { LessonCopy } from '../scripts/lesson';
+
+  function hasWebGL(): boolean {
+    try {
+      const c = document.createElement('canvas');
+      return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch {
+      return false;
+    }
+  }
+
+  const host = document.querySelector<HTMLElement>('[data-globe]');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (host && !reduced && hasWebGL()) {
+    const canvas = host.querySelector<HTMLCanvasElement>('.globe-canvas')!;
+    const tags = host.querySelector<HTMLElement>('.globe-tags')!;
+    const specs = JSON.parse(host.dataset.layers || '[]') as LayerSpec[];
+
+    const copy = JSON.parse(host.dataset.lesson || '{}') as LessonCopy;
+
+    // three.js and the lesson only leave the network once the hero is in view
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+
+      Promise.all([import('../scripts/earth'), import('../scripts/lesson')])
+        .then(async ([earth, lesson]) => {
+          const globe = await earth.mountGlobe(host, canvas, tags, specs);
+          lesson.startLesson(host, globe, copy, {
+            insight: document.querySelector<HTMLElement>('[data-insight]'),
+            liveText: document.querySelector<HTMLElement>('[data-live-text]'),
+            roster: document.getElementById('roster-count')
+          });
+        })
+        .catch((err) => {
+          // the panel keeps its own light and the page carries on; log it,
+          // because a silently blank hero is worse than a noisy console
+          console.warn('[globe] not mounted:', err);
+        });
+    }, { rootMargin: '200px' });
+
+    io.observe(host);
+  }
+</script>

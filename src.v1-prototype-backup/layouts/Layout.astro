@@ -1,0 +1,56 @@
+---
+import '../styles/style.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Eddy Classroom — цифрова платформа для підготовки й проведення уроку',
+  description = 'Eddy Classroom — єдине цифрове середовище для вчителя: готові навчальні плани, бібліотека 3D-матеріалів, тестування та аналітика за урок. Працює офлайн, 1–12 класи.'
+} = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <title>{title}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content={description} />
+  <meta name="author" content="Eddy Group" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#1b6fe3" />
+  <meta name="generator" content="Astro" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Eddy Group" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:locale" content="uk_UA" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Eddy Classroom",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Web, Android, Windows",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Eddy Group",
+      "url": "https://eddygroup.eu"
+    },
+    "description": description
+  })} />
+</head>
+<body>
+  <slot />
+  <script src="/scripts/app.js" is:inline></script>
+</body>
+</html>

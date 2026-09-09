@@ -1,0 +1,30 @@
+{
+  "nav_news": "Новини",
+  "nav_contacts": "Контакти",
+  "nav_menu_open": "Відкрити меню",
+  "nav_lang_label": "EN",
+  "nav_lang_aria": "Switch to English",
+
+  "scroll": "Гортайте",
+
+  "footer_about": "Цифрова платформа для підготовки й проведення уроку від Eddy Group — виробника інтерактивних панелей, STEM-лабораторій і робототехнічних наборів.",
+  "footer_col_support": "Сервісна підтримка",
+  "footer_col_contacts": "Контакти",
+  "footer_service_hours": "Пн-Пт: 09:00-18:00",
+  "footer_service_email": "service@eddygroup.eu",
+  "footer_service_warranty": "Гарантійні умови",
+  "footer_email": "office@eddygroup.eu",
+  "footer_phone": "+380 93 270 82 04",
+  "footer_address": "Київ, вул. Глибочицька, 32",
+  "footer_copyright": "© Eddy Group, 2026",
+  "footer_social_fb": "Eddy Group у Facebook",
+  "footer_social_yt": "Eddy Group на YouTube",
+  "footer_family_label": "Eddy Group family",
+  "footer_family_links": [
+    { "label": "Eddy.Group", "url": "https://eddygroup.eu/" },
+    { "label": "Dr.STEM", "url": "https://drstem.eu/" },
+    { "label": "1-Vision", "url": "https://1vision.eddygroup.eu/" },
+    { "label": "Світло", "url": "https://svitlo.eddygroup.eu/" },
+    { "label": "Eddy Trade", "url": "http://trade.eddygroup.eu/" }
+  ]
+}

@@ -1,0 +1,88 @@
+---
+import { t, tArray } from '../utils/i18n';
+import type { Locale } from '../utils/i18n';
+import { withBase } from '../utils/url';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+
+const items = tArray<{ icon: string; title: string; text: string }>(locale, 'classroom_why_items');
+
+/*
+ * One 3D object per card, from the client's own icon set, plus a colour
+ * rhythm lifted from the mock: mostly white cards with a green, a yellow
+ * and a blue block breaking the grid up. The object hangs off the card's
+ * top-left corner rather than sitting in a tinted plate — that overhang is
+ * the whole personality of this style.
+ */
+const objects: Record<string, string> = {
+  allInOne: 'document',
+  journal: 'check',
+  library: 'book',
+  ai: 'lightbulb',
+  offline: 'lock',
+  devices: 'phone'
+};
+
+const blocks = ['', 'is-green', '', 'is-yellow', '', 'is-blue'];
+---
+
+<section class="band why" id="why">
+  <div class="wrap">
+    <div class="band-head reveal">
+      <span class="eyebrow">{t(locale, 'classroom_why_eyebrow')}</span>
+      <h2 set:html={t(locale, 'classroom_why_title')} />
+    </div>
+
+    <div class="why-grid">
+      {items.map((it, i) => (
+        <article class={`card reveal ${blocks[i] || ''}`.trim()} style={`--i:${i}`}>
+          <img class="obj" src={withBase(`/assets/icons/${objects[it.icon] || 'book'}.png`)}
+               width="256" height="256" alt="" loading="lazy" decoding="async" />
+          <h3>{it.title}</h3>
+          <p>{it.text}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  /* No background here: the band lets the page-wide ambient plane through. It
+     used to repaint an opaque #f5f5f5 identical to body's own, which bought
+     nothing and would now cover the light. */
+  .why::before {
+    background:
+      /* Green is this system's reassurance colour — the offline chip, the
+         live dot, the is-green card three tiles down. "Why us" is the
+         reassurance band. This pool does not introduce the green: it
+         continues the hero's, which already lies in this band's top padding.
+         It sits low enough to pass under the first row of cards, so it does
+         not tint the white balance of the 3D objects hanging off them. */
+      radial-gradient(var(--amb-r-lg) calc(var(--amb-r-lg) * .62) at 2% 52%,
+        rgba(var(--amb-green), var(--amb-2)) 0%,
+        rgba(var(--amb-green), 0) var(--amb-fade)),
+      /* Blue low and right, so the eye is already in Platform's colour before
+         it arrives there. The centre stays inside the box — at 104% it was an
+         ellipse hanging below the box, and the only part of it you could see
+         was the straight line where the box stopped. */
+      radial-gradient(var(--amb-r-lg) calc(var(--amb-r-lg) * .58) at 94% 84%,
+        rgba(var(--amb-blue), var(--amb-2)) 0%,
+        rgba(var(--amb-blue), 0) var(--amb-fade));
+  }
+
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(clamp(258px, 30%, 340px), 1fr));
+    gap: var(--gap-card);
+    /* the objects overhang the cards, so the grid needs headroom */
+    margin-top: clamp(52px, 5vw, 76px);
+  }
+  /* a one- and a two-line title in the same row must still align their
+     body copy — Ukrainian card titles wrap unpredictably */
+  .why-grid h3 { min-height: calc(2 * 1.22em); }
+
+  @media (max-width: 700px) {
+    .why-grid h3 { min-height: 0; }
+  }
+</style>

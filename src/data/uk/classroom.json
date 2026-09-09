@@ -1,0 +1,177 @@
+{
+  "classroom_meta_title": "Eddy Classroom — цифрова платформа для підготовки й проведення уроку",
+  "classroom_meta_description": "Eddy Classroom — єдине цифрове середовище для вчителя: готові навчальні плани, бібліотека 3D-матеріалів, тестування та аналітика за урок. Працює офлайн, 1–12 класи.",
+  "classroom_meta_keywords": "Eddy Classroom, платформа для вчителя, цифровий урок, бібліотека 3D-матеріалів, тестування учнів, аналітика уроку, інтерактивна панель класу, цифрова освіта",
+  "classroom_meta_og_title": "Eddy Classroom — цифрова платформа для підготовки й проведення уроку",
+  "classroom_meta_og_description": "Єдине цифрове середовище для вчителя: готові уроки, бібліотека 3D-матеріалів, тестування та аналітика за урок. Працює офлайн, 1–12 класи.",
+  "classroom_meta_twitter_title": "Eddy Classroom — цифрова платформа для уроку",
+  "classroom_meta_twitter_description": "Готові уроки, бібліотека 3D-матеріалів, тестування та аналітика за урок. Працює офлайн, 1–12 класи.",
+  "classroom_schema_name": "Eddy Classroom",
+  "classroom_schema_description": "Цифрова платформа для підготовки й проведення уроку — готові уроки, бібліотека 3D-матеріалів, тестування та аналітика",
+
+  "classroom_eyebrow": "Eddy Classroom",
+  "classroom_title": "Eddy <span class=\"hl\">Classroom</span>",
+  "classroom_lede": "Єдине цифрове середовище для підготовки й проведення уроку: готові навчальні плани та уроки, бібліотека цифрових та 3D матеріалів, проведення тестувань та аналітика за урок.",
+  "classroom_hero_cta_primary": "Залишити заявку",
+  "classroom_hero_cta_secondary": "Що входить у платформу",
+  "classroom_stats": [
+    { "text": "1–12 класи" },
+    { "text": "Працює офлайн", "offline": true }
+  ],
+  "classroom_hero_panel_title": "Урок · Географія 6-А",
+  "classroom_hero_panel_live": "LIVE",
+  "classroom_hero_roster_class": "Клас 6-А",
+  "classroom_hero_roster_done": "виконали",
+  "classroom_hero_wheel_title": "Колесо фортуни",
+  "classroom_hero_timer_title": "Таймер",
+  "classroom_hero_noise_title": "Шумомір",
+  "classroom_hero_globe_layers": [
+    { "name": "Земна кора", "meta": "5–70 км · тверда" },
+    { "name": "Мантія", "meta": "до 2900 км · тверда" },
+    { "name": "Зовнішнє ядро", "meta": "2900–5150 км · рідке" },
+    { "name": "Внутрішнє ядро", "meta": "5150–6371 км · тверде" }
+  ],
+  "classroom_hero_globe_scale_note": "Товщину земної кори збільшено, щоб її було видно. Насправді вона тонша за 1 % радіуса Землі.",
+  "classroom_lesson_ask": "Запитати клас",
+  "classroom_lesson_question": "Який шар Землі — рідкий?",
+  "classroom_lesson_answered": "відповіли",
+  "classroom_lesson_result": "17 із 22 правильно · 77 % засвоєння",
+  "classroom_lesson_insight": "4 учні плутають мантію із зовнішнім ядром → повторити на слайді 4",
+  "classroom_lesson_offline_state": "Немає з’єднання",
+  "classroom_lesson_offline_chip": "Інтернет зник. Урок — ні.",
+  "classroom_lesson_again": "Провести ще раз",
+  "classroom_hero_globe_hint": "Потягніть, щоб розібрати",
+  "classroom_hero_globe_alt": "Eddy Classroom — інтерактивна 3D-модель внутрішньої будови Землі з анотаціями",
+
+  "classroom_why_eyebrow": "Переваги",
+  "classroom_why_title": "Чому школи обирають <span class=\"hl\">Eddy Classroom</span>",
+  "classroom_why_items": [
+    {
+      "icon": "allInOne",
+      "title": "Усе для уроку в одному місці",
+      "text": "Уроки, бібліотека матеріалів, тести — без десятка розрізнених програм і сайтів."
+    },
+    {
+      "icon": "journal",
+      "title": "Миттєвий журнал відповідей",
+      "text": "Вчитель бачить, хто і де помиляється, ще на уроці — не чекаючи перевірки зошитів."
+    },
+    {
+      "icon": "library",
+      "title": "Бібліотека 3D-контенту",
+      "text": "Матеріал, що робить урок на 100% ефективнішим та додає інтерактиву."
+    },
+    {
+      "icon": "ai",
+      "title": "AI-помічник для вчителя",
+      "text": "Ресурс, що допомагає організувати та створити урок швидше."
+    },
+    {
+      "icon": "offline",
+      "title": "Працює без стабільного інтернету",
+      "text": "Матеріали уроків завантажуються заздалегідь і відкриваються офлайн."
+    },
+    {
+      "icon": "devices",
+      "title": "Один застосунок для всіх пристроїв",
+      "text": "Ноутбук і планшет вчителя, будь-який смартфон учня, інтерактивна панель класу."
+    }
+  ],
+
+  "classroom_platform_eyebrow": "Платформа",
+  "classroom_platform_title": "Що входить у платформу <span class=\"hl\">Eddy Classroom</span>",
+  "classroom_platform_items": [
+    {
+      "icon": "web",
+      "title": "Вебверсія для вчителя й адміністратора",
+      "text": "Підготовка курсів і занять, робота з бібліотекою, конструктор тестів і вікторин із різними типами запитань, перегляд результатів і журналу сесій.",
+      "shot_alt": "Бібліотека матеріалів Eddy Classroom",
+      "wide": true
+    },
+    {
+      "icon": "student",
+      "title": "Зручний учнівський доступ",
+      "text": "Після приєднання до потрібного курсу учень легко переглядає його матеріали, виконує завдання та проходить тестування.",
+      "shot_alt": "Варіанти відповіді в тесті"
+    },
+    {
+      "icon": "panel",
+      "title": "Інтерактивна панель і Whiteboard",
+      "text": "Фронтальна демонстрація презентацій, відео, документів, 3D-моделей і симуляцій на весь клас; можливість малювати й робити позначки просто поверх матеріалу в реальному часі.",
+      "shot_alt": "Анотації поверх 3D-моделі"
+    },
+    {
+      "icon": "analytics",
+      "title": "Аналітика й дашборд ефективності уроку",
+      "text": "Наочний огляд залученості класу та засвоєння матеріалу з рекомендаціями для вчителя на основі результатів сесій.",
+      "shot_alt": "Таблиця результатів сесій"
+    },
+    {
+      "icon": "games",
+      "title": "Ігрові інструменти уроку",
+      "text": "Колесо фортуни для випадкового вибору учня, таймер і шумомір — прості інструменти, які додають уроку динаміки."
+    },
+    {
+      "icon": "virtual",
+      "title": "Віртуальний клас",
+      "text": "Підключення учнів до заняття дистанційно: перегляд матеріалів і спілкування навіть поза межами класу."
+    }
+  ],
+  "classroom_platform_virtual_remote": "дистанційно",
+  "classroom_platform_virtual_online": "на зв’язку",
+
+  "classroom_library_badge": "3D об'єкти",
+  "classroom_library_count": "1200+",
+  "classroom_library_count_label": "моделей",
+  "classroom_library_desc": "Каталог навчального 3D-контенту бібліотеки Eddy Classroom.",
+  "classroom_library_subjects": [
+    { "id": "all", "label": "Усі" },
+    { "id": "biology", "label": "Біологія" },
+    { "id": "physics", "label": "Фізика" },
+    { "id": "chemistry", "label": "Хімія" },
+    { "id": "geography", "label": "Географія" }
+  ],
+  "classroom_library_cards": [
+    { "subject": "biology", "label": "Біологія", "name": "Будова клітини", "size": "r2" },
+    { "subject": "physics", "label": "Фізика", "name": "Термодинаміка", "size": "r3" },
+    { "subject": "chemistry", "label": "Хімія", "name": "Періодична система елементів", "size": "r2 c2" },
+    { "subject": "geography", "label": "Географія", "name": "Тектонічні плити", "size": "r2" },
+    { "subject": "physics", "label": "Фізика", "name": "Електричне коло", "size": "r2" },
+    { "subject": "biology", "label": "Біологія", "name": "Система кровообігу", "size": "r3" },
+    { "subject": "chemistry", "label": "Хімія", "name": "Молекула ДНК", "size": "r2" },
+    { "subject": "geography", "label": "Географія", "name": "Вулкан у розрізі", "size": "r2 c2" },
+    { "subject": "physics", "label": "Фізика", "name": "Восьмициліндровий двигун", "size": "r3" },
+    { "subject": "biology", "label": "Біологія", "name": "Фотосинтез", "size": "r2" },
+    { "subject": "chemistry", "label": "Хімія", "name": "Кристалічна решітка", "size": "r2" },
+    { "subject": "geography", "label": "Географія", "name": "Річкова долина", "size": "r2" }
+  ],
+  "classroom_library_cta": "Переглянути всю бібліотеку 3D-моделей",
+  "classroom_library_note": "Прев'ю моделей — заглушки; реальні мініатюри будуть додані найближчим часом.",
+
+  "classroom_form_headline": "Спробуйте Eddy Classroom безкоштовно",
+  "classroom_form_lede": "Залиште заявку — і наш менеджер допоможе підключити школу, підібрати тариф і провести демонстрацію платформи для вашого колективу.",
+  "classroom_form_title": "Заявка на Eddy Classroom",
+  "classroom_form_fields": [
+    { "name": "name", "label": "Ім'я та Прізвище", "type": "text", "required": true, "placeholder": "Олена Ковальчук" },
+    { "name": "org", "label": "Назва навчального закладу / Організації", "type": "text", "required": false, "placeholder": "Ліцей №5, м. Дніпро" },
+    { "name": "students", "label": "Орієнтовна кількість учнів або класів", "type": "text", "required": false, "placeholder": "12 класів / 320 учнів" },
+    { "name": "phone", "label": "Контактний телефон", "type": "tel", "required": false, "placeholder": "+380 __ ___ __ __" },
+    { "name": "email", "label": "Email", "type": "email", "required": true, "placeholder": "you@school.ua" },
+    { "name": "comment", "label": "Коментар", "type": "textarea", "required": false, "placeholder": "«Цікавить тариф «Школа» на 15 ліцензій» або «Потрібна демонстрація для педради»", "rows": 2 }
+  ],
+  "classroom_form_role_label": "Посада",
+  "classroom_form_role_placeholder": "Оберіть посаду",
+  "classroom_form_role_options": [
+    { "value": "teacher", "label": "Вчитель" },
+    { "value": "admin", "label": "Представник адміністрації" },
+    { "value": "other", "label": "Інше" }
+  ],
+  "classroom_form_submit": "Спробувати Eddy Classroom безкоштовно",
+  "classroom_form_sending": "Надсилаємо...",
+  "classroom_form_success": "✓ Заявку надіслано",
+  "classroom_form_success_hint": "Дякуємо! Відповімо протягом одного робочого дня.",
+  "classroom_form_error": "Спробувати Eddy Classroom безкоштовно",
+  "classroom_form_error_hint": "Помилка відправки. Спробуйте ще раз або напишіть нам напряму.",
+  "classroom_form_thanks": "Дякуємо за заявку!",
+  "classroom_form_thanks_sub": "Менеджер Eddy Classroom зв'яжеться з вами найближчим часом."
+}

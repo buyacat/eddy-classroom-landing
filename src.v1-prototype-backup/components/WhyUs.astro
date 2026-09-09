@@ -1,0 +1,51 @@
+---
+const items = [
+  {
+    title: 'Усе для уроку в одному місці',
+    text: 'Уроки, бібліотека матеріалів, тести — без десятка розрізнених програм і сайтів.',
+    icon: `<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>`
+  },
+  {
+    title: 'Миттєвий журнал відповідей',
+    text: 'Вчитель бачить, хто і де помиляється, ще на уроці — не чекаючи перевірки зошитів.',
+    icon: `<path d="M9 11l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/>`
+  },
+  {
+    title: 'Бібліотека 3D-контенту',
+    text: 'Матеріал, що робить урок на 100% ефективнішим та додає інтерактиву.',
+    icon: `<path d="M12 2 3 7l9 5 9-5-9-5Z"/><path d="M3 12l9 5 9-5"/><path d="M3 17l9 5 9-5"/>`
+  },
+  {
+    title: 'AI-помічник для вчителя',
+    text: 'Ресурс, що допомагає організувати та створити урок швидше.',
+    icon: `<path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3.2"/>`
+  },
+  {
+    title: 'Працює без стабільного інтернету',
+    text: 'Матеріали уроків завантажуються заздалегідь і відкриваються офлайн.',
+    icon: `<path d="M5 12.5a11 11 0 0 1 14 0"/><path d="M8.3 15.8a6.5 6.5 0 0 1 7.4 0"/><path d="M11 19.1a2 2 0 0 1 2 0"/><path d="M2.5 3.5l19 19"/>`
+  },
+  {
+    title: 'Один застосунок для всіх пристроїв',
+    text: 'Ноутбук і планшет вчителя, будь-який смартфон учня, інтерактивна панель класу.',
+    icon: `<rect x="2" y="4" width="13" height="9" rx="1.4"/><path d="M6 17h5"/><rect x="17" y="7" width="5" height="9" rx="1.2"/>`
+  }
+];
+---
+<section class="why band" id="why">
+  <div class="wrap">
+    <div class="band-head reveal">
+      <span class="eyebrow center">Переваги</span>
+      <h2>Чому школи обирають <span>Eddy Classroom</span></h2>
+    </div>
+    <div class="why-grid">
+      {items.map((it) => (
+        <div class="why-card reveal">
+          <div class="ic" set:html={`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${it.icon}</svg>`}></div>
+          <h3>{it.title}</h3>
+          <p>{it.text}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

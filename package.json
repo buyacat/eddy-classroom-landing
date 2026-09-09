@@ -1,0 +1,16 @@
+{
+  "name": "eddy-classroom-landing",
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --port=5178",
+    "build": "astro build",
+    "preview": "astro preview --port=5178",
+    "check": "node scripts/check-earth-layout.mjs",
+    "build:pages": "node scripts/build-pages.mjs"
+  },
+  "dependencies": {
+    "astro": "^5.0.0",
+    "three": "^0.185.1"
+  }
+}

@@ -1,0 +1,75 @@
+---
+---
+<section class="leadform" id="lead-form">
+  <div class="wrap">
+    <div class="leadform-head reveal">
+      <h2>Спробуйте Eddy Classroom безкоштовно</h2>
+      <p>Залиште заявку — і наш менеджер допоможе підключити школу, підібрати тариф і провести демонстрацію платформи для вашого колективу.</p>
+    </div>
+
+    <div class="form-card reveal">
+      <form id="lead-form-el" novalidate>
+        {/* honeypot проти ботів */}
+        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" />
+
+        <div class="field" data-field="name">
+          <label for="f-name">Ім'я та Прізвище</label>
+          <input id="f-name" type="text" name="name" required placeholder="Наприклад, Олена Ковальчук" />
+          <div class="msg">Вкажіть, будь ласка, ім'я та прізвище.</div>
+        </div>
+
+        <div class="field" data-field="org">
+          <label for="f-org">Назва навчального закладу / Організації</label>
+          <input id="f-org" type="text" name="org" required placeholder="Наприклад, ліцей №5, м. Дніпро" />
+          <div class="msg">Вкажіть назву закладу або організації.</div>
+        </div>
+
+        <div class="field row2">
+          <div class="field" data-field="role">
+            <label for="f-role">Посада</label>
+            <select id="f-role" name="role" required>
+              <option value="" selected disabled>Оберіть посаду</option>
+              <option value="teacher">Вчитель</option>
+              <option value="admin">Представник адміністрації</option>
+              <option value="other">Інше</option>
+            </select>
+            <div class="msg">Оберіть посаду.</div>
+          </div>
+          <div class="field" data-field="students">
+            <label for="f-students">Орієнтовна кількість учнів або класів</label>
+            <input id="f-students" type="text" name="students" placeholder="Наприклад, 12 класів / 320 учнів" />
+          </div>
+        </div>
+
+        <div class="field row2">
+          <div class="field" data-field="phone">
+            <label for="f-phone">Контактний телефон</label>
+            <input id="f-phone" type="tel" name="phone" required placeholder="+380 __ ___ __ __" />
+            <div class="msg">Вкажіть коректний номер телефону.</div>
+          </div>
+          <div class="field" data-field="email">
+            <label for="f-email">Email</label>
+            <input id="f-email" type="email" name="email" required placeholder="you@school.ua" />
+            <div class="msg">Вкажіть коректний email.</div>
+          </div>
+        </div>
+
+        <div class="field" data-field="comment">
+          <label for="f-comment">Коментар</label>
+          <textarea id="f-comment" name="comment" rows="3" placeholder="«Цікавить тариф «Школа» на 15 ліцензій» або «Потрібна демонстрація для педради»"></textarea>
+        </div>
+
+        <button class="btn btn-primary btn-block" type="submit">Спробувати Eddy Classroom безкоштовно</button>
+        <p class="form-hint">Натискаючи кнопку, ви погоджуєтесь на обробку персональних даних.</p>
+      </form>
+
+      <div class="form-ok" id="lead-form-ok">
+        <div class="ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <h3>Дякуємо за заявку!</h3>
+        <p>Менеджер Eddy Classroom зв'яжеться з вами найближчим часом.</p>
+      </div>
+    </div>
+  </div>
+</section>

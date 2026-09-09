@@ -1,0 +1,123 @@
+---
+import '../styles/style.css';
+import { t, altPath } from '../utils/i18n';
+import { withBase } from '../utils/url';
+import type { Locale } from '../utils/i18n';
+
+interface Props {
+  locale: Locale;
+  path?: string;
+}
+
+const { locale, path = '/' } = Astro.props;
+
+/* No domain has been assigned to the standalone Classroom landing yet, so
+   canonical / og:url / hreflang are emitted ONLY when SITE_URL is set at
+   build time (`SITE_URL=https://… npm run build`). Guessing a hostname
+   here would ship a wrong canonical, which is worse than shipping none. */
+const siteUrl = (import.meta.env.SITE_URL || '').replace(/\/$/, '');
+
+const title = t(locale, 'classroom_meta_title');
+const description = t(locale, 'classroom_meta_description');
+const keywords = t(locale, 'classroom_meta_keywords');
+const ogTitle = t(locale, 'classroom_meta_og_title');
+const ogDescription = t(locale, 'classroom_meta_og_description');
+const twitterTitle = t(locale, 'classroom_meta_twitter_title');
+const twitterDescription = t(locale, 'classroom_meta_twitter_description');
+
+const ogLocale = locale === 'uk' ? 'uk_UA' : 'en_US';
+const ukPath = '/';
+const enPath = '/en/';
+
+const fontHref =
+  'https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800' +
+  '&family=Montserrat:wght@700;800&display=swap';
+
+const schema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: t(locale, 'classroom_schema_name'),
+  description: t(locale, 'classroom_schema_description'),
+  applicationCategory: 'EducationalApplication',
+  operatingSystem: 'Web, Windows, Android, iOS',
+  inLanguage: ['uk', 'en'],
+  publisher: {
+    '@type': 'Organization',
+    name: 'Eddy Group',
+    email: t(locale, 'footer_email'),
+    telephone: t(locale, 'footer_phone'),
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: t(locale, 'footer_address')
+    }
+  }
+}).replace(/</g, '\\u003c');
+---
+
+<!DOCTYPE html>
+<html lang={locale}>
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Tag Manager — is:inline is required: without it Astro bundles
+       and defers the script, the container starts late and loses the first
+       events. Same Eddy Group container as the sibling sites. -->
+  <script is:inline>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-M9JXZ4RN');</script>
+  <!-- End Google Tag Manager -->
+  <title>{title}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content={description} />
+  <meta name="keywords" content={keywords} />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#4050ff" />
+  <meta name="application-name" content="Eddy Classroom" />
+  <meta name="apple-mobile-web-app-title" content="Eddy Classroom" />
+  <meta name="format-detection" content="telephone=no" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href={fontHref} />
+  <link rel="icon" type="image/svg+xml" href={withBase("/favicon.svg")} />
+  <link rel="mask-icon" href={withBase("/favicon.svg")} color="#4050ff" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Eddy Classroom" />
+  <meta property="og:title" content={ogTitle} />
+  <meta property="og:description" content={ogDescription} />
+  <meta property="og:locale" content={ogLocale} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={twitterTitle} />
+  <meta name="twitter:description" content={twitterDescription} />
+
+  {siteUrl && (
+    <>
+      <link rel="canonical" href={siteUrl + path} />
+      <meta property="og:url" content={siteUrl + path} />
+      <meta property="og:image" content={siteUrl + '/assets/shots/shot-3d.jpg'} />
+      <meta name="twitter:image" content={siteUrl + '/assets/shots/shot-3d.jpg'} />
+      <link rel="alternate" hreflang="uk" href={siteUrl + ukPath} />
+      <link rel="alternate" hreflang="en" href={siteUrl + enPath} />
+      <link rel="alternate" hreflang="x-default" href={siteUrl + ukPath} />
+    </>
+  )}
+
+  <script type="application/ld+json" set:html={schema} />
+  <script is:inline>document.documentElement.classList.add('js');</script>
+  <script define:vars={{ altHref: altPath(locale) }}>
+    window.EDDY_ALT_PATH = altHref;
+  </script>
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) — must be the first node in <body> or
+       Search Console stops seeing it. -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M9JXZ4RN"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+  <slot />
+
+  <script is:inline src={withBase("/scripts/app.js")}></script>
+</body>
+</html>

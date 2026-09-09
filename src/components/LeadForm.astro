@@ -1,0 +1,171 @@
+---
+import { t, tArray } from '../utils/i18n';
+import type { Locale } from '../utils/i18n';
+import { withBase } from '../utils/url';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+
+type Field = { name: string; label: string; type: string; required: boolean; placeholder: string; rows?: number };
+const fields = tArray<Field>(locale, 'classroom_form_fields');
+const by = (name: string) => fields.find((f) => f.name === name)!;
+
+const nameField = by('name');
+const orgField = by('org');
+const studentsField = by('students');
+const phoneField = by('phone');
+const emailField = by('email');
+const commentField = by('comment');
+const roleOptions = tArray<{ value: string; label: string }>(locale, 'classroom_form_role_options');
+const stats = tArray<{ text: string; offline?: boolean }>(locale, 'classroom_stats');
+---
+
+<section class="cta-band" id="demo">
+  <div class="wrap">
+    <div class="cta">
+      <img class="cta-obj" src={withBase("/assets/icons/trophy.png")} width="256" height="256" alt="" loading="lazy" decoding="async" />
+
+      <div class="cta-grid">
+        <div class="cta-copy reveal">
+          <h2>{t(locale, 'classroom_form_headline')}</h2>
+          <p class="lede">{t(locale, 'classroom_form_lede')}</p>
+          <div class="cta-chips">
+            {stats.map((s) => <span class="chip is-white"><i class="dot"></i>{s.text}</span>)}
+          </div>
+        </div>
+
+        <div class="form-card reveal" style="--i:1">
+          <form
+            id="demo-form"
+            data-submit={t(locale, 'classroom_form_submit')}
+            data-sending={t(locale, 'classroom_form_sending')}
+            data-success={t(locale, 'classroom_form_success')}
+            data-error={t(locale, 'classroom_form_error')}
+            data-error-hint={t(locale, 'classroom_form_error_hint')}
+          >
+            <h3>{t(locale, 'classroom_form_title')}</h3>
+
+            {/* honeypot — real users never fill this */}
+            <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"
+                   style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" />
+            <input type="hidden" name="product" value="classroom" />
+
+            <div class="field">
+              <label for="f-name">{nameField.label}{nameField.required && <span class="req"> *</span>}</label>
+              <input id="f-name" type={nameField.type} name={nameField.name} required={nameField.required} placeholder={nameField.placeholder} />
+            </div>
+
+            <div class="field">
+              <label for="f-org">{orgField.label}</label>
+              <input id="f-org" type={orgField.type} name={orgField.name} placeholder={orgField.placeholder} />
+            </div>
+
+            <div class="field row">
+              <div>
+                <label for="f-role">{t(locale, 'classroom_form_role_label')}</label>
+                <select id="f-role" name="role">
+                  <option value="" selected disabled>{t(locale, 'classroom_form_role_placeholder')}</option>
+                  {roleOptions.map((o) => <option value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label for="f-students">{studentsField.label}</label>
+                <input id="f-students" type={studentsField.type} name={studentsField.name} placeholder={studentsField.placeholder} />
+              </div>
+            </div>
+
+            <div class="field row">
+              <div>
+                <label for="f-phone">{phoneField.label}</label>
+                <input id="f-phone" type={phoneField.type} name={phoneField.name} placeholder={phoneField.placeholder} />
+              </div>
+              <div>
+                <label for="f-email">{emailField.label}{emailField.required && <span class="req"> *</span>}</label>
+                <input id="f-email" type={emailField.type} name={emailField.name} required={emailField.required} placeholder={emailField.placeholder} />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="f-comment">{commentField.label}</label>
+              <textarea id="f-comment" rows={commentField.rows || 2} name={commentField.name} placeholder={commentField.placeholder}></textarea>
+            </div>
+
+            <p class="form-hint small" aria-live="polite"></p>
+            <button class="btn btn-dark form-submit" type="submit">{t(locale, 'classroom_form_submit')}</button>
+          </form>
+
+          <div class="form-ok">
+            <img class="ic" src={withBase("/assets/icons/check.png")} width="256" height="256" alt="" />
+            <h3>{t(locale, 'classroom_form_thanks')}</h3>
+            <div class="sub">{t(locale, 'classroom_form_thanks_sub')}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* `position: relative` gives the pool below a containing block; the
+     background is gone so the ambient plane shows through. */
+  .cta-band {
+    position: relative;
+    padding-block: clamp(20px, 3vw, 44px) clamp(48px, 6vw, 88px);
+  }
+
+  /* The one place on this page where a gradient does structural work. Without
+     it the blue block is a rectangle pasted onto grey — the hardest edge on
+     the site. With it the block reads as the source of the light around it,
+     and the edge softens without the block losing a degree of saturation.
+
+     The -14% bottom overhang carries that blue across the strip of grey
+     between this block and the footer's ink block, so the dark band is
+     arrived at rather than landed on. Safe here only because the footer
+     follows: a bottom overhang on the LAST section would grow the page's
+     scrollable area. */
+  .cta-band::before {
+    inset: -30% 0 -14%;
+    background: radial-gradient(var(--amb-r-xl) calc(var(--amb-r-xl) * .62) at 50% 50%,
+      rgba(var(--amb-blue), var(--amb-3)) 0%,
+      rgba(var(--amb-blue), calc(var(--amb-3) * .4)) 40%,
+      rgba(var(--amb-blue), 0) var(--amb-fade));
+  }
+
+  /* One giant rounded blue block on the canvas — the mock builds its
+     hierarchy out of shapes like this, not out of full-bleed bands. */
+  .cta {
+    position: relative;
+    background: var(--blue);
+    border-radius: var(--r-2xl);
+    padding: clamp(40px, 5vw, 76px) clamp(24px, 3.4vw, 62px);
+  }
+  .cta-obj {
+    position: absolute;
+    top: clamp(-46px, -3.4vw, -30px);
+    left: clamp(-18px, -1.2vw, -10px);
+    width: clamp(96px, 9vw, 132px);
+    height: auto;
+    filter: drop-shadow(0 16px 22px rgba(0, 0, 0, .28));
+    pointer-events: none;
+  }
+
+  .cta-grid {
+    display: grid;
+    grid-template-columns: 44% 1fr;
+    gap: clamp(32px, 4vw, 64px);
+    align-items: start;
+  }
+  .cta-copy h2 { color: #fff; }
+  .cta-copy .lede { color: var(--ink-inv-2); margin-top: 20px; }
+  .cta-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+
+  .form-submit { width: 100%; margin-top: 8px; padding: 17px; font-size: 1rem; }
+  .form-hint { margin: 0 0 8px; color: #d81b45; min-height: 0; }
+
+  @media (max-width: 900px) {
+    .cta-grid { grid-template-columns: 1fr; }
+    /* form first on mobile — the ask is the point of the section */
+    .cta-copy { order: 2; }
+    .form-card { order: 1; }
+  }
+</style>

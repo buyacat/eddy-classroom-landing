@@ -1,0 +1,598 @@
+/* ==========================================================================
+   Eddy Classroom — standalone landing design system
+   Built to the client's own Frame 3 product mock: pure-black type on a
+   #F5F5F5 canvas, white cards with very large radii, and three saturated
+   blocks of colour — electric blue #4050FF, yellow #F7DE52, green #5AE3A8.
+   Every colour value here was sampled straight out of that mock.
+
+   Two rules the mock enforces and this file keeps:
+   1. Depth comes from COLOUR BLOCKING, not shadows. Elevation is almost
+      flat; a card is a shape, not a floating pane.
+   2. The 3D icons are objects, not decorations — they break out of their
+      card's edge instead of sitting politely inside a tinted plate.
+   ========================================================================== */
+
+:root {
+  --font-display: "Manrope", system-ui, sans-serif;
+  /* the group header on eddygroup.eu is set in Montserrat — the shared
+     Eddy Group bar keeps that face on every sibling site */
+  --font-group: "Montserrat", "Manrope", system-ui, sans-serif;
+  --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* ---------- palette, sampled from the mock ---------- */
+  --blue: #4050ff;
+  --blue-deep: #2c39d6;
+  --blue-soft: #e5e7ff;
+
+  --yellow: #f7de52;
+  --yellow-deep: #f6ca1b;
+  --yellow-soft: #fef8db;
+
+  --green: #5ae3a8;
+  --green-deep: #1ccf8e;
+  --green-soft: #e2fbf0;
+
+  /* violet from the client's colour sheet — the one deep note, used only
+     where a second dark is needed */
+  --violet: #5700ff;
+
+  /* ---------- surfaces ---------- */
+  --bg-page: #f5f5f5;
+  --surface: #fff;
+  --surface-sunken: #ececec;
+  --ink-block: #0d0d0f;
+
+  /* ---------- ink ---------- */
+  --ink: #000;
+  --ink-2: #43434d;
+  --ink-3: #76767f;
+  --ink-4: #a3a3ac;
+  --ink-inv: #fff;
+  --ink-inv-2: rgba(255, 255, 255, .76);
+
+  --line: #e4e4e6;
+  --line-inv: rgba(255, 255, 255, .18);
+
+  --focus-ring: 0 0 0 3px rgba(64, 80, 255, .35);
+
+  /* ---------- ambient light ----------------------------------------
+     One plane of coloured light lies behind the whole document; every
+     band drops one or two pools into it. Stored as raw channel triplets
+     rather than colours, so a pool picks its own alpha without needing a
+     second colour token per strength. Nothing here is a new hue: these
+     are the same three sheets that fan out under the header, plus the
+     violet the palette has been holding in reserve since day one. */
+  --amb-yellow: 247, 222, 82;
+  --amb-green: 90, 227, 168;
+  --amb-blue: 64, 80, 255;
+  --amb-violet: 87, 0, 255;
+
+  /* Four strengths, each with a budget. Anything between them is a value
+     somebody eyeballed once and nobody can defend later.
+       --amb-4  hero only — this is where light enters the page
+       --amb-3  at most one per band: the band's own colour event
+       --amb-2  the working pool
+       --amb-1  a trace; you only notice it when it is missing
+     .08 is the floor at which #f5f5f5 still visibly shifts hue on an
+     uncalibrated laptop panel; .42 is the ceiling before the wash starts
+     competing with the flat colour blocks it is supposed to sit behind. */
+  --amb-4: .5;
+  --amb-3: .34;
+  --amb-2: .22;
+  --amb-1: .12;
+
+  /* Every pool dies at 62% of its own radius, so better than a third of
+     it is transparent margin. That margin is the entire seam fix: pools
+     reach into their neighbours and cross-fade there instead of ending
+     at a band edge. */
+  --amb-fade: 62%;
+
+  /* Pool radii. vw-based so a pool keeps the same apparent size on a
+     laptop and on a 27"; clamped so it neither vanishes on a phone nor
+     swallows a 2560px canvas. */
+  --amb-r-xl: clamp(560px, 66vw, 1180px);
+  --amb-r-lg: clamp(440px, 52vw, 900px);
+  --amb-r-md: clamp(340px, 40vw, 680px);
+
+  /* ---------- radii — the mock is very round ---------- */
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 26px;
+  --r-xl: 32px;
+  --r-2xl: 40px;
+  --r-pill: 999px;
+
+  /* ---------- elevation — deliberately almost flat ---------- */
+  --e1: 0 1px 2px rgba(0, 0, 0, .04);
+  --e2: 0 2px 10px rgba(0, 0, 0, .05);
+  --e3: 0 8px 26px -12px rgba(0, 0, 0, .18);
+  --e4: 0 24px 60px -28px rgba(0, 0, 0, .3);
+  /* the only coloured shadow on the page */
+  --e-blue: 0 12px 30px -12px rgba(64, 80, 255, .55);
+
+  /* ---------- spacing ---------- */
+  --gap-card: clamp(14px, 1.4vw, 20px);
+  --pad-band: clamp(64px, 8vw, 124px);
+  --pad-card: clamp(22px, 2.1vw, 30px);
+  --gutter: clamp(16px, 4vw, 32px);
+  --maxw: 1240px;
+  --nav-h: 68px;
+
+  /* ---------- motion ---------- */
+  --t-micro: 120ms;
+  --t-hover: 180ms;
+  --t-card: 260ms;
+  --t-reveal: 420ms;
+  --t-enter: 640ms;
+  --ease-out: cubic-bezier(.22, .61, .36, 1);
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --ease-spring: cubic-bezier(.34, 1.42, .5, 1);
+  /* Long settle with no overshoot — for moves the eye follows all the way,
+     where a spring reads as a twitch. The second control point governs how
+     much of the distance is spent early: at x=.12 the motion was over inside
+     the first sixth of its duration and then crawled, which reads as a click
+     rather than a move. Pulled back to a genuine ease-in-out so the sheets
+     leave slowly, do most of their travel in the middle, and land soft. */
+  --ease-glide: cubic-bezier(.45, .03, .25, 1);
+}
+
+/* ==========================================================================
+   base
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--nav-h) + 20px);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-page);
+  color: var(--ink-2);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+img, svg { display: block; max-width: 100%; }
+/* UA default is `margin: 1em 40px` — it silently insets every framed shot. */
+figure, figcaption { margin: 0; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; }
+
+h1, h2, h3, h4 { margin: 0; color: var(--ink); }
+
+h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.625rem, 1.5rem + 4.6vw, 4.75rem);
+  line-height: 1.02;
+  letter-spacing: -.035em;
+  text-wrap: balance;
+  max-width: 15ch;
+}
+
+h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.875rem, 1.2rem + 2.8vw, 3.25rem);
+  line-height: 1.08;
+  letter-spacing: -.028em;
+  text-wrap: balance;
+  max-width: 20ch;
+}
+
+h3 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.125rem, 1.02rem + .42vw, 1.375rem);
+  line-height: 1.22;
+  letter-spacing: -.018em;
+  text-wrap: pretty;
+}
+
+p { margin: 0; }
+
+/* Ukrainian runs 30–40% longer than English: hyphenate paragraphs, never
+   headings — a broken Ukrainian heading reads as a rendering bug. */
+html[lang="uk"] p { hyphens: auto; }
+
+/* In this system the highlight is a marker stroke behind the words, not a
+   gradient fill — it matches the mock's flat colour blocking. */
+.hl {
+  background: linear-gradient(transparent 56%, var(--yellow) 56%);
+  padding-inline: .06em;
+  border-radius: 3px;
+}
+
+.lede {
+  font-size: clamp(1.0625rem, .98rem + .5vw, 1.3125rem);
+  line-height: 1.55;
+  font-weight: 500;
+  color: var(--ink-2);
+  max-width: 52ch;
+  text-wrap: pretty;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  background: var(--ink);
+  color: #fff;
+  border-radius: var(--r-pill);
+  padding: 8px 16px;
+  font-weight: 800;
+  font-size: .75rem;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.band-head { text-align: center; }
+.band-head h2 { margin: 18px auto 0; }
+
+.small, .note { font-size: .8125rem; line-height: 1.5; color: var(--ink-3); font-weight: 500; }
+
+.stat-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -.045em;
+}
+
+.wrap {
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+}
+
+/* Grid and flex items default to `min-width: auto`, so a deliberately
+   oversized screenshot inside a card would widen its own track and push
+   the whole page past the viewport on narrow screens. */
+.hero-grid > *, .why-grid > *, .plat-grid > *, .lib-grid > *,
+.cta-grid > *, .footer-top > *, .plat-card > * { min-width: 0; }
+
+.band { padding-block: var(--pad-band); position: relative; }
+
+/* ==========================================================================
+   ambient light — one plane behind the entire document
+   ========================================================================== */
+
+/* Every pool below is `z-index: -1` inside a section that is deliberately
+   NOT a stacking context, so all of them float up to this one and paint
+   together, in tree order, before a single pixel of content. That is what
+   makes the system seamless: there is no per-band layer with an edge to
+   hide, only pools sharing one plane and overlapping wherever two bands
+   meet. Keep `main` unpositioned and untransformed, and keep `overflow`
+   off the bands, or the pools stop there and the seams come back. */
+body {
+  position: relative;
+  isolation: isolate;
+}
+
+/* The pool box. It overhangs its band top and bottom on purpose — the
+   overhang is where two bands' light mixes. It must never overhang the
+   BOTTOM of the last two sections: absolutely positioned boxes count
+   toward the viewport's scrollable area, and a tail below the footer
+   would grow a strip of dead scroll.
+
+   TWO RULES, and breaking either one puts a straight edge back on the page:
+   1. this overhang has to be deep enough for a pool's fade to finish inside
+      the box — a gradient that is still coloured when it reaches the box is
+      cut off square;
+   2. no pool centre may sit outside 0–100% of the box. A centre at 104% is
+      an ellipse hanging below the box, and all you see of it is the straight
+      line where the box ends. */
+.band::before,
+.cta-band::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -34% 0;
+  pointer-events: none;
+}
+
+/* On a phone a pool covers proportionally far more screen than it does on
+   a desktop, so the whole scale steps down one notch rather than each
+   band being re-tuned by hand. */
+@media (max-width: 700px) {
+  :root {
+    --amb-4: .30;
+    --amb-3: .24;
+    --amb-2: .16;
+    --amb-1: .09;
+  }
+}
+
+/* ==========================================================================
+   buttons — chunky pills, black outline or solid colour, no soft shadows
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 2px solid transparent;
+  border-radius: var(--r-pill);
+  padding: 15px 28px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: .9375rem;
+  line-height: 1.2;
+  /* Ukrainian CTA copy runs to 42 chars — it must be allowed to wrap. */
+  white-space: normal;
+  text-align: center;
+  cursor: pointer;
+  transition: transform var(--t-hover) var(--ease-out),
+              box-shadow var(--t-hover) var(--ease-out),
+              background-color var(--t-hover) var(--ease-out),
+              border-color var(--t-hover) var(--ease-out),
+              color var(--t-hover) var(--ease-out);
+}
+
+.btn-primary { background: var(--blue); color: #fff; box-shadow: var(--e-blue); }
+.btn-primary:hover { background: var(--blue-deep); transform: translateY(-2px); box-shadow: 0 16px 34px -12px rgba(64, 80, 255, .65); }
+
+.btn-dark { background: var(--ink); color: #fff; }
+.btn-dark:hover { transform: translateY(-2px); }
+
+/* the mock's "переглянути →" button: no fill, hairline black ring */
+.btn-ghost { background: transparent; color: var(--ink); border-color: var(--ink); }
+.btn-ghost:hover { background: var(--ink); color: #fff; transform: translateY(-2px); }
+
+.btn-white { background: #fff; color: var(--ink); }
+.btn-white:hover { transform: translateY(-2px); box-shadow: var(--e3); }
+
+.btn-sm { padding: 10px 18px; font-size: .8125rem; border-width: 1.5px; }
+.btn:active { transform: scale(.98); }
+
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--r-sm); }
+
+/* ==========================================================================
+   chips — yellow pill, black bold text, straight off the mock
+   ========================================================================== */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--r-pill);
+  padding: 8px 16px;
+  font-size: .8125rem;
+  font-weight: 800;
+  background: var(--yellow);
+  color: var(--ink);
+  white-space: nowrap;
+}
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink); flex: none; position: relative; }
+.chip.is-green { background: var(--green); }
+.chip.is-white { background: #fff; }
+.chip.is-dark { background: var(--ink); color: #fff; }
+.chip.is-dark .dot { background: var(--green); }
+
+.pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: inherit;
+  animation: pulse-ring 2s var(--ease-out) infinite;
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(1);   opacity: .5; }
+  70%  { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* ==========================================================================
+   .shot — our own chrome around a real product screenshot
+   ========================================================================== */
+
+.shot {
+  position: relative;
+  background: #fff;
+  border-radius: var(--r-xl);
+  box-shadow: var(--e3);
+  overflow: hidden;
+}
+.shot-bar {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-inline: 18px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+.shot-bar i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.shot-bar i:nth-child(1) { background: var(--blue); }
+.shot-bar i:nth-child(2) { background: var(--yellow); }
+.shot-bar i:nth-child(3) { background: var(--green); }
+.shot-bar .shot-meta { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.shot-bar .shot-ttl { font-size: .8125rem; font-weight: 700; color: var(--ink); }
+.shot-bar .shot-live {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--green); color: var(--ink);
+  border-radius: var(--r-pill); padding: 3px 11px;
+  font-size: .6875rem; font-weight: 800; letter-spacing: .05em;
+}
+.shot-bar .shot-live i { width: 6px; height: 6px; background: var(--ink); position: relative; }
+/* the hero lesson drops the line on purpose — green is for LIVE, not for down */
+.shot-bar .shot-live { transition: background var(--t-card) var(--ease-out), color var(--t-card) var(--ease-out); }
+.shot-bar .shot-live.is-down { background: var(--ink-block); color: var(--ink-inv); letter-spacing: .02em; }
+.shot-bar .shot-live.is-down i { background: var(--ink-inv); animation: none; }
+.shot img { width: 100%; height: auto; }
+.shot.is-hero { border-radius: var(--r-2xl); box-shadow: var(--e4); }
+.shot.is-sm { border-radius: var(--r-lg); box-shadow: var(--e2); }
+.shot.is-sm .shot-bar { height: 30px; gap: 5px; padding-inline: 12px; }
+.shot.is-sm .shot-bar i { width: 7px; height: 7px; }
+
+/* ==========================================================================
+   cards + the 3D object system
+   ========================================================================== */
+
+.card {
+  position: relative;
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  padding: var(--pad-card);
+  transition: transform var(--t-hover) var(--ease-out), box-shadow var(--t-hover) var(--ease-out);
+}
+.card:hover { transform: translateY(-4px); box-shadow: var(--e3); }
+.card h3 { margin-bottom: 10px; }
+.card p { font-size: .9375rem; line-height: 1.55; color: var(--ink-3); }
+
+/* colour-blocked variants */
+.card.is-blue { background: var(--blue); }
+.card.is-blue h3 { color: #fff; }
+.card.is-blue p { color: var(--ink-inv-2); }
+.card.is-yellow { background: var(--yellow); }
+.card.is-yellow p { color: rgba(0, 0, 0, .68); }
+.card.is-green { background: var(--green); }
+.card.is-green p { color: rgba(0, 0, 0, .68); }
+
+/*
+ * `.obj` IS the icon system now: a 3D render hanging off the top edge of
+ * its card instead of sitting inside a tinted plate. No SVG grammar, no
+ * substrate — the objects carry the personality on their own, exactly as
+ * they do in the client's mock.
+ */
+.obj {
+  display: block;
+  width: var(--obj, 88px);
+  height: var(--obj, 88px);
+  /* nearly half the object sits above the card edge — at a third it read as
+     a badly placed icon rather than a thing hanging off the card */
+  margin: calc(var(--obj, 88px) * -.46) 0 12px calc(var(--obj, 88px) * -.14);
+  filter: drop-shadow(0 12px 16px rgba(0, 0, 0, .18));
+  transition: transform var(--t-card) var(--ease-spring);
+  pointer-events: none;
+  user-select: none;
+}
+.card:hover .obj, .plat-card:hover .obj { transform: translateY(-6px) rotate(-5deg) scale(1.05); }
+.obj.is-inline { margin: 0; }
+
+/* ==========================================================================
+   scroll reveal
+   ========================================================================== */
+
+/* Progressive enhancement: content is visible by default and only hidden
+   for the reveal animation once we know JS is running. A broken observer
+   must never leave a section blank. */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--t-reveal) var(--ease-out), transform var(--t-reveal) var(--ease-out);
+  transition-delay: calc(min(var(--i, 0), 7) * 60ms);
+}
+.js .reveal.is-visible { opacity: 1; transform: none; }
+
+/* ==========================================================================
+   form
+   ========================================================================== */
+
+.form-card {
+  background: #fff;
+  border-radius: var(--r-2xl);
+  box-shadow: var(--e4);
+  padding: clamp(24px, 3vw, 38px);
+}
+.form-card h3 { margin-bottom: 22px; font-size: 1.375rem; }
+
+.field { position: relative; margin-bottom: 18px; }
+.field > label,
+.field.row > div > label {
+  position: absolute;
+  top: 0; left: 14px;
+  transform: translateY(-50%);
+  z-index: 2;
+  background: #fff;
+  padding: 0 7px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-3);
+  transition: color var(--t-micro) var(--ease-out), background-color var(--t-micro) var(--ease-out);
+  pointer-events: none;
+}
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 14px 15px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--ink);
+  transition: border-color var(--t-micro) var(--ease-out), box-shadow var(--t-micro) var(--ease-out);
+}
+.field textarea { resize: vertical; min-height: 78px; }
+.field input::placeholder, .field textarea::placeholder { color: var(--ink-4); font-weight: 500; }
+.field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 38px;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: var(--focus-ring);
+}
+.field:focus-within > label,
+.field.row > div:focus-within > label { color: var(--ink); background: var(--yellow); border-radius: 5px; }
+.field .req { color: var(--blue); }
+.field.row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field.row > div { position: relative; }
+
+.form-ok { display: none; text-align: center; padding: 26px 6px; }
+.form-ok.show { display: block; }
+.form-ok .ic { width: 96px; height: 96px; margin: 0 auto 18px; }
+.form-ok .sub { color: var(--ink-3); font-size: .9375rem; margin-top: 8px; }
+
+@media (max-width: 560px) {
+  .field.row { grid-template-columns: 1fr; }
+}
+
+/* ==========================================================================
+   reduced motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .js .reveal { opacity: 1 !important; transform: none !important; }
+}
+
+/* ==========================================================================
+   print
+   ========================================================================== */
+
+@media print {
+  /* Ambient light is a screen effect. On paper a 16%-alpha wash prints as a
+     grey blotch and eats toner for no gain — the flat colour blocks carry the
+     layout on their own. */
+  .blob,
+  .band::before,
+  .cta-band::before { display: none !important; }
+  .footer-inner { background-image: none !important; }
+}

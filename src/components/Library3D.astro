@@ -1,0 +1,253 @@
+---
+import { t, tArray } from '../utils/i18n';
+import type { Locale } from '../utils/i18n';
+import { withBase } from '../utils/url';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+
+const subjects = tArray<{ id: string; label: string }>(locale, 'classroom_library_subjects');
+const cards = tArray<{ subject: string; label: string; name: string; size: string }>(locale, 'classroom_library_cards');
+
+/*
+ * PLACEHOLDER IMAGERY — the real 3D preview thumbnails are still on the
+ * client's Drive. Until they land, each tile is a flat colour block from
+ * the mock's palette plus the subject's own 3D object. One colour per
+ * subject, so the colour carries meaning instead of decorating. Swap the
+ * object for a real preview <img> when the assets arrive; nothing else in
+ * this component has to change.
+ */
+const subjectStyle: Record<string, { block: string; obj: string }> = {
+  biology: { block: 'is-green', obj: 'apple' },
+  physics: { block: 'is-blue', obj: 'lightbulb' },
+  chemistry: { block: 'is-yellow', obj: 'fire' },
+  geography: { block: 'is-ink', obj: 'location' }
+};
+---
+
+<section class="band lib" id="library">
+  <div class="wrap">
+    <div class="lib-head">
+      <div class="lib-head-l reveal">
+        <span class="eyebrow">{t(locale, 'classroom_library_badge')}</span>
+        <p class="lib-count">
+          <span class="stat-num" data-countup>{t(locale, 'classroom_library_count')}</span>
+          <span class="lib-count-lbl">{t(locale, 'classroom_library_count_label')}</span>
+        </p>
+        <p class="lib-desc">{t(locale, 'classroom_library_desc')}</p>
+      </div>
+
+      <div class="lib-head-r reveal" style="--i:1">
+        <div class="seg" id="lib-tabs" role="tablist">
+          <span class="seg-pill" aria-hidden="true"></span>
+          {subjects.map((s, i) => (
+            <button class={`seg-opt${i === 0 ? ' is-active' : ''}`} data-subject={s.id} type="button" role="tab"
+                    aria-selected={i === 0 ? 'true' : 'false'}>{s.label}</button>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="lib-grid reveal" id="lib-grid">
+      {cards.map((c) => {
+        const st = subjectStyle[c.subject] || subjectStyle.physics;
+        return (
+          <article class={`tile ${c.size} ${st.block}`} data-subject={c.subject}>
+            <img class="tile-obj" src={withBase(`/assets/icons/${st.obj}.png`)} width="256" height="256" alt="" loading="lazy" decoding="async" />
+            <span class="tile-meta">
+              <span class="sub">{c.label}</span>
+              <span class="nm">{c.name}</span>
+            </span>
+          </article>
+        );
+      })}
+    </div>
+
+    <div class="lib-foot reveal">
+      <a href="#demo" class="btn btn-dark">{t(locale, 'classroom_library_cta')}</a>
+      <figure class="shot is-sm lib-proof">
+        <img src={withBase("/assets/shots/shot-pagination.png")} width="540" height="90"
+             alt="Сторінки каталогу бібліотеки Eddy Classroom" loading="lazy" decoding="async" />
+      </figure>
+    </div>
+    <p class="note lib-note">{t(locale, 'classroom_library_note')}</p>
+  </div>
+</section>
+
+<style>
+  /* The tiles carry the colour in this band, so the light around them stays
+     soft — but the grid is the tallest run of bare canvas on the page, and
+     leaving its centre unlit read as a hole rather than as restraint. */
+  .lib::before {
+    background:
+      /* Yellow sits behind the head, opposite the giant blue numeral. A blue
+         pool there would sink that numeral; the warm one lifts it. Do not
+         swap this one for blue. */
+      radial-gradient(calc(var(--amb-r-lg) * 1.25) calc(var(--amb-r-lg) * .62) at 10% 10%,
+        rgba(var(--amb-yellow), var(--amb-3)) 0%,
+        rgba(var(--amb-yellow), calc(var(--amb-3) * .4)) 38%,
+        rgba(var(--amb-yellow), 0) 72%),
+      /* The centre pool, dead behind the grid. Green because the grid's own
+         loudest tiles are green and blue, and warming the middle would fight
+         them; a wide soft green reads as the room the tiles sit in. */
+      radial-gradient(calc(var(--amb-r-xl) * 1.35) calc(var(--amb-r-xl) * .85) at 50% 52%,
+        rgba(var(--amb-green), var(--amb-3)) 0%,
+        rgba(var(--amb-green), calc(var(--amb-3) * .42)) 38%,
+        rgba(var(--amb-green), 0) var(--amb-fade)),
+      /* The page's blue starts climbing here and does not stop until the
+         footer; this is the first step of that climb. Centre kept inside the
+         box — outside it, all that shows is the straight cut. */
+      radial-gradient(var(--amb-r-xl) calc(var(--amb-r-xl) * .5) at 66% 92%,
+        rgba(var(--amb-blue), var(--amb-2)) 0%,
+        rgba(var(--amb-blue), 0) var(--amb-fade));
+  }
+
+  .lib-head {
+    display: grid;
+    grid-template-columns: 46% 1fr;
+    gap: clamp(24px, 3vw, 48px);
+    align-items: end;
+  }
+
+  .lib-count { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-top: 20px; }
+  .lib-count .stat-num { font-size: clamp(3.25rem, 2rem + 5.2vw, 6rem); line-height: .9; color: var(--blue); }
+  .lib-count-lbl {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(1.625rem, 1.1rem + 1.8vw, 2.75rem);
+    letter-spacing: -.03em; color: var(--ink);
+  }
+  .lib-desc { margin-top: 16px; font-size: 1.0625rem; line-height: 1.55; color: var(--ink-2); max-width: 44ch; }
+
+  .lib-head-r { display: flex; justify-content: flex-end; }
+
+  /* segmented control, restyled to the mock: white capsule, solid black
+     pill sliding under the active option */
+  .seg {
+    position: relative;
+    display: inline-flex;
+    gap: 2px;
+    background: #fff;
+    border-radius: var(--r-pill);
+    padding: 6px;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+    box-shadow: var(--e1);
+  }
+  .seg::-webkit-scrollbar { display: none; }
+  .seg-pill {
+    position: absolute;
+    top: 6px; left: 6px;
+    height: calc(100% - 12px);
+    border-radius: var(--r-pill);
+    background: var(--ink);
+    transition: transform var(--t-card) var(--ease-spring), width var(--t-card) var(--ease-spring);
+    pointer-events: none;
+  }
+  .seg-opt {
+    position: relative;
+    z-index: 2;
+    border: 0;
+    background: none;
+    border-radius: var(--r-pill);
+    padding: 10px 20px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: .875rem;
+    color: var(--ink-3);
+    white-space: nowrap;
+    scroll-snap-align: center;
+    cursor: pointer;
+    transition: color var(--t-micro) var(--ease-out);
+  }
+  .seg-opt:hover { color: var(--ink); }
+  .seg-opt.is-active { color: #fff; }
+
+  /* ---- masonry ---- */
+  .lib-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 96px;
+    grid-auto-flow: row dense;
+    gap: var(--gap-card);
+    margin-top: clamp(32px, 3.5vw, 52px);
+  }
+  .tile {
+    position: relative;
+    grid-row: span 2;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    cursor: pointer;
+    transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+  }
+  .tile:hover { transform: translateY(-4px); box-shadow: var(--e3); }
+  .tile.r3 { grid-row: span 3; }
+  .tile.c2 { grid-column: span 2; }
+  .tile.is-out { opacity: 0; transform: scale(.94); }
+  .tile.is-hidden { display: none; }
+
+  .tile.is-green { background: var(--green); }
+  .tile.is-blue { background: var(--blue); }
+  .tile.is-yellow { background: var(--yellow); }
+  .tile.is-ink { background: var(--ink-block); }
+
+  .tile-obj {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 46%;
+    max-width: 96px;
+    height: auto;
+    filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .22));
+    transition: transform var(--t-card) var(--ease-spring);
+    pointer-events: none;
+  }
+  .tile:hover .tile-obj { transform: translateY(-4px) rotate(-6deg) scale(1.06); }
+  .tile.r3 .tile-obj { width: 52%; }
+
+  .tile-meta {
+    position: relative; z-index: 2;
+    width: 100%;
+    padding: 16px;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  }
+  .tile-meta .sub {
+    background: #fff;
+    color: var(--ink);
+    border-radius: var(--r-pill);
+    padding: 5px 12px;
+    font-size: .6875rem; font-weight: 800;
+  }
+  .tile-meta .nm {
+    font-family: var(--font-display);
+    font-weight: 800; font-size: 1rem; line-height: 1.2;
+    color: var(--ink);
+  }
+  .tile.is-blue .tile-meta .nm, .tile.is-ink .tile-meta .nm { color: #fff; }
+
+  /* ---- footer of the band ---- */
+  .lib-foot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(16px, 2.5vw, 34px);
+    flex-wrap: wrap;
+    margin-top: clamp(32px, 3.5vw, 48px);
+  }
+  .lib-proof { width: 270px; border-radius: var(--r-md); }
+  .lib-proof img { width: 100%; height: auto; }
+  .lib-note { text-align: center; margin-top: 16px; opacity: .8; }
+
+  @media (max-width: 900px) {
+    .lib-head { grid-template-columns: 1fr; align-items: start; }
+    .lib-head-r { justify-content: flex-start; }
+    .lib-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 620px) {
+    .lib-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 84px; }
+    .tile-meta .nm { font-size: .9375rem; }
+    .lib-proof { display: none; }
+  }
+</style>

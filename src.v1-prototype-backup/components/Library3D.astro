@@ -1,0 +1,72 @@
+---
+/* PLACEHOLDER IMAGERY: real 3D-model preview thumbnails are not available
+   yet (client's Google Drive asset drop is pending) — these are gradient
+   placeholder tiles with a generic cube glyph + a plausible subject label,
+   built only to prove out the grid/hover/tab-filter interaction. Swap
+   `tile-bg` for a real thumbnail image per card once assets arrive. */
+const cubeIcon = `<path d="M12 2 3 7l9 5 9-5-9-5Z"/><path d="M3 7v10l9 5 9-5V7"/><path d="M12 12v10"/>`;
+const zoomIcon = `<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6"/>`;
+
+const subjects = [
+  { id: 'all', label: 'Усі' },
+  { id: 'biology', label: 'Біологія' },
+  { id: 'physics', label: 'Фізика' },
+  { id: 'chemistry', label: 'Хімія' },
+  { id: 'geography', label: 'Географія' }
+];
+
+const cards = [
+  { subject: 'biology', label: 'Біологія', name: 'Будова клітини', size: 'r2', grad: 'linear-gradient(150deg,#29c5da,#1b6fe3)' },
+  { subject: 'physics', label: 'Фізика', name: 'Термодинаміка', size: 'r3', grad: 'linear-gradient(150deg,#2649c9,#1e3a8a)' },
+  { subject: 'chemistry', label: 'Хімія', name: 'Періодична система елементів', size: 'r2 c2', grad: 'linear-gradient(150deg,#7c6cf0,#4c3fc9)' },
+  { subject: 'geography', label: 'Географія', name: 'Тектонічні плити', size: 'r2', grad: 'linear-gradient(150deg,#f5a623,#e08600)' },
+  { subject: 'physics', label: 'Фізика', name: 'Електричне коло', size: 'r2', grad: 'linear-gradient(150deg,#1b6fe3,#1e3a8a)' },
+  { subject: 'biology', label: 'Біологія', name: 'Система кровообігу', size: 'r3', grad: 'linear-gradient(150deg,#ee5f8a,#c9407a)' },
+  { subject: 'chemistry', label: 'Хімія', name: 'Молекула ДНК', size: 'r2', grad: 'linear-gradient(150deg,#7c6cf0,#2649c9)' },
+  { subject: 'geography', label: 'Географія', name: 'Вулкан у розрізі', size: 'r2 c2', grad: 'linear-gradient(150deg,#e08600,#b34d00)' },
+  { subject: 'physics', label: 'Фізика', name: 'Восьмициліндровий двигун', size: 'r3', grad: 'linear-gradient(150deg,#22324b,#1a2840)' },
+  { subject: 'biology', label: 'Біологія', name: 'Фотосинтез', size: 'r2', grad: 'linear-gradient(150deg,#29c5da,#188098)' },
+  { subject: 'chemistry', label: 'Хімія', name: 'Кристалічна решітка', size: 'r2', grad: 'linear-gradient(150deg,#4c3fc9,#1e3a8a)' },
+  { subject: 'geography', label: 'Географія', name: 'Річкова долина', size: 'r2', grad: 'linear-gradient(150deg,#f5c518,#e08600)' }
+];
+---
+<section class="lib3d band" id="library">
+  <div class="wrap">
+    <div class="lib3d-head reveal">
+      <span class="lib3d-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" set:html={cubeIcon}></svg>
+        3D об'єкти
+      </span>
+      <h2><span class="num">1200+</span> моделей</h2>
+      <p>Каталог навчального 3D-контенту бібліотеки Eddy Classroom.</p>
+    </div>
+
+    <div class="lib3d-tabs reveal" id="lib3d-tabs">
+      {subjects.map((s, i) => (
+        <button class={`lib3d-tab${i === 0 ? ' active' : ''}`} data-subject={s.id} type="button">{s.label}</button>
+      ))}
+    </div>
+
+    <div class="lib3d-grid reveal" id="lib3d-grid">
+      {cards.map((c) => (
+        <div class={`lib3d-card ${c.size}`} data-subject={c.subject}>
+          <div class="tile-bg" style={`background:${c.grad}`}></div>
+          <div class="cube"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" set:html={cubeIcon}></svg></div>
+          <div class="meta">
+            <div class="sub">{c.label}</div>
+            <div class="nm">{c.name}</div>
+          </div>
+          <div class="overlay">
+            <div class="zoom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" set:html={zoomIcon}></svg></div>
+            <div class="nm">{c.name}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="lib3d-cta reveal">
+      <a href="#lead-form" class="btn btn-primary">Переглянути всю бібліотеку 3D-моделей</a>
+      <p class="lib3d-note">Прев'ю моделей — заглушки; реальні мініатюри будуть додані найближчим часом.</p>
+    </div>
+  </div>
+</section>

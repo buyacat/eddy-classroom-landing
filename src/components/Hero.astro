@@ -1,0 +1,352 @@
+---
+import { t, tArray } from '../utils/i18n';
+import type { Locale } from '../utils/i18n';
+import { withBase } from '../utils/url';
+import EarthGlobe from './EarthGlobe.astro';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+
+const stats = tArray<{ text: string; offline?: boolean }>(locale, 'classroom_stats');
+
+/*
+ * The hero shows the product, not an illustration of it: a live, draggable
+ * 3D model from the library, re-framed in our own chrome (blue/yellow/green
+ * dots instead of macOS traffic lights). The panel is left uncovered on
+ * purpose — the model is the demo, and a second card cropping its corner only
+ * competed with it.
+ *
+ * The three floating tools are the client's own 3D objects — coin for the
+ * random-name wheel, clock for the timer, music note for the noise meter.
+ * All strings below are the frozen ones from classroom.json.
+ */
+const tools = [
+  { key: 'coin', title: t(locale, 'classroom_hero_wheel_title'), cls: 'tool-a' },
+  { key: 'clock', title: t(locale, 'classroom_hero_timer_title'), cls: 'tool-b' },
+  { key: 'music', title: t(locale, 'classroom_hero_noise_title'), cls: 'tool-c' }
+];
+---
+
+<section class="hero" id="top">
+  <span class="blob blob-y" aria-hidden="true"></span>
+  <span class="blob blob-g" aria-hidden="true"></span>
+  <span class="blob blob-b" aria-hidden="true"></span>
+
+  <div class="hero-grid wrap">
+    <div class="hero-copy">
+      <span class="eyebrow enter" style="--d:0ms">{t(locale, 'classroom_eyebrow')}</span>
+      <h1 class="enter" style="--d:60ms" set:html={t(locale, 'classroom_title')} />
+      <p class="lede enter" style="--d:120ms">{t(locale, 'classroom_lede')}</p>
+      <p class="hero-insight" data-insight aria-live="polite"></p>
+      <div class="hero-chips enter" style="--d:180ms">
+        {stats.map((s) => (
+          <span class={`chip${s.offline ? ' is-green' : ''}`}>
+            <i class={`dot${s.offline ? ' pulse' : ''}`}></i>{s.text}
+          </span>
+        ))}
+      </div>
+      <div class="hero-cta enter" style="--d:240ms">
+        <a href="#demo" class="btn btn-primary">{t(locale, 'classroom_hero_cta_primary')}</a>
+        <a href="#platform" class="btn btn-ghost">{t(locale, 'classroom_hero_cta_secondary')}</a>
+      </div>
+    </div>
+
+    <div class="hero-stage">
+      <figure class="shot is-hero enter" style="--d:80ms">
+        <figcaption class="shot-bar">
+          <i></i><i></i><i></i>
+          <span class="shot-meta">
+            <span class="shot-ttl">{t(locale, 'classroom_hero_panel_title')}</span>
+            <span class="shot-live"><i class="pulse"></i><span data-live-text
+              >{t(locale, 'classroom_hero_panel_live')}</span></span>
+          </span>
+        </figcaption>
+        <EarthGlobe locale={locale} />
+      </figure>
+
+      <div class="badge badge-roster enter" style="--d:420ms">
+        <span class="avs">
+          <span style="background:var(--blue)">АК</span>
+          <span style="background:var(--yellow);color:#000">МІ</span>
+          <span style="background:var(--green);color:#000">ОП</span>
+        </span>
+        <span class="txt">
+          <span class="t1">{t(locale, 'classroom_hero_roster_class')}</span>
+          <span class="t2"><b id="roster-count">18/22</b> {t(locale, 'classroom_hero_roster_done')}</span>
+        </span>
+      </div>
+
+      {tools.map((tool, i) => (
+        <div class={`badge badge-tool ${tool.cls} enter`} style={`--d:${500 + i * 80}ms`} title={tool.title}>
+          <img class="obj is-inline" src={withBase(`/assets/icons/${tool.key}.png`)} width="256" height="256" alt="" loading="lazy" />
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <a class="scroll-cue" href="#why" aria-hidden="true" tabindex="-1">
+    <span class="mouse"><i></i></span>
+    <span>{t(locale, 'scroll')}</span>
+  </a>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    padding: calc(var(--nav-h) + clamp(32px, 5vw, 72px)) 0 clamp(40px, 5vw, 72px);
+    /* Clip X, never Y. The old `overflow: hidden` guillotined the green and
+       blue pools in a straight line across the full viewport width at the
+       hero's bottom edge — the one visible seam on the page. But the yellow
+       pool does hang 173px past the right edge, and body's `overflow-x`
+       suppresses the scrollbar without stopping the document from measuring
+       wider. `overflow-x: clip` is the one value that cuts a single axis:
+       `hidden` would force the other axis to `auto` and re-cut the bleed. */
+    overflow-x: clip;
+  }
+
+  /* Three soft blocks of brand colour instead of an atmospheric gradient —
+     the mock builds depth out of flat shapes, so the page does too.
+
+     They are the same three colours as the sheets in the header, and they
+     are driven by the same two moments: they bloom in with the stack when
+     the page loads, and green + blue drain away on the exact beat their
+     sheets are pulled out of the header (`html.nav-stuck`, set in app.js).
+     Yellow is the one that stays in both places. */
+  .blob {
+    position: absolute;
+    /* Load-bearing: this drops the three pools into the same page-wide
+       ambient plane as every other band (see style.css), so the hero's light
+       and the next band's light are literally one layer and cannot show a
+       join. */
+    z-index: -1;
+    border-radius: 50%;
+    pointer-events: none;
+    /* No filter: blur(). A radial falloff is already smooth; the blur was a
+       second full-size GPU pass replayed on every nav-stuck toggle, for an
+       effect the third colour stop below gives away for free. */
+    transition:
+      opacity 620ms var(--ease-out),
+      transform 760ms var(--ease-out);
+  }
+  /* Offsets are calc'd off each pool's own size, not off the hero's height —
+     a percentage offset would resolve against the section and drift with the
+     copy length between UK and EN. The middle colour stop is what keeps a
+     wash this wide from banding on an 8-bit panel. */
+  /* The yellow is the widest thing on the page on purpose: it is where light
+     enters the site, and a tight pool made it read as a corner highlight
+     rather than as the room being lit. Wider ellipse, a longer plateau before
+     the falloff starts, and its own fade past the shared 62% so the wash
+     reaches the middle of the hero instead of dying at the shoulder. */
+  .blob-y {
+    --h: min(68vw, 1020px);
+    width: var(--h); height: calc(var(--h) * .82);
+    top: calc(var(--h) * -.26);
+    right: calc(var(--h) * -.20);
+    background: radial-gradient(ellipse,
+      rgba(var(--amb-yellow), var(--amb-4)) 0%,
+      rgba(var(--amb-yellow), calc(var(--amb-4) * .62)) 32%,
+      rgba(var(--amb-yellow), calc(var(--amb-4) * .24)) 54%,
+      rgba(var(--amb-yellow), 0) 76%);
+  }
+
+  /* Green and blue are centred all but exactly ON the hero's bottom edge, so
+     half of each pool lands in the top padding of "why us" — precisely where
+     the old clip used to cut them off. */
+  .blob-g {
+    --h: min(46vw, 620px);
+    width: var(--h); height: var(--h);
+    bottom: calc(var(--h) * -.46);
+    left: calc(var(--h) * -.18);
+    background: radial-gradient(circle,
+      rgba(var(--amb-green), var(--amb-3)) 0%,
+      rgba(var(--amb-green), calc(var(--amb-3) * .45)) 34%,
+      rgba(var(--amb-green), 0) var(--amb-fade));
+    transition-delay: 60ms;
+  }
+  .blob-b {
+    --h: min(40vw, 520px);
+    width: var(--h); height: var(--h);
+    bottom: calc(var(--h) * -.50);
+    right: 4%;
+    background: radial-gradient(circle,
+      rgba(var(--amb-blue), var(--amb-2)) 0%,
+      rgba(var(--amb-blue), calc(var(--amb-2) * .45)) 34%,
+      rgba(var(--amb-blue), 0) var(--amb-fade));
+    transition-delay: 120ms;
+  }
+
+  /* load: the light comes up with the same stagger as the stack fanning open */
+  html.js:not(.is-loaded) .blob { opacity: 0; transform: scale(.9); }
+
+  /* stuck: green and blue leave — drifting the way their sheets do — and the
+     yellow that remains opens out a little to take the room */
+  html.nav-stuck .blob-g { opacity: 0; transform: translateX(7vw) scale(.94); transition-delay: 110ms; }
+  html.nav-stuck .blob-b { opacity: 0; transform: translateX(7vw) scale(.94); transition-delay: 0ms; }
+  html.nav-stuck .blob-y { transform: scale(1.07); }
+
+  /* offline beat: the room's light drops for a moment and the lesson does not */
+  :global(html.lesson-offline) .blob { opacity: .18; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob { transition: none; }
+    .hero-insight { transition: none; }
+  }
+
+  .hero-grid {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 46%) 1fr;
+    gap: clamp(32px, 4vw, 64px);
+    align-items: center;
+  }
+
+  .hero-copy h1 { margin: 20px 0 0; }
+  .hero-copy .lede { margin-top: 20px; }
+
+  /* The one line that answers "what does this give my school?" — and it is
+     written by the platform, in front of the visitor, because of what the
+     visitor just did in the panel. Empty and out of flow until then. */
+  .hero-insight {
+    margin: 0;
+    max-height: 0;
+    overflow: hidden;
+    padding-left: 14px;
+    border-left: 3px solid transparent;
+    font-size: .875rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--ink-2);
+    opacity: 0;
+    transition:
+      max-height 420ms var(--ease-out),
+      margin 420ms var(--ease-out),
+      opacity 320ms var(--ease-out),
+      border-color 320ms var(--ease-out);
+  }
+  .hero-insight.is-on {
+    margin-top: 20px;
+    max-height: 6em;
+    opacity: 1;
+    border-left-color: var(--green-deep);
+  }
+  .hero-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+
+  /* ---- stage ---- */
+  .hero-stage { position: relative; }
+  .badge {
+    position: absolute;
+    z-index: 5;
+    background: #fff;
+    border-radius: var(--r-lg);
+    box-shadow: var(--e3);
+  }
+  .badge-roster {
+    top: 10%;
+    left: -10%;
+    padding: 11px 16px 11px 12px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+  .badge-roster .avs { display: flex; }
+  .badge-roster .avs span {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 2.5px solid #fff;
+    margin-left: -10px;
+    display: grid; place-items: center;
+    font-family: var(--font-display);
+    font-size: 11px; font-weight: 800; color: #fff;
+  }
+  .badge-roster .avs span:first-child { margin-left: 0; }
+  .badge-roster .txt { display: flex; flex-direction: column; line-height: 1.3; }
+  .badge-roster .t1 { font-family: var(--font-display); font-weight: 800; font-size: 13.5px; color: var(--ink); }
+  .badge-roster .t2 { font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
+  .badge-roster .t2 b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  .badge-tool {
+    width: 74px; height: 74px;
+    display: grid; place-items: center;
+    right: -18px;
+    padding: 10px;
+  }
+  .badge-tool .obj { width: 54px; height: 54px; }
+  .tool-a { top: 70px; }
+  .tool-b { top: 250px; }
+  .tool-c { top: 430px; }
+
+  /* ambient bob — deliberately non-harmonic periods so they never sync */
+  .badge-roster { animation: bob 5.2s var(--ease-in-out) infinite; }
+  .tool-a { animation: bob 6.1s var(--ease-in-out) infinite; }
+  .tool-b { animation: bob 7s var(--ease-in-out) infinite; }
+  .tool-c { animation: bob 6.6s var(--ease-in-out) infinite; }
+  @keyframes bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -5px; } }
+
+  /* ---- entrance ---- */
+  :global(.js) .enter { opacity: 0; transform: translateY(18px); }
+  :global(.is-loaded) .enter {
+    opacity: 1;
+    transform: none;
+    transition: opacity 520ms var(--ease-out) var(--d, 0ms), transform 520ms var(--ease-out) var(--d, 0ms);
+  }
+  :global(.is-loaded) .shot.enter { transition-duration: var(--t-enter); }
+  :global(.js) .badge.enter { transform: translateY(18px) scale(.86); }
+  :global(.is-loaded) .badge.enter {
+    transition: opacity 520ms var(--ease-out) var(--d), transform 520ms var(--ease-spring) var(--d);
+  }
+
+  /* ---- scroll cue ---- */
+  .scroll-cue {
+    position: relative;
+    z-index: 2;
+    margin: clamp(30px, 4vw, 56px) auto 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: .6875rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+  }
+  .scroll-cue .mouse {
+    width: 22px; height: 34px;
+    border: 2.5px solid var(--ink-4);
+    border-radius: 12px;
+    display: grid;
+    justify-items: center;
+    padding-top: 6px;
+  }
+  .scroll-cue .mouse i {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--ink-4);
+    animation: cue 1.8s var(--ease-in-out) infinite;
+  }
+  @keyframes cue { 0% { transform: translateY(0); opacity: 1; } 70% { transform: translateY(12px); opacity: 0; } 100% { opacity: 0; } }
+
+  @media (max-width: 1080px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 44px; }
+    .hero-copy { text-align: center; }
+    .hero-copy h1, .hero-copy .lede { margin-inline: auto; }
+    .hero-chips, .hero-cta { justify-content: center; }
+    .hero-stage { max-width: 620px; margin-inline: auto; width: 100%; }
+    .badge-roster { left: -4%; }
+    .badge-tool { right: -10px; }
+  }
+  @media (max-width: 700px) {
+    .badge-roster { top: 4%; left: -2%; padding: 8px 12px 8px 9px; }
+    .badge-roster .t1 { font-size: 12px; }
+    .badge-tool { width: 58px; height: 58px; right: -8px; padding: 7px; }
+    .badge-tool .obj { width: 42px; height: 42px; }
+    .tool-a { top: 40px; }
+    .tool-b { top: 172px; }
+    .tool-c { top: 304px; }
+  }
+  @media (max-width: 480px) {
+    .tool-c { display: none; }
+  }
+</style>

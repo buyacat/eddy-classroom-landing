@@ -1,0 +1,174 @@
+---
+import Logo from './Logo.astro';
+import { t, tArray } from '../utils/i18n';
+import type { Locale } from '../utils/i18n';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+
+/* Contact block is the Eddy Group HQ one used verbatim on the sibling
+   Eddy sites — not invented here. */
+const email = t(locale, 'footer_email');
+const phone = t(locale, 'footer_phone');
+const phoneHref = 'tel:' + phone.replace(/\s/g, '');
+
+/* Cross-brand "family" row — same pattern as the sibling Eddy sites
+   (e.g. drstem.eu): a row of links out to the rest of the group. */
+const familyLinks = tArray<{ label: string; url: string }>(locale, 'footer_family_links');
+---
+
+<footer class="footer" itemscope itemtype="https://schema.org/Organization">
+  <div class="wrap">
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a href="#top" aria-label="Eddy Classroom"><Logo part="tag" variant="inverse" /></a>
+          <p>{t(locale, 'footer_about')}</p>
+        </div>
+
+        <div class="fcol">
+          <h4>{t(locale, 'footer_col_support')}</h4>
+          <span>{t(locale, 'footer_service_hours')}</span>
+          <a href={phoneHref}>{phone}</a>
+          <a href={`mailto:${t(locale, 'footer_service_email')}`}>{t(locale, 'footer_service_email')}</a>
+          <span>{t(locale, 'footer_service_warranty')}</span>
+        </div>
+
+        <div class="fcol">
+          <h4>{t(locale, 'footer_col_contacts')}</h4>
+          <a href={`mailto:${email}`} itemprop="email">{email}</a>
+          <a href={phoneHref} itemprop="telephone">{phone}</a>
+          <span itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+            <span itemprop="streetAddress">{t(locale, 'footer_address')}</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="footer-family">
+        <div class="fl-group">
+          <span class="fl-label">{t(locale, 'footer_family_label')}</span>
+          <div class="fl">
+            {familyLinks.map((link) => (
+              <a href={link.url} target="_blank" rel="noopener noreferrer">{link.label}</a>
+            ))}
+          </div>
+        </div>
+        <div class="soc">
+          <a href="https://www.facebook.com/profile.php?id=61576618363606" target="_blank" rel="noreferrer noopener"
+             aria-label={t(locale, 'footer_social_fb')}>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12.06C22 6.48 17.52 2 11.94 2 6.36 2 1.88 6.48 1.88 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.42V9.91c0-2.39 1.42-3.71 3.6-3.71 1.04 0 2.13.19 2.13.19v2.34h-1.2c-1.18 0-1.55.73-1.55 1.48v1.78h2.64l-.42 2.91h-2.22V22c4.78-.76 8.44-4.92 8.44-9.94z"/></svg>
+          </a>
+          <a href="https://www.youtube.com/@eddy-group" target="_blank" rel="noreferrer noopener"
+             aria-label={t(locale, 'footer_social_yt')}>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.38.56A3.02 3.02 0 0 0 .5 6.2 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.8 3.02 3.02 0 0 0 2.12 2.14C4.5 20.5 12 20.5 12 20.5s7.5 0 9.38-.56a3.02 3.02 0 0 0 2.12-2.14A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.8zM9.6 15.6V8.4l6.4 3.6-6.4 3.6z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div class="cp">{t(locale, 'footer_copyright')}</div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  /* No background and no pool of its own: the light that reaches this far is
+     the CTA band's, overhanging from above. A pool anchored here would have
+     to overhang the bottom of the last section on the page. */
+  .footer { padding-bottom: clamp(16px, 2vw, 28px); }
+  /* the footer is a rounded black block on the canvas, matching the
+     wordmark's tag and the library's fourth colour */
+  .footer-inner {
+    background-color: var(--ink-block);
+    /* Ambient light cannot survive on ink, so instead of fading the page's
+       blue into black, the block absorbs it and re-emits it a shade deeper.
+       This is the palette's --violet finally doing the job it was reserved
+       for — the one deep note, used only where a second dark is needed — and
+       it is the only place it appears on the whole site. Layered over the
+       flat fill, never instead of it: the footer is still a black shape, not
+       a gradient panel. */
+    background-image:
+      radial-gradient(130% 100% at 8% 0%,
+        rgba(var(--amb-violet), .34) 0%,
+        rgba(var(--amb-violet), 0) 56%),
+      radial-gradient(90% 90% at 94% 98%,
+        rgba(var(--amb-blue), .20) 0%,
+        rgba(var(--amb-blue), 0) 68%);
+    color: var(--ink-inv-2);
+    border-radius: var(--r-2xl);
+    padding: clamp(32px, 4vw, 56px) clamp(24px, 3.4vw, 56px) clamp(22px, 2.4vw, 32px);
+  }
+
+  .footer-brand { --logo-size: 26px; }
+
+  .footer-top {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: clamp(24px, 3vw, 48px);
+    padding-bottom: 34px;
+  }
+  .footer-brand p { margin-top: 18px; font-size: .875rem; line-height: 1.55; max-width: 42ch; }
+
+  .fcol { display: flex; flex-direction: column; gap: 10px; }
+  .fcol h4 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: .8125rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--yellow);
+    margin-bottom: 4px;
+  }
+  .fcol a, .fcol span { font-size: .875rem; line-height: 1.5; font-weight: 500; transition: color var(--t-hover) var(--ease-out); }
+  .fcol a:hover { color: #fff; }
+
+  /* family row — cross-links to the rest of the Eddy Group sites,
+     same pattern as the sibling landings (e.g. drstem.eu) */
+  .footer-family {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 22px 0;
+    border-top: 1px solid var(--line-inv);
+  }
+  .fl-group { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .fl-label {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: .6875rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--yellow);
+    white-space: nowrap;
+  }
+  .fl { display: flex; gap: 18px; flex-wrap: wrap; }
+  .fl a { font-size: .8125rem; font-weight: 600; color: var(--ink-inv-2); transition: color var(--t-hover) var(--ease-out); }
+  .fl a:hover { color: #fff; }
+
+  .footer-bottom { padding-top: 20px; }
+  .cp { font-size: .8125rem; color: rgba(255, 255, 255, .5); font-weight: 600; }
+  .soc { display: flex; gap: 10px; }
+  .soc a {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .1);
+    display: grid; place-items: center;
+    color: rgba(255, 255, 255, .75);
+    transition: background-color var(--t-hover) var(--ease-out), color var(--t-hover) var(--ease-out);
+  }
+  .soc a:hover { background: var(--yellow); color: var(--ink); }
+  .soc svg { width: 18px; height: 18px; }
+
+  @media (max-width: 860px) {
+    .footer-top { grid-template-columns: 1fr 1fr; }
+    .footer-brand { grid-column: span 2; }
+  }
+  @media (max-width: 520px) {
+    .footer-top { grid-template-columns: 1fr; }
+    .footer-brand { grid-column: span 1; }
+    .footer-family { flex-direction: column; align-items: flex-start; }
+  }
+</style>

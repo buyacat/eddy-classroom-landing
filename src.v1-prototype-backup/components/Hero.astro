@@ -1,0 +1,112 @@
+---
+/* Signature hero: teacher's laptop pushing the lesson to the classroom
+   panel — the mechanism this product actually does, not a hardware/lab
+   motif. Deliberately NOT the Dr.STEM orbiting-atom + reading-chips
+   hero and NOT the giant parallax background wordmark. */
+const beamPath = "M280,300 C 360,280 320,180 330,150";
+---
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div class="hero-copy reveal">
+      <span class="eyebrow">Eddy Classroom</span>
+      <h1>Eddy <span>Classroom</span></h1>
+      <p class="lede">Єдине цифрове середовище для підготовки й проведення уроку: готові навчальні плани та уроки, бібліотека цифрових та 3D матеріалів, проведення тестувань та аналітика за урок.</p>
+      <div class="hero-stats">
+        <span class="stat-chip"><i class="dot"></i>1–12 класи</span>
+        <span class="stat-chip offline"><i class="dot"></i>Працює офлайн</span>
+      </div>
+      <div class="hero-cta">
+        <a href="#lead-form" class="btn btn-primary">Залишити заявку</a>
+        <a href="#platform" class="btn btn-ghost">Що входить у платформу</a>
+      </div>
+    </div>
+
+    <div class="stage reveal">
+      <div class="ws">
+        <svg class="push-beam" viewBox="0 0 640 560" preserveAspectRatio="none" aria-hidden="true">
+          <path d={beamPath}></path>
+          <circle class="push-dot" r="4">
+            <animateMotion dur="3.2s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear" path={beamPath}></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.08;0.85;1" dur="3.2s" repeatCount="indefinite"></animate>
+          </circle>
+        </svg>
+
+        <!-- teacher's laptop: lesson builder UI -->
+        <div class="laptop" data-float aria-hidden="true">
+          <div class="laptop-screen">
+            <div class="laptop-cam"></div>
+            <div class="laptop-ui">
+              <div class="side">
+                <i class="on"></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+              <div class="main">
+                <div class="ttl"></div>
+                <div class="bar w1"></div>
+                <div class="bar w2"></div>
+                <div class="bar w3"></div>
+                <div class="thumbs">
+                  <em class="active"></em><em></em><em></em>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="laptop-hinge"></div>
+          <div class="laptop-base"></div>
+        </div>
+
+        <!-- interactive panel: what the class sees, mirrored live -->
+        <div class="panel" data-float aria-hidden="true">
+          <div class="panel-frame">
+            <div class="panel-screen">
+              <div class="panel-topbar">
+                <span class="ttl">Урок · Біологія 7-А</span>
+                <span class="live">LIVE</span>
+              </div>
+              <div class="panel-body">
+                <div class="panel-slide">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                  <svg class="ink" viewBox="0 0 100 60" aria-hidden="true"><path d="M18 42 C 30 18, 46 18, 52 34 S 70 46, 84 20"></path></svg>
+                </div>
+                <div class="panel-side">
+                  <div class="row"><span class="av done"></span><span class="ln"></span></div>
+                  <div class="row"><span class="av done"></span><span class="ln"></span></div>
+                  <div class="row"><span class="av"></span><span class="ln"></span></div>
+                  <div class="row"><span class="av"></span><span class="ln"></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- floating "who's still working" roster -->
+        <div class="float-badge badge-roster bob" id="roster-badge">
+          <span class="avs">
+            <span style="background:#1b6fe3">АК</span>
+            <span style="background:#7c6cf0">МІ</span>
+            <span style="background:#f5a623">ОП</span>
+          </span>
+          <span class="txt">
+            <span class="t1">Клас 7-А</span>
+            <span class="t2"><b id="roster-count">18/22</b> виконали</span>
+          </span>
+        </div>
+
+        <!-- game-tool motion accents: wheel of names / timer / noise-meter -->
+        <div class="float-badge badge-tool badge-wheel bob" title="Колесо фортуни">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6.4 3.7"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
+        </div>
+        <div class="float-badge badge-tool badge-timer bob" title="Таймер">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="13" r="8"/><path d="M12 13V9" class="tick"/><path d="M9 3h6"/></svg>
+        </div>
+        <div class="float-badge badge-tool badge-noise bob" title="Шумомір">
+          <span class="bars"><i></i><i></i><i></i><i></i><i></i></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-cue">
+    <span class="mouse"></span>
+    <span>SCROLL</span>
+  </div>
+</section>

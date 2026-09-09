@@ -1,0 +1,285 @@
+---
+import Logo from './Logo.astro';
+import { t, altPath } from '../utils/i18n';
+import type { Locale } from '../utils/i18n';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+
+/* The Eddy Group header, rebuilt from eddygroup.eu: full-width white bar,
+   group wordmark on the left, the group menu centred in uppercase, the
+   language switch on the right. The old in-page section menu
+   (#why / #platform / #library) is gone — this page is a landing, so the
+   header's job is moving between Eddy sites, not inside this one.
+
+   Menu targets and the #1F2C2E link ink are taken verbatim from the live
+   eddygroup.eu header so the bar reads as the same navigation everywhere. */
+const links = [
+  { href: 'https://trade.eddygroup.eu/', label: 'Trade' },
+  { href: 'https://1vision.eddygroup.eu/', label: '1-Vision' },
+  { href: 'https://drstem.eu/', label: 'Dr. STEM' },
+  { href: 'https://svitlo.eddygroup.eu/', label: 'Svitlo' },
+  {
+    href: locale === 'uk' ? 'https://eddygroup.eu/news/' : 'https://eddygroup.eu/en/news/',
+    label: t(locale, 'nav_news')
+  },
+  {
+    href: locale === 'uk' ? 'https://eddygroup.eu/contact/' : 'https://eddygroup.eu/en/contact/',
+    label: t(locale, 'nav_contacts')
+  }
+];
+const alt = altPath(locale);
+---
+
+<header class="gnav" id="nav">
+  <div class="gnav-bar">
+   <div class="gnav-inner">
+    <div class="gnav-brand">
+      <a href="#top" class="gnav-product" aria-label="Eddy Classroom"><Logo part="tag" /></a>
+    </div>
+
+    <nav class="gnav-links" aria-label="Eddy Group">
+      {links.map((l) => (
+        <a href={l.href} class="gnav-link" target="_blank" rel="noopener">{l.label}</a>
+      ))}
+    </nav>
+
+    <div class="gnav-actions">
+      <a href={alt} class="gnav-lang" aria-label={t(locale, 'nav_lang_aria')}>{t(locale, 'nav_lang_label')}</a>
+      <button class="gnav-burger" id="nav-burger" type="button"
+              aria-label={t(locale, 'nav_menu_open')} aria-expanded="false" aria-controls="mobile-menu">
+        <span></span><span></span><span></span>
+      </button>
+     </div>
+   </div>
+  </div>
+
+  <!-- The stack: three sheet edges fanned out under the bar at rest, closing
+       into one 3px tri-colour line the moment the header sticks. -->
+  <div class="gnav-stack" aria-hidden="true">
+    <span class="sheet sheet-y"></span>
+    <span class="sheet sheet-g"></span>
+    <span class="sheet sheet-b"></span>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mobile-menu-inner">
+    {links.map((l) => <a href={l.href} class="mm-link" target="_blank" rel="noopener">{l.label}</a>)}
+    <a href={alt} class="mm-link">{t(locale, 'nav_lang_label')}</a>
+  </div>
+</div>
+
+<style>
+  /* ---------- the header is a stack of exercise books ----------
+     At the top of the page three coloured sheet edges are fanned out under
+     the white bar, each one further back in real 3D space. As soon as the
+     page scrolls the stack closes: the sheets drop to Z=0 and clip into
+     three equal segments of a single 3px line, and the bar itself plays a
+     short "settle" tilt, the way a stack lands on a desk. */
+  .gnav {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 60;
+    perspective: 900px;
+    /* vanishing point on the stack line, so receding sheets shrink toward
+       it instead of drifting up the bar */
+    perspective-origin: 50% 100%;
+    transition: filter 200ms var(--ease-out);
+  }
+  .gnav-bar {
+    background: #fff;
+    transition: box-shadow 220ms var(--ease-out);
+  }
+  .gnav.is-stuck .gnav-bar { box-shadow: 0 4px 10px rgba(0, 0, 0, .05); }
+
+  /* The bar itself never moves. It used to play a short rotateX "settle" on
+     every is-stuck toggle, and that was a mistake three times over: the
+     keyframe restarted each time the threshold was crossed, so slow scrolling
+     around it rattled; the bar's text rendered through a 3D transform for the
+     whole animation; and on a 1440px bar a few degrees of rotateX reads as
+     the header coming loose, not as depth. The choreography lives entirely in
+     the sheets below, where there is no type to distort. */
+
+  .gnav-stack {
+    position: absolute;
+    inset: 100% 0 auto;
+    height: 26px;
+    transform-style: preserve-3d;
+    pointer-events: none;
+  }
+  .sheet {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 6px;
+    border-radius: 0 0 3px 3px;
+    clip-path: inset(0 0 0 0);
+    will-change: transform, clip-path;
+    /* order matters: the per-state rules below address these four by index */
+    transition:
+      transform 1050ms var(--ease-glide),
+      clip-path 850ms var(--ease-glide),
+      opacity 380ms var(--ease-out),
+      height 650ms var(--ease-glide);
+  }
+  /* Fanned at rest: a stepped block of three sheet edges. scaleX sets the
+     step so it stays predictable at every viewport width; the small
+     translateZ keeps the layers genuinely apart in 3D, which is what makes
+     the settle tilt read as depth rather than as a slide. */
+  .sheet-y { background: var(--yellow); z-index: 3; }
+  .sheet-g {
+    background: var(--green);
+    z-index: 2;
+    transform: translate3d(0, 6px, -22px) scaleX(.964);
+    transition-delay: 60ms;
+  }
+  .sheet-b {
+    background: var(--blue);
+    z-index: 1;
+    transform: translate3d(0, 12px, -46px) scaleX(.928);
+    transition-delay: 120ms;
+  }
+
+  /* Closed until the page is ready, so the stack visibly fans open on load
+     — the transition above does the work, no extra keyframes. */
+  html:not(.is-loaded) .sheet { transform: none; }
+
+  /* Closing: the stack shuts. All three sheets rise out of the fan into one
+     row on the same long glide, staggered back to front, and each clips to
+     its own third — so the line the reader lives with still carries the full
+     brand chord instead of going one or two colours. Nothing springs: every
+     move here is one the eye follows the whole way, and an overshoot reads
+     as a twitch. The hero's coloured light drains on the same beat
+     (Hero.astro, `html.nav-stuck`), so header and hero read as one system. */
+  .gnav.is-stuck .sheet { height: 5px; }
+  .gnav.is-stuck .sheet-y {
+    clip-path: inset(0 66.67% 0 0);
+    transition-delay: 0ms, 300ms, 0ms, 260ms;
+  }
+  .gnav.is-stuck .sheet-g {
+    transform: translate3d(0, 0, 0);
+    clip-path: inset(0 33.34% 0 33.33%);
+    transition-delay: 110ms, 340ms, 0ms, 260ms;
+  }
+  .gnav.is-stuck .sheet-b {
+    transform: translate3d(0, 0, 0);
+    clip-path: inset(0 0 0 66.66%);
+    transition-delay: 220ms, 380ms, 0ms, 260ms;
+  }
+
+  .gnav-inner {
+    height: var(--nav-h);
+    /* eddygroup.eu runs the bar to a 70px gutter, not to a centred column */
+    padding-inline: clamp(16px, 4.6vw, 70px);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 20px;
+  }
+
+  .gnav-brand { display: flex; align-items: center; min-width: 0; }
+  /* placeholder mark: the `classroom` chip alone until the real logo lands */
+  .gnav-product { --logo-size: 36px; display: flex; }
+
+  .gnav-links { display: flex; justify-content: center; }
+  .gnav-link {
+    padding: 4px 15px;
+    font-family: var(--font-group);
+    font-weight: 800;
+    font-size: .9375rem;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #1f2c2e;
+    transition: color var(--t-micro) var(--ease-out);
+  }
+  .gnav-link:hover { color: var(--blue); }
+
+  .gnav-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+
+  .gnav-lang {
+    display: grid; place-items: center;
+    min-width: 44px; height: 36px;
+    padding-inline: 12px;
+    border-radius: var(--r-pill);
+    border: 2px solid var(--line);
+    font-family: var(--font-group);
+    font-weight: 800;
+    font-size: .8125rem;
+    letter-spacing: .04em;
+    color: #1f2c2e;
+    transition: border-color var(--t-micro) var(--ease-out), background-color var(--t-micro) var(--ease-out), color var(--t-micro) var(--ease-out);
+  }
+  .gnav-lang:hover { border-color: var(--ink); background: var(--ink); color: #fff; }
+
+  .gnav-burger {
+    display: none;
+    width: 44px; height: 36px;
+    border-radius: var(--r-pill);
+    border: 2px solid var(--line);
+    background: #fff;
+    cursor: pointer;
+    padding: 0;
+    place-items: center;
+  }
+  .gnav-burger span {
+    display: block;
+    width: 17px; height: 2.5px;
+    border-radius: 2px;
+    background: var(--ink);
+    margin: 2.5px auto;
+    transition: transform var(--t-hover) var(--ease-out), opacity var(--t-micro) var(--ease-out);
+  }
+  .gnav-burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .gnav-burger.open span:nth-child(2) { opacity: 0; }
+  .gnav-burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .mobile-menu {
+    position: fixed;
+    inset: calc(var(--nav-h) + 6px) var(--gutter) auto;
+    z-index: 55;
+    max-width: calc(var(--maxw) - var(--gutter) * 2);
+    margin-inline: auto;
+    background: #fff;
+    border-radius: var(--r-xl);
+    box-shadow: var(--e4);
+    transform: translateY(-12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--t-hover) var(--ease-out), transform var(--t-hover) var(--ease-out);
+  }
+  .mobile-menu.open { opacity: 1; transform: none; pointer-events: auto; }
+  .mobile-menu-inner {
+    padding: 14px 18px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .mm-link {
+    padding: 14px 6px;
+    font-family: var(--font-group);
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: #1f2c2e;
+    border-bottom: 1px solid var(--line);
+  }
+  .mm-link:last-child { border-bottom: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sheet { transition: none; }
+  }
+
+  @media (max-width: 1180px) {
+    .gnav-link { padding-inline: 10px; font-size: .875rem; }
+  }
+  @media (max-width: 1000px) {
+    .gnav-inner { grid-template-columns: 1fr auto; }
+    .gnav-links { display: none; }
+    .gnav-burger { display: grid; }
+  }
+  @media (max-width: 520px) {
+    .gnav-product { --logo-size: 30px; }
+  }
+</style>

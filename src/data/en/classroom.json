@@ -147,14 +147,13 @@
   "classroom_library_cards": [
     { "subject": "biology", "label": "Biology", "name": "Cell structure", "glyph": "cell" },
     { "subject": "chemistry", "label": "Chemistry", "name": "Periodic table of elements", "glyph": "periodic" },
-    { "subject": "geography", "label": "Geography", "name": "Volcano cross-section", "glyph": "volcano" },
     { "subject": "physics", "label": "Physics", "name": "Thermodynamics", "glyph": "thermo" },
+    { "subject": "geography", "label": "Geography", "name": "Volcano cross-section", "glyph": "volcano" },
     { "subject": "biology", "label": "Biology", "name": "Circulatory system", "glyph": "heart" },
     { "subject": "geography", "label": "Geography", "name": "Tectonic plates", "glyph": "plates" },
-    { "subject": "chemistry", "label": "Chemistry", "name": "DNA molecule", "glyph": "dna" },
-    { "subject": "physics", "label": "Physics", "name": "V8 engine", "glyph": "engine" }
+    { "subject": "physics", "label": "Physics", "name": "V8 engine", "glyph": "engine" },
+    { "subject": "chemistry", "label": "Chemistry", "name": "DNA molecule", "glyph": "dna" }
   ],
-  "classroom_library_cta": "Browse the entire 3D model library",
   "classroom_library_note": "Model previews are placeholders; real thumbnails will be added soon.",
 
   "classroom_form_headline": "Try Eddy Classroom",

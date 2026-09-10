@@ -1,7 +1,7 @@
 ---
-import Logo from './Logo.astro';
 import { t, tArray } from '../utils/i18n';
 import type { Locale } from '../utils/i18n';
+import { withBase } from '../utils/url';
 
 interface Props { locale: Locale }
 const { locale } = Astro.props;
@@ -29,7 +29,18 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
     <div class="footer-inner">
       <div class="footer-top">
         <div class="footer-brand">
-          <a href="#top" aria-label="Eddy Classroom"><Logo part="tag" variant="inverse" /></a>
+          <!-- the header's lockup, in its white cut for the dark footer -->
+          <span class="footer-lockup">
+            <a href="https://eddygroup.eu/" target="_blank" rel="noopener">
+              <img class="f-eddy" src={withBase('/assets/brand/eddy-white.svg')}
+                   alt="Eddy Group" width="158" height="26" />
+            </a>
+            <span class="f-vline" aria-hidden="true"></span>
+            <a href="#top">
+              <img class="f-mark" src={withBase('/assets/brand/classroom-mark-white.png')}
+                   alt="Eddy Classroom" width="126" height="24" />
+            </a>
+          </span>
           <p>{t(locale, 'footer_about')}</p>
         </div>
 
@@ -116,7 +127,11 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
     padding: clamp(32px, 4vw, 56px) clamp(24px, 3.4vw, 56px) clamp(22px, 2.4vw, 32px);
   }
 
-  .footer-brand { --logo-size: 26px; }
+  .footer-lockup { display: flex; align-items: center; gap: 13px; }
+  .footer-lockup a { display: flex; }
+  .f-eddy { height: 26px; width: auto; display: block; }
+  .f-mark { height: 24px; width: auto; display: block; }
+  .f-vline { width: 1px; height: 24px; background: rgba(255, 255, 255, .28); }
 
   .footer-top {
     display: grid;

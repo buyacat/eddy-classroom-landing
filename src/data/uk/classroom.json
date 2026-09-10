@@ -147,14 +147,13 @@
   "classroom_library_cards": [
     { "subject": "biology", "label": "Біологія", "name": "Будова клітини", "glyph": "cell" },
     { "subject": "chemistry", "label": "Хімія", "name": "Періодична система елементів", "glyph": "periodic" },
-    { "subject": "geography", "label": "Географія", "name": "Вулкан у розрізі", "glyph": "volcano" },
     { "subject": "physics", "label": "Фізика", "name": "Термодинаміка", "glyph": "thermo" },
+    { "subject": "geography", "label": "Географія", "name": "Вулкан у розрізі", "glyph": "volcano" },
     { "subject": "biology", "label": "Біологія", "name": "Система кровообігу", "glyph": "heart" },
     { "subject": "geography", "label": "Географія", "name": "Тектонічні плити", "glyph": "plates" },
-    { "subject": "chemistry", "label": "Хімія", "name": "Молекула ДНК", "glyph": "dna" },
-    { "subject": "physics", "label": "Фізика", "name": "Восьмициліндровий двигун", "glyph": "engine" }
+    { "subject": "physics", "label": "Фізика", "name": "Восьмициліндровий двигун", "glyph": "engine" },
+    { "subject": "chemistry", "label": "Хімія", "name": "Молекула ДНК", "glyph": "dna" }
   ],
-  "classroom_library_cta": "Переглянути всю бібліотеку 3D-моделей",
   "classroom_library_note": "Прев'ю моделей — заглушки; реальні мініатюри будуть додані найближчим часом.",
 
   "classroom_form_headline": "Спробуйте Eddy Classroom",

@@ -259,6 +259,44 @@ const MOON_PERIOD = 26;
 const MOON_TILT_X = 0.88;
 const MOON_TILT_Z = 0.09;
 
+/*
+ * Where the Moon waits out the exploded view.
+ *
+ * The orbit cannot survive the model coming apart: it is a fixed ring at
+ * r = MOON_ORBIT while the shells fan out along their own axis, so past a
+ * third of the travel the Moon flies straight through them — and through
+ * half-transparent shells that reads as passing through the planet, the one
+ * thing this drawing must never show.
+ *
+ * Deleting it outright works and is dull: the companion that gave the planet
+ * its scale simply stops existing the moment the lesson starts. So it steps
+ * out of the way instead — up and to the right of the crust, where the top
+ * corner is empty once the layers have gone left and the captions have
+ * dropped under them, and where the sun already is (2.6, 2.2, 3.8), so the
+ * parked face is the lit one.
+ *
+ * Offsets are in the units the open stack is drawn at and ride its scale, so
+ * "one crust-diameter up" stays one crust-diameter up when the lesson strip
+ * shrinks the picture. Smaller than in orbit, because up there it is scenery
+ * and not the subject.
+ */
+const MOON_PARK_DIR = new Vector3(0.22, 1, 0).normalize();
+/**
+ * Clear air between the crust's rim and the parked Moon. The park is measured
+ * off the RIM, not off a fixed point in the panel: the crust halves in size as
+ * the row opens, and a Moon pinned to panel coordinates either grazes it early
+ * in the pull or floats off into the top edge late in it. Hung off the rim it
+ * keeps the same gap the whole way and simply drifts in as the planet shrinks.
+ *
+ * Only 12 degrees off vertical, though the corner invites more: the floating
+ * tool badges hang over the right edge of the panel from about 5% to 18% of
+ * its height, and a Moon parked further right would drift under the rocket.
+ */
+const MOON_PARK_CLEAR = 0.22;
+const MOON_PARK_SCALE = 0.66;
+/** rad/s — slow enough to read as a body, not as a spinning prop. */
+const MOON_PARK_SPIN = 0.014;
+
 /* ------------------------------------------------------------------ noise */
 
 /** Integer hash — cheap enough to run a few million times while the page loads. */
@@ -903,6 +941,23 @@ export async function mountGlobe(
   moonMesh.position.set(MOON_ORBIT, 0, 0);
   moonArm.add(moonMesh);
 
+  /*
+   * The same Moon, parked — a second mesh rather than the first one flown to
+   * the corner. Flying it there would send it across the row it is being
+   * moved out of, and from half the phases it would cross in front of the
+   * cross-section on the way: the very shot this is meant to prevent. Two
+   * meshes cross-fade with a gap between them instead, so at no frame are
+   * there two Moons, and at no frame does one travel through rock.
+   *
+   * Its own material (and its own, coarser sphere — it is drawn at two thirds
+   * the size) so the two opacities are independent. The maps are shared.
+   */
+  const parkMat = moonMat.clone();
+  parkMat.opacity = 0;
+  const parkMoon = new Mesh(new SphereGeometry(MOON_R, 48, 32), parkMat);
+  parkMoon.visible = false;
+  scene.add(parkMoon);
+
   /** Phase of the orbit, in turns. Starts front-left, where it is not behind. */
   let moonPhase = 0.62;
 
@@ -1163,20 +1218,52 @@ export async function mountGlobe(
      * The Moon keeps its own clock — it is not driven by the drag, the rock or
      * the explode, because none of those are time passing.
      *
-     * Opening the model does not switch it off, it steps it back. A path that
-     * vanishes has to travel somewhere to vanish, and the eye reads that
-     * travel as the thing falling apart; a path that simply dims stays where
-     * it was put and lets the cross-section have the attention. So the ring
-     * keeps roughly half its ink and the Moon keeps most of its own, and the
-     * planet opens inside a frame that never moved.
+     * Opening the model takes it out of orbit — see MOON_PARK_* above for why
+     * the ring cannot stay once the shells fan out through it. The orbit and
+     * the body on it fade out early, well before the crust reaches the radius
+     * the Moon travels on, and the group is switched off once there is nothing
+     * left to see: a fully transparent mesh still sorts and still costs a draw.
+     *
+     * Then the parked one fades in up-right of the crust, on a gap after the
+     * first has gone. Both halves run off `openness`, so closing the model
+     * plays the whole handover backwards for free.
      */
     moonPhase = (moonPhase + dt / MOON_PERIOD) % 1;
     moonArm.rotation.y = moonPhase * Math.PI * 2;
-    const opened = smoothstep(0.04, 0.42, openness);
+    /* Gone by 0.14 of the row: measured, the crust first eats into the orbit
+       at openness 0.17 — from there the Moon is inside it, not behind it. */
+    const leaving = smoothstep(0.02, 0.14, openness);
     moonSystem.scale.setScalar(1 - 0.16 * compact);
     moonSystem.position.set(0, 0.42 * compact, 0);
-    orbitMat.opacity = 0.3 - 0.17 * opened;
-    moonMat.opacity = 1 - 0.4 * opened;
+    orbitMat.opacity = 0.3 * (1 - leaving);
+    moonMat.opacity = 1 - leaving;
+    moonSystem.visible = leaving < 0.999;
+
+    /*
+     * The park rides the crust, not the panel. The crust is the shell that
+     * stays put while the rest of the row leaves it, so `recentre` IS the
+     * crust's centre and `scale` IS its radius — the Moon can be hung off the
+     * rim in one line, and stays the same distance off it at any openness.
+     *
+     * It fades in as the orbiting one finishes leaving, not later: a window
+     * that waits for the row to finish opening leaves a stretch with no Moon
+     * anywhere, and the invitation demo — which opens a quarter of the way and
+     * closes again — would spend the whole of itself inside that stretch.
+     */
+    const parked = smoothstep(0.13, 0.27, openness);
+    parkMat.opacity = parked;
+    parkMoon.visible = parked > 0.002;
+    if (parkMoon.visible) {
+      const s = MOON_PARK_SCALE * (1 - 0.16 * compact);
+      const d = scale + MOON_PARK_CLEAR + MOON_R * s;
+      parkMoon.position.set(
+        recentre.x + MOON_PARK_DIR.x * d,
+        recentre.y + MOON_PARK_DIR.y * d,
+        0
+      );
+      parkMoon.scale.setScalar(s);
+      parkMoon.rotation.y += MOON_PARK_SPIN * dt;
+    }
 
     if (measureIn <= 0) {
       measureIn = 30;

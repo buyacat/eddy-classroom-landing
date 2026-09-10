@@ -1,7 +1,7 @@
 ---
-import Logo from './Logo.astro';
 import { t, altPath } from '../utils/i18n';
 import type { Locale } from '../utils/i18n';
+import { withBase } from '../utils/url';
 
 interface Props { locale: Locale }
 const { locale } = Astro.props;
@@ -34,8 +34,22 @@ const alt = altPath(locale);
 <header class="gnav" id="nav">
   <div class="gnav-bar">
    <div class="gnav-inner">
+    <!-- Group wordmark, hairline, product wordmark — the same lockup the
+         1-Vision site carries, so a visitor arriving from any Eddy property
+         reads the same sentence: the company, then which of its products
+         this is. The two halves are separate links because they are separate
+         destinations: the group mark leaves for eddygroup.eu, the product
+         mark returns to the top of this page. -->
     <div class="gnav-brand">
-      <a href="#top" class="gnav-product" aria-label="Eddy Classroom"><Logo part="tag" /></a>
+      <a href="https://eddygroup.eu/" class="gnav-group" target="_blank" rel="noopener">
+        <img class="gnav-eddy" src={withBase('/assets/brand/eddy-black.svg')}
+             alt="Eddy Group" width="158" height="26" />
+      </a>
+      <span class="gnav-vline" aria-hidden="true"></span>
+      <a href="#top" class="gnav-product">
+        <img class="gnav-mark" src={withBase('/assets/brand/classroom-mark.png')}
+             alt="Eddy Classroom" width="126" height="24" />
+      </a>
     </div>
 
     <nav class="gnav-links" aria-label="Eddy Group">
@@ -177,9 +191,13 @@ const alt = altPath(locale);
     gap: 20px;
   }
 
-  .gnav-brand { display: flex; align-items: center; min-width: 0; }
-  /* placeholder mark: the `classroom` chip alone until the real logo lands */
-  .gnav-product { --logo-size: 36px; display: flex; }
+  .gnav-brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
+  .gnav-group, .gnav-product { display: flex; }
+  /* The group mark is the taller of the two on purpose: it is the constant,
+     and the product name reads as its subordinate rather than its twin. */
+  .gnav-eddy { height: 26px; width: auto; display: block; }
+  .gnav-mark { height: 24px; width: auto; display: block; }
+  .gnav-vline { width: 1px; height: 24px; background: rgba(31, 44, 46, .22); }
 
   .gnav-links { display: flex; justify-content: center; }
   .gnav-link {
@@ -279,7 +297,10 @@ const alt = altPath(locale);
     .gnav-links { display: none; }
     .gnav-burger { display: grid; }
   }
-  @media (max-width: 520px) {
-    .gnav-product { --logo-size: 30px; }
+  @media (max-width: 620px) {
+    .gnav-brand { gap: 10px; }
+    .gnav-eddy { height: 21px; }
+    .gnav-mark { height: 19px; }
+    .gnav-vline { height: 19px; }
   }
 </style>

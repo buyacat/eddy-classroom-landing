@@ -10,6 +10,11 @@
   "footer_about": "Цифрова платформа для підготовки й проведення уроку від Eddy Group — виробника інтерактивних панелей, STEM-лабораторій і робототехнічних наборів.",
   "footer_col_support": "Сервісна підтримка",
   "footer_col_contacts": "Контакти",
+  "footer_col_docs": "Документи й навчання",
+  "footer_docs_links": [
+    { "label": "Список тендерних вимог", "url": "" },
+    { "label": "Безкоштовний курс підвищення кваліфікації для вчителів", "url": "" }
+  ],
   "footer_service_hours": "Пн-Пт: 09:00-18:00",
   "footer_service_email": "service@eddygroup.eu",
   "footer_service_warranty": "Гарантійні умови",

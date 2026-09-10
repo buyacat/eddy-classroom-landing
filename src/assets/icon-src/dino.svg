@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <radialGradient id="dBody" cx="30%" cy="14%" r="95%">
+      <stop offset="0%" stop-color="#A8F5CC"/>
+      <stop offset="42%" stop-color="#4DC584"/>
+      <stop offset="100%" stop-color="#238351"/>
+    </radialGradient>
+    <radialGradient id="dHead" cx="28%" cy="18%" r="95%">
+      <stop offset="0%" stop-color="#B2F7D2"/>
+      <stop offset="45%" stop-color="#54CC8B"/>
+      <stop offset="100%" stop-color="#309669"/>
+    </radialGradient>
+    <linearGradient id="dNeck" x1="0.05" y1="0.2" x2="1" y2="0.8">
+      <stop offset="0%" stop-color="#8CE8B7"/>
+      <stop offset="50%" stop-color="#55C88B"/>
+      <stop offset="100%" stop-color="#2B8A5C"/>
+    </linearGradient>
+    <linearGradient id="dTail" x1="1" y1="0.2" x2="0" y2="0.9">
+      <stop offset="0%" stop-color="#4CBC82"/>
+      <stop offset="55%" stop-color="#39A872"/>
+      <stop offset="100%" stop-color="#1F7A52"/>
+    </linearGradient>
+    <linearGradient id="dLegBack" x1="0.2" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#3FAE77"/>
+      <stop offset="100%" stop-color="#1E7550"/>
+    </linearGradient>
+    <linearGradient id="dLegFront" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#84E3AF"/>
+      <stop offset="55%" stop-color="#4FC287"/>
+      <stop offset="100%" stop-color="#2A895C"/>
+    </linearGradient>
+    <linearGradient id="dBelly" x1="0.25" y1="0" x2="0.75" y2="1">
+      <stop offset="0%" stop-color="#FFFEF5"/>
+      <stop offset="55%" stop-color="#F0FAE6"/>
+      <stop offset="100%" stop-color="#CFE8D2"/>
+    </linearGradient>
+    <linearGradient id="dSpike" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#FFE894"/>
+      <stop offset="50%" stop-color="#F7C948"/>
+      <stop offset="100%" stop-color="#D2951A"/>
+    </linearGradient>
+    <filter id="db3" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="3"/></filter>
+    <filter id="db6" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="db11" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="11"/></filter>
+    <clipPath id="dBodyClip"><ellipse cx="108" cy="150" rx="56" ry="46"/></clipPath>
+    <clipPath id="dHeadClip"><path d="M156 74 C156 58 170 46 188 46 C208 46 222 58 222 74 C222 90 208 102 188 102 C170 102 156 90 156 74 Z"/></clipPath>
+    <clipPath id="dTailClip"><path d="M104 190 C78 194 52 178 30 150 C23 141 33 128 43 136 C64 153 84 161 106 158 Z"/></clipPath>
+  </defs>
+
+  <g transform="translate(128 128) scale(1.06) translate(-128 -128)">
+  <!-- ground shadow -->
+  <ellipse cx="116" cy="216" rx="72" ry="13" fill="#1F3A2C" opacity=".22" filter="url(#db6)"/>
+
+  <!-- tail -->
+  <path d="M104 190 C78 194 52 178 30 150 C23 141 33 128 43 136 C64 153 84 161 106 158 Z" fill="url(#dTail)"/>
+  <g clip-path="url(#dTailClip)">
+    <path d="M40 140 C58 156 78 166 100 168 L100 178 C74 178 52 166 34 148 Z" fill="#166A46" opacity=".35" filter="url(#db3)"/>
+    <path d="M44 134 C62 148 80 155 100 156 L98 149 C78 148 60 141 44 129 Z" fill="#FFFFFF" opacity=".22" filter="url(#db3)"/>
+  </g>
+
+  <!-- back leg -->
+  <path d="M68 152 h26 a14 14 0 0 1 14 14 v18 a22 22 0 0 1 -22 22 h-10 a22 22 0 0 1 -22 -22 v-18 a14 14 0 0 1 14 -14 z" fill="url(#dLegBack)"/>
+
+  <!-- body -->
+  <ellipse cx="108" cy="150" rx="56" ry="46" fill="url(#dBody)"/>
+  <g clip-path="url(#dBodyClip)">
+    <path d="M56 158 C70 180 90 190 112 190 C136 190 155 178 166 158 L168 200 L52 200 Z" fill="url(#dBelly)"/>
+    <path d="M56 158 C70 180 90 190 112 190 C136 190 155 178 166 158" fill="none" stroke="#B5D9BD" stroke-opacity=".55" stroke-width="3" filter="url(#db3)"/>
+    <ellipse cx="82" cy="122" rx="24" ry="16" transform="rotate(-22 82 122)" fill="#FFFFFF" opacity=".36" filter="url(#db6)"/>
+    <ellipse cx="164" cy="164" rx="30" ry="26" fill="#1B7048" opacity=".4" filter="url(#db11)"/>
+    <ellipse cx="60" cy="182" rx="26" ry="22" fill="#1B7048" opacity=".3" filter="url(#db11)"/>
+    <ellipse cx="108" cy="106" rx="46" ry="12" fill="#C8FBE0" opacity=".35" filter="url(#db6)"/>
+  </g>
+
+  <!-- neck -->
+  <path d="M134 178 C128 142 134 106 156 80 C165 69 185 74 182 89 C168 112 162 142 166 176 Z" fill="url(#dNeck)"/>
+  <path d="M142 172 C138 140 145 108 161 88 C165 83 172 84 174 88 C158 110 150 140 153 172 Z" fill="#FFFFFF" opacity=".2" filter="url(#db3)"/>
+  <path d="M163 176 C160 142 166 112 180 90 L182 89 C168 112 162 142 166 176 Z" fill="#1B7048" opacity=".35" filter="url(#db3)"/>
+
+  <!-- front leg -->
+  <path d="M128 158 h26 a14 14 0 0 1 14 14 v16 a22 22 0 0 1 -22 22 h-10 a22 22 0 0 1 -22 -22 v-16 a14 14 0 0 1 14 -14 z" fill="url(#dLegFront)"/>
+  <ellipse cx="141" cy="204" rx="16" ry="6" fill="#1B7048" opacity=".3" filter="url(#db3)"/>
+
+  <!-- back spikes -->
+  <g fill="url(#dSpike)">
+    <path d="M74 132 C77 122 82 116 89 112 C87 120 86 126 86 134 Z"/>
+    <path d="M97 114 C100 104 105 98 112 95 C110 103 109 109 109 117 Z"/>
+    <path d="M120 102 C123 92 128 87 135 84 C133 92 132 97 132 105 Z"/>
+    <path d="M143 84 C146 75 151 69 158 66 C155 74 154 79 154 87 Z"/>
+  </g>
+
+  <!-- head -->
+  <path d="M156 74 C156 58 170 46 188 46 C208 46 222 58 222 74 C222 90 208 102 188 102 C170 102 156 90 156 74 Z" fill="url(#dHead)"/>
+  <g clip-path="url(#dHeadClip)">
+    <path d="M190 92 C199 98 212 99 226 96 L228 108 L186 108 Z" fill="url(#dBelly)" opacity=".8" filter="url(#db3)"/>
+    <ellipse cx="176" cy="60" rx="16" ry="10" transform="rotate(-22 176 60)" fill="#FFFFFF" opacity=".42" filter="url(#db3)"/>
+    <ellipse cx="160" cy="94" rx="20" ry="13" fill="#1B7048" opacity=".32" filter="url(#db6)"/>
+  </g>
+  <ellipse cx="185" cy="66" rx="6.5" ry="7.5" fill="#173A2B"/>
+  <circle cx="187" cy="63.5" r="2.4" fill="#FFFFFF" opacity=".92"/>
+  <ellipse cx="213" cy="72" rx="2.8" ry="2.1" fill="#2A6B4C" opacity=".6"/>
+  <path d="M200 84 C205 90 212 90 217 85" fill="none" stroke="#22664A" stroke-opacity=".72" stroke-width="3.4" stroke-linecap="round"/>
+  </g>
+</svg>

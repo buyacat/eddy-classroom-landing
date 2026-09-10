@@ -2,26 +2,34 @@
 import { t, tArray } from '../utils/i18n';
 import type { Locale } from '../utils/i18n';
 import { withBase } from '../utils/url';
+import LibGlyph from './LibGlyph.astro';
 
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 
 const subjects = tArray<{ id: string; label: string }>(locale, 'classroom_library_subjects');
-const cards = tArray<{ subject: string; label: string; name: string; size: string }>(locale, 'classroom_library_cards');
+const cards = tArray<{ subject: string; label: string; name: string; glyph: string }>(locale, 'classroom_library_cards');
 
 /*
  * PLACEHOLDER IMAGERY — the real 3D preview thumbnails are still on the
- * client's Drive. Until they land, each tile is a flat colour block from
- * the mock's palette plus the subject's own 3D object. One colour per
- * subject, so the colour carries meaning instead of decorating. Swap the
- * object for a real preview <img> when the assets arrive; nothing else in
- * this component has to change.
+ * client's Drive. Until they land, each cell is a flat colour block from
+ * the mock's palette plus a drawn object (see LibGlyph.astro). One colour
+ * per subject, so the colour carries meaning instead of decorating, and
+ * one drawn object per MODEL, so a cell named "Молекула ДНК" is not a
+ * flame. Swap the glyph for a real preview <img> when the assets arrive;
+ * nothing else in this component has to change.
+ *
+ * The cells are hexagons in a honeycomb, and there are nine of them. Nine
+ * is the point: this band is a sample of a 1200-model library, not an
+ * index of it, and a masonry wall of twelve only made the page longer
+ * without making the number more believable. The comb also gives the band
+ * a shape of its own — the rest of the page is rounded rectangles.
  */
-const subjectStyle: Record<string, { block: string; obj: string }> = {
-  biology: { block: 'is-green', obj: 'apple' },
-  physics: { block: 'is-blue', obj: 'lightbulb' },
-  chemistry: { block: 'is-yellow', obj: 'fire' },
-  geography: { block: 'is-ink', obj: 'location' }
+const subjectBlock: Record<string, string> = {
+  biology: 'is-green',
+  physics: 'is-blue',
+  chemistry: 'is-yellow',
+  geography: 'is-ink'
 };
 ---
 
@@ -48,19 +56,18 @@ const subjectStyle: Record<string, { block: string; obj: string }> = {
       </div>
     </div>
 
-    <div class="lib-grid reveal" id="lib-grid">
-      {cards.map((c) => {
-        const st = subjectStyle[c.subject] || subjectStyle.physics;
-        return (
-          <article class={`tile ${c.size} ${st.block}`} data-subject={c.subject}>
-            <img class="tile-obj" src={withBase(`/assets/icons/${st.obj}.png`)} width="256" height="256" alt="" loading="lazy" decoding="async" />
-            <span class="tile-meta">
-              <span class="sub">{c.label}</span>
+    <div class="lib-comb reveal" id="lib-grid">
+      {cards.map((c) => (
+        <article class={`hex ${subjectBlock[c.subject] || 'is-blue'}`} data-subject={c.subject}>
+          <span class="hex-face">
+            <span class="hex-in">
+              <LibGlyph name={c.glyph} cls="hex-obj" />
               <span class="nm">{c.name}</span>
+              <span class="sub">{c.label}</span>
             </span>
-          </article>
-        );
-      })}
+          </span>
+        </article>
+      ))}
     </div>
 
     <div class="lib-foot reveal">
@@ -164,68 +171,128 @@ const subjectStyle: Record<string, { block: string; obj: string }> = {
   .seg-opt:hover { color: var(--ink); }
   .seg-opt.is-active { color: #fff; }
 
-  /* ---- masonry ---- */
-  .lib-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: 96px;
-    grid-auto-flow: row dense;
-    gap: var(--gap-card);
-    margin-top: clamp(32px, 3.5vw, 52px);
-  }
-  .tile {
-    position: relative;
-    grid-row: span 2;
-    border-radius: var(--r-lg);
-    overflow: hidden;
+  /* ---- honeycomb ----
+     Pointy-top cells: width w, height w * 2/√3. Rows nest by pulling each
+     row up a quarter of a cell height, and every other row starts half a
+     cell in — that half-cell start is the only thing the filter script has
+     to reapply (`is-shift`), because which cell begins a row changes when
+     subjects are filtered out. The track is 3.5 cells wide so the offset
+     row still fits without wrapping early.
+
+     The cells do not touch. A tight comb reads as a diagram; this band is
+     a shelf of things you could pick up, so the gap is wide enough to see
+     the ground between them and the corners are rounded off.
+
+     Eight cells, not nine: eight is what fills the comb symmetrically. */
+  .lib-comb {
+    position: relative;   /* offsetParent for the pointer field in app.js */
+    --hex-cols: 3;
+    --hex-gap: clamp(14px, 1.9vw, 30px);
+    /* no-JS fallback only — the script overwrites this with a width solved
+       against the real track (see initLibrary/comb in app.js) */
+    --hex-w: clamp(112px, 13.5vw, 216px);
+    --hex-h: calc(var(--hex-w) * 1.1547);
     display: flex;
-    align-items: flex-end;
+    flex-wrap: wrap;
+    column-gap: var(--hex-gap);
+    row-gap: 0;
+    /* exactly `cols` cells wide (+1px of slack against sub-pixel rounding).
+       An indented row therefore holds one cell fewer, and eight cells fall
+       into the symmetric 3 / 2 / 3 comb on their own. */
+    width: calc(var(--hex-cols) * var(--hex-w)
+                + (var(--hex-cols) - 1) * var(--hex-gap) + 1px);
+    max-width: 100%;
+    margin: clamp(32px, 3.5vw, 52px) auto 0;
+    /* every cell is pulled up, first row included — give that back here */
+    padding-top: calc(var(--hex-h) * .25 - var(--hex-gap) * .5);
+  }
+  /* a filtered subject is one short row: centre it instead of leaving it
+     hanging off the left edge of a 3.5-cell track */
+  .lib-comb.is-short { justify-content: center; }
+
+  /* Two elements per cell on purpose: the shape is masked, and a mask
+     clips away anything a filter draws outside it — so the drop-shadow
+     lives on the outer element and the mask on the inner one. `--px/--py`
+     are written by the pointer field in app.js. */
+  .hex {
+    position: relative;
+    flex: 0 0 var(--hex-w);
+    height: var(--hex-h);
+    margin-top: calc(var(--hex-h) * -.25 + var(--hex-gap) * .5);
     cursor: pointer;
-    transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+    transform: translate3d(var(--px, 0px), var(--py, 0px), 0);
+    transition: transform 500ms cubic-bezier(.22, .9, .28, 1),
+                filter 260ms var(--ease-out), opacity 200ms var(--ease-out);
   }
-  .tile:hover { transform: translateY(-4px); box-shadow: var(--e3); }
-  .tile.r3 { grid-row: span 3; }
-  .tile.c2 { grid-column: span 2; }
-  .tile.is-out { opacity: 0; transform: scale(.94); }
-  .tile.is-hidden { display: none; }
+  .hex.is-shift { margin-left: calc((var(--hex-w) + var(--hex-gap)) / 2); }
 
-  .tile.is-green { background: var(--green); }
-  .tile.is-blue { background: var(--blue); }
-  .tile.is-yellow { background: var(--yellow); }
-  .tile.is-ink { background: var(--ink-block); }
-
-  .tile-obj {
-    position: absolute;
-    top: 14px; right: 14px;
-    width: 46%;
-    max-width: 96px;
-    height: auto;
-    filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .22));
-    transition: transform var(--t-card) var(--ease-spring);
-    pointer-events: none;
-  }
-  .tile:hover .tile-obj { transform: translateY(-4px) rotate(-6deg) scale(1.06); }
-  .tile.r3 .tile-obj { width: 52%; }
-
-  .tile-meta {
-    position: relative; z-index: 2;
+  .hex-face {
+    display: grid;
+    place-items: center;
     width: 100%;
-    padding: 16px;
-    display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+    height: 100%;
+    /* a hexagon drawn inset and stroked back out with a round join: the
+       stroke width is the corner radius, doubled */
+    -webkit-mask-image: var(--hex-mask);
+    mask-image: var(--hex-mask);
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    transition: transform 420ms cubic-bezier(.22, .9, .28, 1);
   }
-  .tile-meta .sub {
-    background: #fff;
-    color: var(--ink);
-    border-radius: var(--r-pill);
-    padding: 5px 12px;
-    font-size: .6875rem; font-weight: 800;
+  .lib-comb {
+    --hex-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,12.7 89,35.22 89,80.25 50,102.77 11,80.25 11,35.22' fill='%23000' stroke='%23000' stroke-width='22' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
-  .tile-meta .nm {
+
+  .hex:hover { z-index: 3; filter: drop-shadow(0 14px 22px rgba(15, 18, 45, .18)); }
+  .hex:hover .hex-face { transform: scale(1.025); }
+  .hex.is-out { opacity: 0; }
+  .hex.is-out .hex-face { transform: scale(.94); }
+  .hex.is-hidden { display: none; }
+
+  .hex.is-green .hex-face { background: var(--green); }
+  .hex.is-blue .hex-face { background: var(--blue); }
+  .hex.is-yellow .hex-face { background: var(--yellow); }
+  .hex.is-ink .hex-face { background: var(--ink-block); }
+
+  /* the label stack sits in the cell's widest band, dead centre — the
+     corners of a hexagon are unusable, so nothing is anchored to them */
+  .hex-in {
+    width: 100%;
+    padding: 0 15%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    text-align: center;
+  }
+  /* the glyph sizes itself (LibGlyph.astro) — a scoped rule here cannot
+     cross into a child component, so only the hover lift lives out here,
+     and it has to be :global to land on the child's root */
+  .hex:hover :global(.glyph) { transform: translateY(-3px) rotate(-6deg) scale(1.07); }
+  .hex .nm {
     font-family: var(--font-display);
-    font-weight: 800; font-size: 1rem; line-height: 1.2;
+    font-weight: 800;
+    font-size: clamp(.8125rem, .63rem + .38vw, 1rem);
+    line-height: 1.18;
     color: var(--ink);
   }
-  .tile.is-blue .tile-meta .nm, .tile.is-ink .tile-meta .nm { color: #fff; }
+  .hex .sub {
+    font-size: .625rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: rgba(0, 0, 0, .45);
+  }
+  .hex.is-blue .nm, .hex.is-ink .nm { color: #fff; }
+  .hex.is-blue .sub, .hex.is-ink .sub { color: rgba(255, 255, 255, .6); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hex, .hex-face { transition: none; }
+    :global(.glyph) { transition: none; }
+  }
 
   /* ---- footer of the band ---- */
   .lib-foot {
@@ -243,11 +310,13 @@ const subjectStyle: Record<string, { block: string; obj: string }> = {
   @media (max-width: 900px) {
     .lib-head { grid-template-columns: 1fr; align-items: start; }
     .lib-head-r { justify-content: flex-start; }
-    .lib-grid { grid-template-columns: repeat(3, 1fr); }
+    .lib-comb { --hex-w: clamp(112px, 18vw, 200px); }
+  }
+  /* two cells per row below this — three would put the labels under 12px */
+  @media (max-width: 700px) {
+    .lib-comb { --hex-cols: 2; --hex-gap: 12px; --hex-w: min(34vw, 200px); }
   }
   @media (max-width: 620px) {
-    .lib-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 84px; }
-    .tile-meta .nm { font-size: .9375rem; }
     .lib-proof { display: none; }
   }
 </style>

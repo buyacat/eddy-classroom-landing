@@ -26,10 +26,9 @@ const layers = tArray<{ name: string; meta?: string }>(locale, 'classroom_hero_g
  */
 const lesson = {
   ask: t(locale, 'classroom_lesson_ask'),
-  question: t(locale, 'classroom_lesson_question'),
+  rounds: tArray<{ q: string; result: string }>(locale, 'classroom_lesson_rounds'),
   answered: t(locale, 'classroom_lesson_answered'),
-  result: t(locale, 'classroom_lesson_result'),
-  insight: t(locale, 'classroom_lesson_insight'),
+  next: t(locale, 'classroom_lesson_next'),
   offlineState: t(locale, 'classroom_lesson_offline_state'),
   offlineChip: t(locale, 'classroom_lesson_offline_chip'),
   again: t(locale, 'classroom_lesson_again')
@@ -405,8 +404,14 @@ const lesson = {
       Promise.all([import('../scripts/earth'), import('../scripts/lesson')])
         .then(async ([earth, lesson]) => {
           const globe = await earth.mountGlobe(host, canvas, tags, specs);
+
+          /* The hint says the model comes apart; this shows it. It waits out
+             the canvas fade first (620ms in the CSS above) so the demo is not
+             played to a panel that is still arriving, and it bows out the
+             moment a hand arrives — see demo() in the module. */
+          window.setTimeout(() => globe.demo(), 900);
+
           lesson.startLesson(host, globe, copy, {
-            insight: document.querySelector<HTMLElement>('[data-insight]'),
             liveText: document.querySelector<HTMLElement>('[data-live-text]'),
             roster: document.getElementById('roster-count')
           });

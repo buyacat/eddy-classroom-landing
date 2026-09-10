@@ -10,6 +10,11 @@
   "footer_about": "A digital platform for preparing and running the lesson, by Eddy Group — a manufacturer of interactive panels, STEM labs and robotics kits.",
   "footer_col_support": "Service support",
   "footer_col_contacts": "Contacts",
+  "footer_col_docs": "Documents & training",
+  "footer_docs_links": [
+    { "label": "Tender requirements list", "url": "" },
+    { "label": "Free professional development course for teachers", "url": "" }
+  ],
   "footer_service_hours": "Mon-Fri: 09:00-18:00",
   "footer_service_email": "service@eddygroup.eu",
   "footer_service_warranty": "Warranty terms",

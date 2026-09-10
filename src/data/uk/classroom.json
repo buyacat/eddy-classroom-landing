@@ -24,6 +24,9 @@
   "classroom_hero_roster_done": "виконали",
   "classroom_hero_wheel_title": "Колесо фортуни",
   "classroom_hero_timer_title": "Таймер",
+  "classroom_hero_space_title": "Космос",
+  "classroom_hero_dino_title": "Динозаври",
+  "classroom_hero_galaxy_title": "Галактика",
   "classroom_hero_noise_title": "Шумомір",
   "classroom_hero_globe_layers": [
     { "name": "Земна кора", "meta": "5–70 км · тверда" },
@@ -33,14 +36,17 @@
   ],
   "classroom_hero_globe_scale_note": "Товщину земної кори збільшено, щоб її було видно. Насправді вона тонша за 1 % радіуса Землі.",
   "classroom_lesson_ask": "Запитати клас",
-  "classroom_lesson_question": "Який шар Землі — рідкий?",
+  "classroom_lesson_rounds": [
+    { "q": "Який шар Землі — рідкий?", "result": "17 із 22 правильно · 77 % засвоєння" },
+    { "q": "Який шар Землі найтонший?", "result": "19 із 22 правильно · 86 % засвоєння" },
+    { "q": "Який шар твердий, попри 5000 °C?", "result": "14 із 22 правильно · 64 % засвоєння" }
+  ],
   "classroom_lesson_answered": "відповіли",
-  "classroom_lesson_result": "17 із 22 правильно · 77 % засвоєння",
-  "classroom_lesson_insight": "4 учні плутають мантію із зовнішнім ядром → повторити на слайді 4",
+  "classroom_lesson_next": "Наступне питання",
   "classroom_lesson_offline_state": "Немає з’єднання",
   "classroom_lesson_offline_chip": "Інтернет зник. Урок — ні.",
   "classroom_lesson_again": "Провести ще раз",
-  "classroom_hero_globe_hint": "Потягніть, щоб розібрати",
+  "classroom_hero_globe_hint": "Торкніться або потягніть",
   "classroom_hero_globe_alt": "Eddy Classroom — інтерактивна 3D-модель внутрішньої будови Землі з анотаціями",
 
   "classroom_why_eyebrow": "Переваги",
@@ -89,6 +95,13 @@
       "wide": true
     },
     {
+      "icon": "session",
+      "title": "Спільне проходження тесту групою",
+      "text": "Клас відповідає одночасно, а вчитель бачить живу таблицю: хто на якому питанні, хто помилився і скільки балів набрав. Тест завершується однією кнопкою.",
+      "shot_alt": "Сесія спільного тесту: таблиця відповідей класу та питання з варіантами",
+      "wide": true
+    },
+    {
       "icon": "student",
       "title": "Зручний учнівський доступ",
       "text": "Після приєднання до потрібного курсу учень легко переглядає його матеріали, виконує завдання та проходить тестування.",
@@ -132,23 +145,19 @@
     { "id": "geography", "label": "Географія" }
   ],
   "classroom_library_cards": [
-    { "subject": "biology", "label": "Біологія", "name": "Будова клітини", "size": "r2" },
-    { "subject": "physics", "label": "Фізика", "name": "Термодинаміка", "size": "r3" },
-    { "subject": "chemistry", "label": "Хімія", "name": "Періодична система елементів", "size": "r2 c2" },
-    { "subject": "geography", "label": "Географія", "name": "Тектонічні плити", "size": "r2" },
-    { "subject": "physics", "label": "Фізика", "name": "Електричне коло", "size": "r2" },
-    { "subject": "biology", "label": "Біологія", "name": "Система кровообігу", "size": "r3" },
-    { "subject": "chemistry", "label": "Хімія", "name": "Молекула ДНК", "size": "r2" },
-    { "subject": "geography", "label": "Географія", "name": "Вулкан у розрізі", "size": "r2 c2" },
-    { "subject": "physics", "label": "Фізика", "name": "Восьмициліндровий двигун", "size": "r3" },
-    { "subject": "biology", "label": "Біологія", "name": "Фотосинтез", "size": "r2" },
-    { "subject": "chemistry", "label": "Хімія", "name": "Кристалічна решітка", "size": "r2" },
-    { "subject": "geography", "label": "Географія", "name": "Річкова долина", "size": "r2" }
+    { "subject": "biology", "label": "Біологія", "name": "Будова клітини", "glyph": "cell" },
+    { "subject": "chemistry", "label": "Хімія", "name": "Періодична система елементів", "glyph": "periodic" },
+    { "subject": "geography", "label": "Географія", "name": "Вулкан у розрізі", "glyph": "volcano" },
+    { "subject": "physics", "label": "Фізика", "name": "Термодинаміка", "glyph": "thermo" },
+    { "subject": "biology", "label": "Біологія", "name": "Система кровообігу", "glyph": "heart" },
+    { "subject": "geography", "label": "Географія", "name": "Тектонічні плити", "glyph": "plates" },
+    { "subject": "chemistry", "label": "Хімія", "name": "Молекула ДНК", "glyph": "dna" },
+    { "subject": "physics", "label": "Фізика", "name": "Восьмициліндровий двигун", "glyph": "engine" }
   ],
   "classroom_library_cta": "Переглянути всю бібліотеку 3D-моделей",
   "classroom_library_note": "Прев'ю моделей — заглушки; реальні мініатюри будуть додані найближчим часом.",
 
-  "classroom_form_headline": "Спробуйте Eddy Classroom безкоштовно",
+  "classroom_form_headline": "Спробуйте Eddy Classroom",
   "classroom_form_lede": "Залиште заявку — і наш менеджер допоможе підключити школу, підібрати тариф і провести демонстрацію платформи для вашого колективу.",
   "classroom_form_title": "Заявка на Eddy Classroom",
   "classroom_form_fields": [
@@ -166,11 +175,11 @@
     { "value": "admin", "label": "Представник адміністрації" },
     { "value": "other", "label": "Інше" }
   ],
-  "classroom_form_submit": "Спробувати Eddy Classroom безкоштовно",
+  "classroom_form_submit": "Надіслати заявку",
   "classroom_form_sending": "Надсилаємо...",
   "classroom_form_success": "✓ Заявку надіслано",
   "classroom_form_success_hint": "Дякуємо! Відповімо протягом одного робочого дня.",
-  "classroom_form_error": "Спробувати Eddy Classroom безкоштовно",
+  "classroom_form_error": "Надіслати заявку",
   "classroom_form_error_hint": "Помилка відправки. Спробуйте ще раз або напишіть нам напряму.",
   "classroom_form_thanks": "Дякуємо за заявку!",
   "classroom_form_thanks_sub": "Менеджер Eddy Classroom зв'яжеться з вами найближчим часом."

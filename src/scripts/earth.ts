@@ -36,6 +36,7 @@ import {
   FrontSide,
   Group,
   Mesh,
+  MeshBasicMaterial,
   MeshStandardMaterial,
   Object3D,
   PerspectiveCamera,
@@ -124,14 +125,23 @@ const AXIS = new Vector3(-1, 0.05, 0).normalize();
  * Three-quarter view: far enough round that the sphere still reads as a
  * sphere, open enough that you look straight into the cross-section.
  *
- * The value is the mirror of the 3.1 this pose used to sit at, taken about the
- * screen's vertical: the missing wedge's bisector left the model at azimuth
- * +0.49 rad (front-right) and now leaves it at -0.49 (front-left), which is
- * what turns the cut — and with it the cascade — round to the other side.
+ * The number is set by one hard constraint, not by taste: the direction the
+ * shells travel has to lie INSIDE the mouth of the cut. The opening is 119°
+ * wide, so its bisector may sit at most 59.4° off the travel axis; park it at
+ * 45° and the cascade leaves through the hole with 14° to spare, while the
+ * cross-section is still turned far enough toward the camera to be read.
+ *
+ * The pose this replaced had the bisector 28° off camera — prettier, more
+ * face-on, and 2.4° short of legal: the contents came out through the rim
+ * rather than through the opening, so every shell scraped through the solid
+ * half of the crust on its way out. That was true of the original right-handed
+ * pose too (mirrored, it had the same 2.4° deficit), which is why it is fixed
+ * here rather than treated as fallout from turning the model round.
+ *
  * A rotation, not a reflection, so the map is not printed backwards; the
  * meridians that face out simply move round with the opening.
  */
-const BASE_YAW = 2.115;
+const BASE_YAW = 1.8221;
 /** 23.44 degrees — the real axial tilt, so even the pose teaches something. */
 const BASE_PITCH = 0.409;
 
@@ -187,6 +197,22 @@ const TAG_PAD = 8;
 /** Keep pulling this far past the end and the lesson starts on its own. */
 const OVERPULL = 1.35;
 
+/**
+ * The demo: how far the model opens itself, once, to say that it opens.
+ *
+ * A caption under a static planet is a fact about the page. A planet that
+ * breaks a little way apart and closes again is a fact about the planet, and
+ * it is read before the caption is. Deliberately a quarter of the travel —
+ * far enough that the mantle clears the crust and the gesture is unmistakable,
+ * short enough that it is an invitation and not the show itself.
+ *
+ * The window has to cover act one as well: the model is rocking when this
+ * fires, the alignment gate holds it shut until it has turned to face its own
+ * cut (~0.5s), and only then does the pull count. Hence two seconds, not one.
+ */
+const DEMO_OPEN = 0.26;
+const DEMO_MS = 2000;
+
 const CAM_Z = 5.9;
 /** How much the whole assembly shrinks at full explode, to stay in the panel. */
 const OPEN_SHRINK = 0.5;
@@ -199,6 +225,39 @@ const OPEN_SHRINK = 0.5;
 const OPEN_LIFT_Y = 0.12;
 // nudged off the right edge, where the floating tool badges overlap the panel
 const OPEN_LIFT_X = -0.06;
+
+/* ------------------------------------------------------------------- moon */
+
+/*
+ * The Moon is here to give the planet a scale and a companion, and it has to
+ * do it inside a square panel that already holds a globe of radius 1 and four
+ * captions. So two of these three numbers are true and one is a compromise,
+ * the same bargain the crust makes above.
+ *
+ * MOON_R is 0.27 in reality; 0.19 is as large as it can be here before it
+ * starts colliding with the caption row on the way past. MOON_ORBIT is a lie
+ * by two orders of magnitude — the real distance is 60 Earth radii, which at
+ * this scale would put it four metres off the side of the screen — and the
+ * orbit is drawn as a visible line precisely because a path you can see is
+ * the only honest way to say "this is a diagram, not a photograph".
+ *
+ * The tilt is what makes the path READ as a path: seen exactly edge-on an
+ * orbit is a straight line, and a moon sliding along a line looks like a bug,
+ * not a body going round.
+ *
+ * 0.88 rad is not a guess. Tip the orbit less than asin(1 / MOON_ORBIT) = 0.78
+ * and its highest point still falls inside the planet's silhouette, so the top
+ * and bottom of the ellipse are swallowed and all that is left is two side
+ * arcs — the loop stops being a loop. Past that angle the whole ellipse clears
+ * the disc, the path is legible in a single glance, and the Moon never crosses
+ * in front of the cross-section it would otherwise hide.
+ */
+const MOON_R = 0.19;
+const MOON_ORBIT = 1.42;
+/** Seconds per lap. A real month compressed to something a visitor will wait for. */
+const MOON_PERIOD = 26;
+const MOON_TILT_X = 0.88;
+const MOON_TILT_Z = 0.09;
 
 /* ------------------------------------------------------------------ noise */
 
@@ -414,6 +473,77 @@ function buildGrain(): CanvasTexture {
   const tex = new CanvasTexture(c);
   tex.colorSpace = SRGBColorSpace;
   return tex;
+}
+
+/**
+ * The Moon's face, generated the same way the Earth's is — no second texture
+ * file for an object 200px wide.
+ *
+ * Two passes, because the Moon really is two things: the pale, saturated
+ * highlands from the fractal field, and the maria, the dark basalt seas that
+ * are the part everyone can actually name. The craters go on last, each drawn
+ * as a dark floor under a lit rim, and each stretched horizontally by
+ * 1/cos(latitude) so it comes back out round once the equirectangular map is
+ * wrapped onto a sphere — without that the poles wear ellipses.
+ */
+function buildMoonMaps(): { color: CanvasTexture; bump: CanvasTexture } {
+  const W = 512, H = 256;
+  const [c, ctx] = canvas2d(W, H);
+  const img = ctx.createImageData(W, H);
+
+  for (let y = 0; y < H; y++) {
+    const lat = (y / H - 0.5) * Math.PI;
+    for (let x = 0; x < W; x++) {
+      const lon = (x / W) * Math.PI * 2;
+      // sampled on the sphere itself, so the seam at lon = 0 closes
+      const sx = Math.cos(lat) * Math.cos(lon), sy = Math.sin(lat), sz = Math.cos(lat) * Math.sin(lon);
+      const n = fbm(sx * 3.1 + 11, sy * 3.1 + 5, sz * 3.1 + 2, 5);
+      const sea = fbm(sx * 1.35 + 41, sy * 1.35 + 17, sz * 1.35 + 29, 3);
+      // maria: the low, dark half of the noise field, with a soft shoreline
+      const mare = smoothstep(0.52, 0.61, sea);
+      const v = (150 + (n - 0.5) * 46) * (1 - 0.36 * mare);
+      const i = (y * W + x) * 4;
+      img.data[i] = Math.max(0, Math.min(255, v * 1.02));
+      img.data[i + 1] = Math.max(0, Math.min(255, v));
+      img.data[i + 2] = Math.max(0, Math.min(255, v * 0.97));
+      img.data[i + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+
+  // deterministic craters — a fixed seed, so the Moon is the same one twice
+  let seed = 20240712;
+  const rnd = () => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) | 0;
+    return ((seed >>> 8) & 0xffffff) / 0xffffff;
+  };
+  for (let k = 0; k < 90; k++) {
+    const cx = rnd() * W;
+    const cy = 20 + rnd() * (H - 40);
+    const lat = (cy / H - 0.5) * Math.PI;
+    const r = 2 + rnd() * rnd() * 15;
+    const stretch = 1 / Math.max(0.25, Math.cos(lat));
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(stretch, 1);
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(78, 76, 74, 0.30)';
+    ctx.fill();
+    // rim, lit from the same side as the scene's sun
+    ctx.beginPath();
+    ctx.arc(-r * 0.16, -r * 0.16, r * 0.92, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(236, 233, 228, 0.42)';
+    ctx.lineWidth = Math.max(1, r * 0.22);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  const color = new CanvasTexture(c);
+  color.colorSpace = SRGBColorSpace;
+  // the same canvas serves as relief: the craters are already dark-on-light
+  const bump = new CanvasTexture(c);
+  return { color, bump };
 }
 
 /**
@@ -657,6 +787,8 @@ export interface GlobeHandle {
   onOverpull(cb: () => void): void;
   /** Lift and shrink, to hand the bottom of the panel to the lesson strip. */
   compact(on: boolean): void;
+  /** Open a little way and close again, once, to show that it opens at all. */
+  demo(): void;
 }
 
 export async function mountGlobe(
@@ -717,6 +849,63 @@ export async function mountGlobe(
     return { ...built, name, el };
   });
 
+  /*
+   * The Moon system hangs off the SCENE, not off the model.
+   *
+   * It cannot ride the spinner: the Earth turning on its axis does not carry
+   * the Moon round with it, and one drag of the globe would whip the Moon
+   * through a month. It cannot ride the stack either, and that one was tried:
+   * the stack shrinks by half and slides sideways as the model comes apart, so
+   * an orbit parented to it shrank and slid too — the ring sagged out of the
+   * panel mid-fade and read as broken rather than as leaving.
+   *
+   * Parented to the scene it is a fixed frame instead: the path holds its
+   * size and its centre, and the planet opens INSIDE it. The one transform it
+   * still follows is `compact`, because that is the panel making room for the
+   * lesson strip — the whole picture moves, so the orbit moves with it.
+   *
+   * The path is drawn as a real ring rather than implied: with depth testing
+   * on, the planet occludes the far half of it, which is the whole lesson —
+   * the line goes behind, so the Moon going behind reads as depth and not as
+   * the Moon being deleted for a while.
+   */
+  const moonMaps = buildMoonMaps();
+  const moonSystem = new Group();
+  moonSystem.rotation.x = MOON_TILT_X;
+  moonSystem.rotation.z = MOON_TILT_Z;
+  scene.add(moonSystem);
+
+  const orbitMat = new MeshBasicMaterial({
+    color: new Color('#c3d4ff'),
+    transparent: true,
+    opacity: 0.3,
+    side: DoubleSide,
+    depthWrite: false
+  });
+  const orbitRing = new Mesh(new RingGeometry(MOON_ORBIT - 0.006, MOON_ORBIT + 0.006, 192), orbitMat);
+  orbitRing.rotation.x = -Math.PI / 2;
+  moonSystem.add(orbitRing);
+
+  /* The arm turns; the Moon does not turn inside it. That is tidal locking,
+     and it comes free: a body carried round on a rotating arm keeps the same
+     face pointed at the centre unless you spin it the other way. */
+  const moonArm = new Group();
+  moonSystem.add(moonArm);
+  const moonMat = new MeshStandardMaterial({
+    map: moonMaps.color,
+    bumpMap: moonMaps.bump,
+    bumpScale: 0.006,
+    roughness: 0.98,
+    metalness: 0,
+    transparent: true
+  });
+  const moonMesh = new Mesh(new SphereGeometry(MOON_R, 64, 40), moonMat);
+  moonMesh.position.set(MOON_ORBIT, 0, 0);
+  moonArm.add(moonMesh);
+
+  /** Phase of the orbit, in turns. Starts front-left, where it is not behind. */
+  let moonPhase = 0.62;
+
   // ---- state ----
   let yaw = 0;             // extra yaw from dragging, and from turning back
   let yawTarget = 0;
@@ -730,6 +919,7 @@ export async function mountGlobe(
   let yawAtStart = 0;
   let touched = false;
   let pinned = false;      // set by a tap, so it opens without a drag
+  let demoed = false;      // the one-time invitation has been spent
   let width = 0;
   let height = 0;
   let t = 0;
@@ -969,6 +1159,25 @@ export async function mountGlobe(
     recentre.y += OPEN_LIFT_Y * openness + 0.42 * compact;
     stack.position.copy(recentre);
 
+    /*
+     * The Moon keeps its own clock — it is not driven by the drag, the rock or
+     * the explode, because none of those are time passing.
+     *
+     * Opening the model does not switch it off, it steps it back. A path that
+     * vanishes has to travel somewhere to vanish, and the eye reads that
+     * travel as the thing falling apart; a path that simply dims stays where
+     * it was put and lets the cross-section have the attention. So the ring
+     * keeps roughly half its ink and the Moon keeps most of its own, and the
+     * planet opens inside a frame that never moved.
+     */
+    moonPhase = (moonPhase + dt / MOON_PERIOD) % 1;
+    moonArm.rotation.y = moonPhase * Math.PI * 2;
+    const opened = smoothstep(0.04, 0.42, openness);
+    moonSystem.scale.setScalar(1 - 0.16 * compact);
+    moonSystem.position.set(0, 0.42 * compact, 0);
+    orbitMat.opacity = 0.3 - 0.17 * opened;
+    moonMat.opacity = 1 - 0.4 * opened;
+
     if (measureIn <= 0) {
       measureIn = 30;
       for (let i = 0; i < layers.length; i++) tagWidth[i] = layers[i].el.offsetWidth;
@@ -1062,6 +1271,23 @@ export async function mountGlobe(
         yawTarget = 0;
         if (mode === 'turn') mode = 'open';
       }
+    },
+
+    /*
+     * Show, don't caption. Runs once per mount and never against the visitor:
+     * a hand on the model at any point during it — even before it starts —
+     * cancels it, because at that moment the demo would be arguing with the
+     * gesture it exists to teach.
+     */
+    demo() {
+      if (demoed || touched || pinned) return;
+      demoed = true;
+      yawTarget = 0;
+      explodeTarget = DEMO_OPEN;
+      window.setTimeout(() => {
+        if (touched || pinned) return;
+        explodeTarget = 0;
+      }, DEMO_MS);
     },
 
     flash(index: number, ms = 900) {

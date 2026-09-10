@@ -94,8 +94,56 @@
 
     var pill = seg.querySelector(".seg-pill");
     var opts = [].slice.call(seg.querySelectorAll(".seg-opt"));
-    var tiles = [].slice.call(grid.querySelectorAll(".tile"));
+    var tiles = [].slice.call(grid.querySelectorAll(".hex"));
+    var current = "all";
     if (!opts.length) return;
+
+    /* The honeycomb nests in CSS, but which cell STARTS a row is a runtime
+       fact: it changes when a subject is filtered out, and again when the
+       breakpoint drops the comb from three cells per row to two. So the
+       half-cell indent of every other row is (re)applied here, off the list
+       of cells that are about to be visible — not off the DOM order, which
+       still contains the hidden ones. */
+    function comb() {
+      var cs = getComputedStyle(grid);
+      var cols = parseInt(cs.getPropertyValue("--hex-cols"), 10) || 3;
+      /* A row is `cols` cells wide and the offset row starts half a cell in,
+         so the track is (cols + .5) cells plus (cols - .5) gaps. Solving that
+         for the cell width is the only way the comb reliably fits every
+         viewport: a vw-based cell overflows the wrap on narrow screens, and
+         flex-wrap answers by putting one hexagon per row. */
+      var gap = parseFloat(cs.columnGap) || 12;
+      /* clientWidth includes the wrap's own padding, which is 16px a side on
+         a phone — enough to make the offset row one cell too wide and drop
+         its last cell onto a line of its own */
+      var host = grid.parentElement, avail;
+      if (host) {
+        var hcs = getComputedStyle(host);
+        avail = host.clientWidth - parseFloat(hcs.paddingLeft) - parseFloat(hcs.paddingRight);
+      } else {
+        avail = grid.clientWidth;
+      }
+      if (avail > 0) {
+        // -2px covers the 1px of slack the track adds plus any rounding
+        var w = (avail - 2 - (cols - 1) * gap) / cols;
+        grid.style.setProperty("--hex-w", Math.max(112, Math.min(236, Math.floor(w))) + "px");
+      }
+      var shown = tiles.filter(function (t) {
+        return current === "all" || t.dataset.subject === current;
+      });
+      tiles.forEach(function (t) { t.classList.remove("is-shift"); });
+      /* The track is exactly `cols` cells wide, so an indented row fits one
+         cell fewer and flex-wrap breaks it by itself: 3 / 2 / 3. That is the
+         symmetric comb — the old 3.5-cell track produced 3 / 3 / 3 with one
+         edge always ragged. Only the first cell of an indented row carries
+         the indent, so the rows have to be walked, not divided. */
+      for (var i = 0, row = 0; i < shown.length; row++) {
+        if (row % 2) shown[i].classList.add("is-shift");
+        i += row % 2 ? cols - 1 : cols;
+      }
+      // one short row looks abandoned at the left edge of the track
+      grid.classList.toggle("is-short", shown.length <= cols);
+    }
 
     function movePill(btn, animate) {
       if (!pill) return;
@@ -110,6 +158,8 @@
     }
 
     function filter(subject) {
+      current = subject;
+      comb();
       tiles.forEach(function (tile, i) {
         var show = subject === "all" || tile.dataset.subject === subject;
         if (reduce) {
@@ -147,13 +197,66 @@
       movePill(active, false);
     }
 
+    /* ---- the pointer field ----
+       Every cell inside the radius drifts away from the cursor, hardest
+       right next to it and fading to nothing at the edge, so moving across
+       the comb feels like pushing something with a little weight rather
+       than lighting up one tile at a time. Centres are read from layout
+       offsets, never from getBoundingClientRect: a rect already includes
+       the transform this handler wrote last frame, and feeding that back
+       in makes the cells drift away on their own. */
+    var fieldOn = !reduce && window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    if (fieldOn) {
+      var raf = 0, mx = 0, my = 0;
+
+      function push() {
+        raf = 0;
+        var box = grid.getBoundingClientRect();
+        for (var i = 0; i < tiles.length; i++) {
+          var t = tiles[i];
+          if (t.classList.contains("is-hidden")) continue;
+          var w = t.offsetWidth;
+          if (!w) continue;
+          var dx = box.left + t.offsetLeft + w / 2 - mx;
+          var dy = box.top + t.offsetTop + t.offsetHeight / 2 - my;
+          var d = Math.sqrt(dx * dx + dy * dy) || 1;
+          var r = w * 1.7;
+          if (d > r) {
+            if (t.style.getPropertyValue("--px") !== "0px") {
+              t.style.setProperty("--px", "0px");
+              t.style.setProperty("--py", "0px");
+            }
+            continue;
+          }
+          // squared falloff: the two or three nearest cells carry the move
+          var f = 1 - d / r;
+          var k = f * f * (w * .028);
+          t.style.setProperty("--px", (dx / d * k).toFixed(2) + "px");
+          t.style.setProperty("--py", (dy / d * k).toFixed(2) + "px");
+        }
+      }
+
+      grid.addEventListener("pointermove", function (e) {
+        mx = e.clientX; my = e.clientY;
+        if (!raf) raf = requestAnimationFrame(push);
+      });
+      grid.addEventListener("pointerleave", function () {
+        if (raf) { cancelAnimationFrame(raf); raf = 0; }
+        tiles.forEach(function (t) {
+          t.style.setProperty("--px", "0px");
+          t.style.setProperty("--py", "0px");
+        });
+      });
+    }
+
     reposition();
+    comb();
     // Ukrainian subject labels reflow once Inter swaps in
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(reposition);
     var tid;
     window.addEventListener("resize", function () {
       clearTimeout(tid);
-      tid = setTimeout(reposition, 120);
+      tid = setTimeout(function () { reposition(); comb(); }, 120);
     });
   }
 

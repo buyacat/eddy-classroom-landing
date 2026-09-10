@@ -3,6 +3,7 @@ import { t, tArray } from '../utils/i18n';
 import type { Locale } from '../utils/i18n';
 import { withBase } from '../utils/url';
 import EarthGlobe from './EarthGlobe.astro';
+import Galaxy from './Galaxy.astro';
 
 interface Props { locale: Locale }
 const { locale } = Astro.props;
@@ -16,14 +17,20 @@ const stats = tArray<{ text: string; offline?: boolean }>(locale, 'classroom_sta
  * purpose — the model is the demo, and a second card cropping its corner only
  * competed with it.
  *
- * The three floating tools are the client's own 3D objects — coin for the
- * random-name wheel, clock for the timer, music note for the noise meter.
- * All strings below are the frozen ones from classroom.json.
+ * The three floating objects next to the globe are subjects, not controls:
+ * beside a live planet, a coin and an alarm clock read as a shop and a
+ * deadline. Rocket and dinosaur are drawn for this site (sources in
+ * src/assets/icon-src/) in the pack's own clay language — one saturated
+ * body colour, cream detail, soft key light from the upper left — so they
+ * sit next to the bought objects without looking imported. The in-lesson
+ * tools keep the coin/clock/music trio down in the platform band, where
+ * they carry their labels. The third object is the one that had to be drawn
+ * in the page instead of exported, because it turns — see Galaxy.astro.
  */
 const tools = [
-  { key: 'coin', title: t(locale, 'classroom_hero_wheel_title'), cls: 'tool-a' },
-  { key: 'clock', title: t(locale, 'classroom_hero_timer_title'), cls: 'tool-b' },
-  { key: 'music', title: t(locale, 'classroom_hero_noise_title'), cls: 'tool-c' }
+  { key: 'rocket', title: t(locale, 'classroom_hero_space_title'), cls: 'tool-a' },
+  { key: 'dino', title: t(locale, 'classroom_hero_dino_title'), cls: 'tool-b' },
+  { key: 'galaxy', title: t(locale, 'classroom_hero_galaxy_title'), cls: 'tool-c' }
 ];
 ---
 
@@ -37,7 +44,6 @@ const tools = [
       <span class="eyebrow enter" style="--d:0ms">{t(locale, 'classroom_eyebrow')}</span>
       <h1 class="enter" style="--d:60ms" set:html={t(locale, 'classroom_title')} />
       <p class="lede enter" style="--d:120ms">{t(locale, 'classroom_lede')}</p>
-      <p class="hero-insight" data-insight aria-live="polite"></p>
       <div class="hero-chips enter" style="--d:180ms">
         {stats.map((s) => (
           <span class={`chip${s.offline ? ' is-green' : ''}`}>
@@ -78,7 +84,9 @@ const tools = [
 
       {tools.map((tool, i) => (
         <div class={`badge badge-tool ${tool.cls} enter`} style={`--d:${500 + i * 80}ms`} title={tool.title}>
-          <img class="obj is-inline" src={withBase(`/assets/icons/${tool.key}.png`)} width="256" height="256" alt="" loading="lazy" />
+          {tool.key === 'galaxy'
+            ? <Galaxy />
+            : <img class="obj is-inline" src={withBase(`/assets/icons/${tool.key}.png`)} width="256" height="256" alt="" loading="lazy" />}
         </div>
       ))}
     </div>
@@ -189,7 +197,6 @@ const tools = [
 
   @media (prefers-reduced-motion: reduce) {
     .blob { transition: none; }
-    .hero-insight { transition: none; }
   }
 
   .hero-grid {
@@ -204,32 +211,6 @@ const tools = [
   .hero-copy h1 { margin: 20px 0 0; }
   .hero-copy .lede { margin-top: 20px; }
 
-  /* The one line that answers "what does this give my school?" — and it is
-     written by the platform, in front of the visitor, because of what the
-     visitor just did in the panel. Empty and out of flow until then. */
-  .hero-insight {
-    margin: 0;
-    max-height: 0;
-    overflow: hidden;
-    padding-left: 14px;
-    border-left: 3px solid transparent;
-    font-size: .875rem;
-    font-weight: 700;
-    line-height: 1.5;
-    color: var(--ink-2);
-    opacity: 0;
-    transition:
-      max-height 420ms var(--ease-out),
-      margin 420ms var(--ease-out),
-      opacity 320ms var(--ease-out),
-      border-color 320ms var(--ease-out);
-  }
-  .hero-insight.is-on {
-    margin-top: 20px;
-    max-height: 6em;
-    opacity: 1;
-    border-left-color: var(--green-deep);
-  }
   .hero-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
   .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
 

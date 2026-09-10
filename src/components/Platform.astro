@@ -12,30 +12,44 @@ const items = tArray<{ icon: string; title: string; text: string; shot_alt?: str
 );
 
 /*
- * This is the band that has to prove the feature list is real, so four of
- * the six cards carry an actual crop of the shipping app. `zoom` is the
- * displayed width of the crop inside the card window — each crop has its
- * own natural density, so a single value would leave some screens
- * unreadably small and others cropped to mush. Alt text comes from the
- * locale file (`shot_alt`), so /en/ no longer gets Ukrainian alts.
+ * This is the band that has to prove the feature list is real, so five of
+ * the seven cards carry an actual screen of the shipping app. Alt text
+ * comes from the locale file (`shot_alt`), so /en/ does not get Ukrainian
+ * alts.
  */
-const shots: Record<string, { src: string; w: number; h: number; zoom: string }> = {
-  web: { src: withBase('/assets/shots/shot-library.jpg'), w: 1400, h: 711, zoom: '1020px' },
-  student: { src: withBase('/assets/shots/shot-quiz.png'), w: 1100, h: 646, zoom: '150%' },
-  panel: { src: withBase('/assets/shots/shot-pins.jpg'), w: 820, h: 615, zoom: '104%' },
-  analytics: { src: withBase('/assets/shots/shot-results.jpg'), w: 1400, h: 390, zoom: '175%' }
+/*
+ * Every screenshot in this band sits in the same browser window: chrome on
+ * top, the screen under it, the frame running off the bottom edge of its
+ * card. Cropped screenshots bleeding straight into a rounded corner read
+ * as a broken image; the same crop inside a window reads as a product you
+ * are looking at. `zoom` is the displayed width of the screen inside that
+ * window — 100% shows the whole page, more than that is a crop, and each
+ * screen has its own density, so a single value would leave some
+ * unreadably small. `pan` slides the viewport down the page when the part
+ * worth showing is not the very top.
+ */
+const shots: Record<string, { src: string; w: number; h: number; zoom: string; url: string; pan?: string }> = {
+  web: { src: withBase('/assets/shots/shot-library.jpg'), w: 1400, h: 711, zoom: '100%', url: 'app.eddy.school/library' },
+  /* The one screen that shows the product doing its whole job at once: the
+     class answering on the right, the teacher's live table on the left. */
+  session: { src: withBase('/assets/shots/shot-session.jpg'), w: 1430, h: 824, zoom: '100%', url: 'app.eddy.school/session' },
+  student: { src: withBase('/assets/shots/shot-quiz.png'), w: 1100, h: 646, zoom: '156%', url: 'app.eddy.school/quiz' },
+  panel: { src: withBase('/assets/shots/shot-pins.jpg'), w: 820, h: 615, zoom: '118%', url: 'app.eddy.school/board', pan: '-46px' },
+  analytics: { src: withBase('/assets/shots/shot-results.jpg'), w: 1400, h: 390, zoom: '168%', url: 'app.eddy.school/results' }
 };
 
 /* Two sizes of object only: 96px on cards that carry a screenshot, 128px on
-   the two half-width cards that carry a live mini-UI instead. The grey
-   search glass sank into its white card and read as "lookup", so analytics
-   gets the medal — results. The web card keeps the contract (document + pen):
-   it is grey too, but the blue folder is already the first WhyUs card one
-   band up, and the same object twice in a row is worse than a grey one. */
+   the two half-width cards that carry a live mini-UI instead. Every object
+   in this band is a colour object: the grey ones (contract, pen, search)
+   sank into the white cards and read as switched-off. `document` repeats a
+   WhyUs object one band up, which is the lesser evil — the blue folder is
+   what a teacher's workspace of courses looks like. `location` is the pin
+   the whiteboard card's own screenshot is covered in. */
 const objects: Record<string, string> = {
-  web: 'contract',
+  web: 'document',
+  session: 'apple',   // the band already has a medal on analytics; two awards read as one idea
   student: 'key',
-  panel: 'pen',
+  panel: 'location',
   analytics: 'medal',
   games: 'gift',
   virtual: 'chat'
@@ -97,9 +111,15 @@ const roster = [
             </div>
 
             {shot && (
-              <div class="plat-shot" style={`--zoom:${shot.zoom}`}>
-                <img src={shot.src} width={shot.w} height={shot.h} alt={it.shot_alt ?? it.title}
-                     loading="lazy" decoding="async" />
+              <div class="plat-win" style={`--zoom:${shot.zoom};--pan:${shot.pan ?? '0px'}`}>
+                <span class="win-bar" aria-hidden="true">
+                  <i class="d1"></i><i class="d2"></i><i class="d3"></i>
+                  <span class="win-url">{shot.url}</span>
+                </span>
+                <span class="win-view">
+                  <img src={shot.src} width={shot.w} height={shot.h} alt={it.shot_alt ?? it.title}
+                       loading="lazy" decoding="async" />
+                </span>
               </div>
             )}
 
@@ -178,7 +198,7 @@ const roster = [
   }
   .plat-card:hover { transform: translateY(-4px); box-shadow: var(--e3); }
 
-  .plat-body { padding: var(--pad-card); }
+  .plat-body { padding: var(--pad-card) var(--pad-card) clamp(18px, 1.7vw, 26px); }
   .plat-card h3 { margin-bottom: 10px; }
   /* a one- and a two-line title in the same row must still align their
      body copy — Ukrainian card titles wrap unpredictably (same as WhyUs) */
@@ -192,30 +212,85 @@ const roster = [
   .plat-card.is-blue p { color: var(--ink-inv-2); }
   .plat-card.is-blue:hover { box-shadow: 0 18px 40px -14px rgba(64, 80, 255, .6); }
 
-  /* The screenshot bleeds into the card's bottom-right corner: a window
-     into the product, not a framed thumbnail. */
-  .plat-shot {
-    margin: 6px 0 0 clamp(22px, 2.1vw, 30px);
-    height: 158px;
+  /* ---- wide cards: the two that carry a full product screen ----
+     They used to take a whole row each, which pushed the band past two
+     viewport heights before the small cards even appeared. Paired at half
+     width they read as one "here is the product" row, and the band lands
+     in three rows: 2 screens / 3 features / 2 states. */
+  .plat-card.is-wide { grid-column: span 3; --obj: 112px; }
+  .plat-card.is-wide .plat-body { flex: none; }
+  .plat-card.is-wide h3 { font-size: clamp(1.25rem, 1.05rem + .55vw, 1.625rem); }
+  .plat-card.is-wide p { font-size: .9375rem; max-width: 46ch; }
+
+  /* A browser window resting in the bottom of the card: chrome on top, the
+     screen under it, and a real bottom edge — a window that ran off the
+     card looked like a screenshot someone forgot to finish cropping. One
+     viewport height for every window in the band, wide cards included, so
+     five different screens read as five views of one product. */
+  .plat-win {
+    --win-inset: clamp(18px, 1.7vw, 28px);
+    margin: auto var(--win-inset) var(--win-inset);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgba(15, 18, 45, .05), 0 20px 38px -20px rgba(15, 18, 45, .42);
     overflow: hidden;
-    border-radius: var(--r-md) 0 var(--r-xl) 0;
+  }
+  .win-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    background: #f1f2f7;
+    border-bottom: 1px solid rgba(15, 18, 45, .07);
+  }
+  .win-bar i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .win-bar .d1 { background: #ff5f57; }
+  .win-bar .d2 { background: #febc2e; }
+  .win-bar .d3 { background: #28c840; }
+  .win-url {
+    flex: 1;
+    min-width: 0;
+    margin-left: 8px;
+    height: 18px;
+    padding: 0 9px;
+    border-radius: var(--r-pill);
+    background: #fff;
+    box-shadow: inset 0 0 0 1px rgba(15, 18, 45, .08);
+    display: flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--ink-3);
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  /* A browser viewport is a wide letterbox, never a square. Height is set
+     per card width so the ratio stays roughly 2:1 or wider — at 212px the
+     narrow cards were showing a window shape no laptop has. */
+  .win-view {
+    display: block;
+    height: 152px;
+    overflow: hidden;
     background: #fff;
   }
-  .plat-shot img {
-    width: var(--zoom, 128%);
+  .plat-card.is-wide .win-view { height: clamp(172px, 14vw, 204px); }
+  /* `cover` is what keeps the window a window: a screen shorter than the
+     viewport would otherwise leave a white band under it, which reads as a
+     rendering bug rather than as a page you have scrolled to the end of */
+  .win-view img {
+    display: block;
+    width: var(--zoom, 100%);
     max-width: none;
-    height: auto;
-    transform-origin: left top;
+    height: 100%;
+    object-fit: cover;
+    object-position: left top;
+    transform: translateY(var(--pan, 0px));
     transition: transform var(--t-card) var(--ease-out);
   }
-  .plat-card:hover .plat-shot img { transform: scale(1.035); }
-
-  /* ---- wide card: text left, product right ---- */
-  .plat-card.is-wide { grid-column: span 6; flex-direction: row; align-items: stretch; --obj: 128px; }
-  .plat-card.is-wide .plat-body { flex: 0 0 42%; display: flex; flex-direction: column; justify-content: center; padding-right: 8px; }
-  .plat-card.is-wide h3 { font-size: clamp(1.375rem, 1.1rem + .8vw, 1.875rem); }
-  .plat-card.is-wide p { font-size: 1rem; }
-  .plat-card.is-wide .plat-shot { flex: 1; margin: clamp(24px, 2.6vw, 40px) 0 0 0; height: auto; min-height: 264px; border-radius: var(--r-md) 0 var(--r-xl) 0; }
+  /* on hover the window scrolls a little further down the page — the same
+     "there is more of this" gesture the crops make when they scale */
+  .plat-card:hover .win-view img { transform: translateY(calc(var(--pan, 0px) - 14px)); }
 
   /* ---- half cards: the two that show a product state instead of a crop ---- */
   .plat-card.is-half { grid-column: span 3; --obj: 128px; }
@@ -297,27 +372,26 @@ const roster = [
   @media (max-width: 1000px) {
     .plat-grid { grid-template-columns: repeat(4, 1fr); }
     .plat-card { grid-column: span 2; }
+    /* below the desktop grid the screenshots need the whole row to stay
+       legible; everything else pairs up */
     .plat-card.is-wide { grid-column: span 4; }
-    /* five cards in pairs leave a hole; the analytics crop is a wide table,
-       so it is the one that takes a full row without looking stretched */
+    .plat-card.is-half { grid-column: span 2; }
+    /* five cards in pairs leave a hole; the analytics screen is a wide
+       table, so it is the one that takes a full row without stretching */
     .plat-card.is-analytics { grid-column: span 4; }
     /* `--zoom` is an inline style on the window, so it is overridden on the
        image itself, not on the custom property */
-    .plat-card.is-analytics .plat-shot { height: 190px; }
-    .plat-card.is-analytics .plat-shot img { width: 118%; }
+    .plat-card.is-analytics .win-view { height: 176px; }
+    .plat-card.is-analytics .win-view img { width: 112%; }
   }
   @media (max-width: 760px) {
     .plat-grid { grid-template-columns: 1fr; }
     .plat-card, .plat-card.is-wide, .plat-card.is-half, .plat-card.is-analytics { grid-column: span 1; }
     .plat-card:not(.is-wide) h3 { min-height: 0; }
-    .plat-card.is-wide { flex-direction: column; --obj: 112px; }
-    .plat-card.is-wide .plat-body { flex: none; padding-right: var(--pad-card); }
-    /* `flex: 1` from the desktop rule beat the height cap here (flex-basis 0
-       plus content size), so the library list ran to ~280px — pin it */
-    .plat-card.is-wide .plat-shot { flex: none; margin-left: clamp(22px, 2.1vw, 30px); min-height: 0; height: 200px; }
-    .plat-card.is-wide .plat-shot img { width: 100%; }
-    .plat-card.is-analytics .plat-shot { height: 158px; }
-    .plat-card.is-analytics .plat-shot img { width: var(--zoom); }
+    .plat-card.is-wide { --obj: 112px; }
+    .plat-card.is-wide .plat-body { padding-right: var(--pad-card); }
+    .win-view, .plat-card.is-wide .win-view { height: 168px; }
+    .plat-card.is-analytics .win-view img { width: var(--zoom); }
     .plat-card.is-half { --obj: 112px; }
     .plat-tool { padding: 12px 6px 10px; font-size: .75rem; }
     .plat-tool .obj { width: 44px; height: 44px; }

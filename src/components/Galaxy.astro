@@ -1,0 +1,181 @@
+---
+/*
+ * The third floating object: a galaxy, not a music note.
+ *
+ * The brief was "a clump of something, on black", and at 54px that is the
+ * only kind of astronomy that survives — a black hole or a nebula would both
+ * collapse into a smudge. A barred spiral keeps its silhouette at any size:
+ * bright core, two arms, dark sky.
+ *
+ * The arms are real logarithmic spirals (r = a·e^(b·θ), squashed and tilted
+ * so the disc reads as a plate seen at an angle) generated once and frozen
+ * into the path data — nothing is computed at runtime. The whole disc turns,
+ * slowly enough that you notice it only if you stay on the page; the sky
+ * behind it does not, because the stars are foreground, not part of the wheel.
+ *
+ * Bottom left, three aligned stars: Orion's belt. It is the one thing in the
+ * hero a pupil can point at and say they have seen it.
+ *
+ * Black sphere, warm-gold core — so the badge still balances the black note
+ * it replaces and rhymes with the rocket's nose cone.
+ */
+---
+
+<svg class="gx" viewBox="0 0 256 256" role="img" aria-hidden="true" focusable="false">
+  <defs>
+    <radialGradient id="gx-sky" cx="38%" cy="30%" r="78%">
+      <stop offset="0%" stop-color="#1B2450"/>
+      <stop offset="55%" stop-color="#0B1030"/>
+      <stop offset="100%" stop-color="#03040E"/>
+    </radialGradient>
+    <radialGradient id="gx-core" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="26%" stop-color="#FFF3C4"/>
+      <stop offset="58%" stop-color="#FFC24E"/>
+      <stop offset="100%" stop-color="#FF8A1E" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="gx-halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#9FC0FF" stop-opacity=".55"/>
+      <stop offset="60%" stop-color="#5C7FE0" stop-opacity=".20"/>
+      <stop offset="100%" stop-color="#31489E" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gx-arm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFE7B0"/>
+      <stop offset="45%" stop-color="#BBD3FF"/>
+      <stop offset="100%" stop-color="#6E8FE8"/>
+    </linearGradient>
+    <radialGradient id="gx-gloss" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity=".38"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="gx-clip"><circle cx="128" cy="128" r="100"/></clipPath>
+    <filter id="gx-soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    <filter id="gx-wide" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+  </defs>
+
+  <!-- the sphere of sky -->
+  <circle cx="128" cy="128" r="100" fill="url(#gx-sky)"/>
+
+  <g clip-path="url(#gx-clip)">
+    <!-- disc glow, then the wheel itself -->
+    <ellipse cx="128" cy="128" rx="86" ry="56" transform="rotate(-20 128 128)" fill="url(#gx-halo)" filter="url(#gx-wide)"/>
+
+    <g class="gx-wheel" filter="url(#gx-soft)">
+      <path class="gx-arm is-faint" d="M 130.5 135.0 L 128.4 135.9 L 126.1 136.6 L 123.6 137.1 L 121.2 137.3 L 118.8 137.1 L 116.5 136.6 L 114.5 135.8 L 112.8 134.6 L 111.6 133.1 L 110.8 131.3 L 110.6 129.2 L 111.1 126.9 L 112.1 124.5 L 113.8 122.1 L 116.2 119.6 L 119.2 117.3 L 122.7 115.2 L 126.7 113.3 L 131.0 111.9 L 135.6 111.0 L 140.2 110.5 L 144.7 110.7 L 149.0 111.6 L 152.9 113.0 L 156.1 115.2 L 158.6 117.9 L 160.2 121.3 L 160.7 125.1 L 160.1 129.4 L 158.3 133.9 L 155.2 138.5 L 150.9 143.1 L 145.5 147.6 L 139.0 151.6 L 131.6 155.2 L 123.6 158.0 L 115.0 159.9 L 106.3 160.8 L 97.7 160.7 L 89.5 159.3 L 82.1 156.7 L 75.8 152.8 L 70.9 147.8 L 67.7 141.6 L 66.4 134.5 L 67.2 126.6 L 70.4 118.2 L 75.8 109.5 L 83.5 100.7 L 93.5 92.3 L 105.4 84.5 L 119.1 77.7 L 134.1 72.2 L 150.1 68.3 L 166.5 66.3 L 182.8 66.3 L 198.3 68.6 L 212.5 73.2 L 224.7 80.1 L 234.4 89.3"/>
+      <path class="gx-arm is-faint" d="M 123.2 114.9 L 127.3 113.1 L 131.6 111.7 L 136.2 110.9 L 140.8 110.5 L 145.4 110.8 L 149.6 111.7 L 153.4 113.3 L 156.5 115.5 L 158.9 118.4 L 160.3 121.8 L 160.7 125.7 L 159.9 130.0 L 157.9 134.5 L 154.7 139.2 L 150.2 143.8 L 144.6 148.2 L 138.0 152.2 L 130.5 155.6 L 122.4 158.3 L 113.8 160.1 L 105.1 160.9 L 96.5 160.5 L 88.4 159.0 L 81.1 156.2 L 75.0 152.2 L 70.3 147.0 L 67.4 140.7 L 66.4 133.4 L 67.5 125.5 L 71.0 117.0 L 76.7 108.2 L 84.8 99.5 L 95.0 91.1 L 107.3 83.5 L 121.2 76.9 L 136.4 71.6 L 152.4 67.9 L 168.9 66.2 L 185.1 66.5 L 200.5 69.1 L 214.4 74.0 L 226.3 81.3 L 235.5 90.8 L 241.6 102.3 L 244.0 115.7 L 242.4 130.6 L 236.6 146.5 L 226.3 162.9 L 211.8 179.4 L 193.1 195.2 L 170.6 209.9 L 144.8 222.7 L 116.5 233.0 L 86.4 240.4 L 55.4 244.2 L 24.8 244.2 L -4.5 239.9 L -31.2 231.3 L -54.2 218.2 L -72.4 200.9"/>
+      <path class="gx-arm" d="M 136.5 124.9 L 137.0 125.8 L 137.2 126.9 L 137.1 128.0 L 136.7 129.3 L 136.0 130.6 L 134.8 131.9 L 133.4 133.2 L 131.7 134.3 L 129.6 135.4 L 127.4 136.2 L 125.0 136.9 L 122.6 137.2 L 120.1 137.3 L 117.8 137.0 L 115.6 136.3 L 113.8 135.3 L 112.3 134.0 L 111.2 132.4 L 110.7 130.4 L 110.7 128.3 L 111.4 125.9 L 112.8 123.5 L 114.8 121.0 L 117.4 118.6 L 120.6 116.3 L 124.3 114.3 L 128.5 112.7 L 132.9 111.4 L 137.5 110.7 L 142.2 110.5 L 146.6 111.0 L 150.7 112.1 L 154.4 113.9 L 157.3 116.3 L 159.4 119.3 L 160.5 122.9 L 160.6 126.9 L 159.5 131.3 L 157.1 135.8 L 153.5 140.5 L 148.7 145.1 L 142.8 149.4 L 136.0 153.2 L 128.2 156.5 L 119.9 158.9 L 111.3 160.4 L 102.6 160.9 L 94.1 160.2 L 86.2 158.3 L 79.3 155.2 L 73.5 150.8 L 69.3 145.3 L 66.9 138.7 L 66.5 131.2 L 68.3 123.1 L 72.4 114.5 L 78.8 105.7 L 87.5 97.1 L 98.3 88.9 L 111.1 81.5"/>
+      <path class="gx-arm" d="M 112.1 133.8 L 111.1 132.1 L 110.6 130.1 L 110.8 127.9 L 111.6 125.6 L 113.0 123.1 L 115.1 120.7 L 117.8 118.3 L 121.1 116.0 L 124.9 114.1 L 129.1 112.5 L 133.6 111.3 L 138.2 110.7 L 142.8 110.6 L 147.2 111.1 L 151.3 112.3 L 154.8 114.2 L 157.7 116.7 L 159.6 119.8 L 160.6 123.4 L 160.5 127.5 L 159.2 131.9 L 156.7 136.5 L 152.9 141.2 L 148.0 145.7 L 141.9 149.9 L 134.9 153.7 L 127.1 156.9 L 118.7 159.2 L 110.0 160.6 L 101.3 160.9 L 93.0 160.0 L 85.2 157.9 L 78.4 154.6 L 72.8 150.1 L 68.8 144.4 L 66.7 137.7 L 66.6 130.1 L 68.7 121.9 L 73.2 113.2 L 79.9 104.4 L 88.9 95.9 L 100.0 87.8 L 113.0 80.5 L 127.5 74.4 L 143.2 69.8 L 159.5 66.9 L 175.9 66.0 L 191.8 67.3 L 206.6 70.9 L 219.8 76.8 L 230.6 85.1 L 238.5 95.5 L 243.1 107.9 L 243.8 121.9 L 240.4 137.3 L 232.7 153.5 L 220.6 170.0 L 204.2 186.3 L 183.9 201.7 L 159.9 215.6"/>
+    </g>
+
+    <ellipse cx="128" cy="128" rx="34" ry="21" transform="rotate(-20 128 128)" fill="url(#gx-core)"/>
+    <circle class="gx-nucleus" cx="128" cy="128" r="11" fill="#FFFBEA"/>
+
+    <!-- foreground sky -->
+    <g class="gx-stars">
+    <circle cx="92.8" cy="58.2" r="1.9" fill="#EAF1FF" opacity="0.39"/>
+    <circle cx="39.6" cy="129.5" r="1.0" fill="#EAF1FF" opacity="0.61"/>
+    <circle cx="112.9" cy="193.4" r="1.1" fill="#EAF1FF" opacity="0.48"/>
+    <circle cx="153.5" cy="217.5" r="1.8" fill="#EAF1FF" opacity="0.59"/>
+    <circle cx="199.7" cy="85.9" r="1.1" fill="#EAF1FF" opacity="0.42"/>
+    <circle cx="89.7" cy="191.2" r="1.2" fill="#EAF1FF" opacity="0.7"/>
+    <circle cx="155.8" cy="102.5" r="1.7" fill="#EAF1FF" opacity="0.39"/>
+    <circle cx="164.1" cy="113.5" r="1.4" fill="#EAF1FF" opacity="0.7"/>
+    <circle cx="118.6" cy="88.0" r="2.1" fill="#EAF1FF" opacity="0.77"/>
+    <circle cx="76.8" cy="142.9" r="1.7" fill="#EAF1FF" opacity="0.88"/>
+    <circle cx="173.9" cy="85.6" r="2.4" fill="#EAF1FF" opacity="0.42"/>
+    <circle cx="111.6" cy="179.4" r="1.1" fill="#EAF1FF" opacity="0.64"/>
+    <circle cx="180.9" cy="142.6" r="2.2" fill="#EAF1FF" opacity="0.54"/>
+    <circle cx="167.1" cy="146.9" r="1.8" fill="#EAF1FF" opacity="0.62"/>
+    <circle cx="122.8" cy="160.8" r="1.0" fill="#EAF1FF" opacity="0.77"/>
+    <circle cx="192.4" cy="84.9" r="1.5" fill="#EAF1FF" opacity="0.75"/>
+    <circle cx="53.9" cy="77.5" r="1.5" fill="#EAF1FF" opacity="0.87"/>
+    <circle cx="44.1" cy="117.8" r="1.7" fill="#EAF1FF" opacity="0.88"/>
+    <circle cx="83.7" cy="111.1" r="1.4" fill="#EAF1FF" opacity="0.88"/>
+    <circle cx="63.2" cy="74.4" r="1.3" fill="#EAF1FF" opacity="0.64"/>
+    <circle cx="145.8" cy="80.5" r="0.9" fill="#EAF1FF" opacity="0.6"/>
+    <circle cx="48.7" cy="154.9" r="1.0" fill="#EAF1FF" opacity="0.39"/>
+    <circle cx="69.8" cy="60.5" r="1.4" fill="#EAF1FF" opacity="0.38"/>
+    <circle cx="48.3" cy="100.7" r="0.9" fill="#EAF1FF" opacity="0.87"/>
+    <circle cx="150.8" cy="57.7" r="1.3" fill="#EAF1FF" opacity="0.56"/>
+    <circle cx="100.8" cy="52.6" r="2.2" fill="#EAF1FF" opacity="0.95"/>
+    <circle cx="96.5" cy="81.0" r="2.1" fill="#EAF1FF" opacity="0.45"/>
+    <circle cx="133.7" cy="57.3" r="1.7" fill="#EAF1FF" opacity="0.37"/>
+    <circle cx="200.7" cy="167.2" r="1.3" fill="#EAF1FF" opacity="0.57"/>
+    <circle cx="61.4" cy="182.4" r="1.7" fill="#EAF1FF" opacity="0.82"/>
+    <circle cx="93.9" cy="72.6" r="2.1" fill="#EAF1FF" opacity="0.94"/>
+    <circle cx="198.5" cy="189.2" r="2.1" fill="#EAF1FF" opacity="0.79"/>
+    <circle cx="73.3" cy="131.5" r="1.4" fill="#EAF1FF" opacity="0.37"/>
+    <circle cx="79.8" cy="166.5" r="2.3" fill="#EAF1FF" opacity="0.62"/>
+    <circle cx="219.0" cy="100.9" r="1.2" fill="#EAF1FF" opacity="0.49"/>
+    <circle cx="67.3" cy="68.9" r="1.8" fill="#EAF1FF" opacity="0.89"/>
+    <circle cx="196.1" cy="123.9" r="1.9" fill="#EAF1FF" opacity="0.83"/>
+    <circle cx="45.0" cy="160.1" r="2.3" fill="#EAF1FF" opacity="0.82"/>
+    <circle cx="178.0" cy="123.6" r="1.2" fill="#EAF1FF" opacity="0.82"/>
+    <circle cx="94.5" cy="188.2" r="2.4" fill="#EAF1FF" opacity="0.59"/>
+    <circle cx="108.3" cy="217.4" r="2.0" fill="#EAF1FF" opacity="0.45"/>
+    <circle cx="98.1" cy="137.7" r="1.1" fill="#EAF1FF" opacity="0.36"/>
+    <circle cx="133.3" cy="214.7" r="1.6" fill="#EAF1FF" opacity="0.87"/>
+    <circle cx="193.2" cy="70.2" r="1.3" fill="#EAF1FF" opacity="0.53"/>
+    <circle cx="76.1" cy="145.3" r="1.3" fill="#EAF1FF" opacity="0.6"/>
+    <circle cx="98.8" cy="119.6" r="1.8" fill="#EAF1FF" opacity="0.89"/>
+    </g>
+    <g class="gx-belt">
+    <circle cx="64" cy="74" r="2.6" fill="#FFFFFF"/>
+    <circle cx="76" cy="82" r="2.6" fill="#FFFFFF"/>
+    <circle cx="88" cy="90" r="2.6" fill="#FFFFFF"/>
+    </g>
+
+    <!-- clay-pack gloss: the same top-left key light as the rocket and the dino -->
+    <ellipse cx="92" cy="76" rx="58" ry="40" transform="rotate(-28 92 76)" fill="url(#gx-gloss)"/>
+  </g>
+
+  <circle cx="128" cy="128" r="100" fill="none" stroke="#000000" stroke-opacity=".55" stroke-width="3"/>
+  <circle cx="128" cy="128" r="98" fill="none" stroke="#7E93D6" stroke-opacity=".30" stroke-width="1.5"/>
+</svg>
+
+<style>
+  .gx {
+    width: 54px;
+    height: 54px;
+    display: block;
+    filter: drop-shadow(0 6px 10px rgba(10, 14, 40, .28));
+  }
+
+  .gx-arm {
+    fill: none;
+    stroke: url(#gx-arm);
+    stroke-width: 9;
+    stroke-linecap: round;
+    opacity: .9;
+  }
+  .gx-arm.is-faint { stroke-width: 5; opacity: .38; }
+
+  /* One turn every 72s. Fast enough to catch on a second look, slow enough
+     that it never competes with the globe next to it. */
+  .gx-wheel {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: gx-turn 72s linear infinite;
+  }
+
+  .gx-nucleus { animation: gx-pulse 5.5s ease-in-out infinite; }
+  .gx-belt circle { animation: gx-twinkle 3.4s ease-in-out infinite; }
+  .gx-belt circle:nth-child(2) { animation-duration: 4.6s; }
+  .gx-belt circle:nth-child(3) { animation-duration: 2.9s; }
+
+  @keyframes gx-turn { to { transform: rotate(360deg); } }
+  @keyframes gx-pulse { 0%, 100% { opacity: .82; } 50% { opacity: 1; } }
+  @keyframes gx-twinkle { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gx-wheel, .gx-nucleus, .gx-belt circle { animation: none; }
+  }
+
+  @media (max-width: 700px) {
+    .gx { width: 42px; height: 42px; }
+  }
+</style>

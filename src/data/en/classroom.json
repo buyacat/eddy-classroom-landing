@@ -24,6 +24,9 @@
   "classroom_hero_roster_done": "completed",
   "classroom_hero_wheel_title": "Wheel of names",
   "classroom_hero_timer_title": "Timer",
+  "classroom_hero_space_title": "Space",
+  "classroom_hero_dino_title": "Dinosaurs",
+  "classroom_hero_galaxy_title": "Galaxy",
   "classroom_hero_noise_title": "Noise meter",
   "classroom_hero_globe_layers": [
     { "name": "Crust", "meta": "5–70 km · solid" },
@@ -33,14 +36,17 @@
   ],
   "classroom_hero_globe_scale_note": "The crust is drawn thicker than life so it can be seen. In reality it is under 1% of Earth's radius.",
   "classroom_lesson_ask": "Ask the class",
-  "classroom_lesson_question": "Which layer of the Earth is liquid?",
+  "classroom_lesson_rounds": [
+    { "q": "Which layer of the Earth is liquid?", "result": "17 of 22 correct · 77% mastery" },
+    { "q": "Which layer of the Earth is the thinnest?", "result": "19 of 22 correct · 86% mastery" },
+    { "q": "Which layer stays solid at 5,000 °C?", "result": "14 of 22 correct · 64% mastery" }
+  ],
   "classroom_lesson_answered": "answered",
-  "classroom_lesson_result": "17 of 22 correct · 77% understood",
-  "classroom_lesson_insight": "4 pupils confuse the mantle with the outer core → revisit slide 4",
+  "classroom_lesson_next": "Next question",
   "classroom_lesson_offline_state": "No connection",
   "classroom_lesson_offline_chip": "The internet went. The lesson didn’t.",
   "classroom_lesson_again": "Run it again",
-  "classroom_hero_globe_hint": "Drag to take it apart",
+  "classroom_hero_globe_hint": "Tap it, or drag it apart",
   "classroom_hero_globe_alt": "Eddy Classroom — interactive 3D model of the Earth's interior with annotations",
 
   "classroom_why_eyebrow": "Advantages",
@@ -89,6 +95,13 @@
       "wide": true
     },
     {
+      "icon": "session",
+      "title": "The whole group takes the test together",
+      "text": "The class answers at the same time and the teacher watches a live table: who is on which question, who got it wrong, and what they scored. One button ends the test.",
+      "shot_alt": "A shared test session: the class answer table beside the question and its options",
+      "wide": true
+    },
+    {
       "icon": "student",
       "title": "Easy student access",
       "text": "Once joined to a course, a student can easily browse its materials, complete assignments, and take tests.",
@@ -132,23 +145,19 @@
     { "id": "geography", "label": "Geography" }
   ],
   "classroom_library_cards": [
-    { "subject": "biology", "label": "Biology", "name": "Cell structure", "size": "r2" },
-    { "subject": "physics", "label": "Physics", "name": "Thermodynamics", "size": "r3" },
-    { "subject": "chemistry", "label": "Chemistry", "name": "Periodic table of elements", "size": "r2 c2" },
-    { "subject": "geography", "label": "Geography", "name": "Tectonic plates", "size": "r2" },
-    { "subject": "physics", "label": "Physics", "name": "Electric circuit", "size": "r2" },
-    { "subject": "biology", "label": "Biology", "name": "Circulatory system", "size": "r3" },
-    { "subject": "chemistry", "label": "Chemistry", "name": "DNA molecule", "size": "r2" },
-    { "subject": "geography", "label": "Geography", "name": "Volcano cross-section", "size": "r2 c2" },
-    { "subject": "physics", "label": "Physics", "name": "V8 engine", "size": "r3" },
-    { "subject": "biology", "label": "Biology", "name": "Photosynthesis", "size": "r2" },
-    { "subject": "chemistry", "label": "Chemistry", "name": "Crystal lattice", "size": "r2" },
-    { "subject": "geography", "label": "Geography", "name": "River valley", "size": "r2" }
+    { "subject": "biology", "label": "Biology", "name": "Cell structure", "glyph": "cell" },
+    { "subject": "chemistry", "label": "Chemistry", "name": "Periodic table of elements", "glyph": "periodic" },
+    { "subject": "geography", "label": "Geography", "name": "Volcano cross-section", "glyph": "volcano" },
+    { "subject": "physics", "label": "Physics", "name": "Thermodynamics", "glyph": "thermo" },
+    { "subject": "biology", "label": "Biology", "name": "Circulatory system", "glyph": "heart" },
+    { "subject": "geography", "label": "Geography", "name": "Tectonic plates", "glyph": "plates" },
+    { "subject": "chemistry", "label": "Chemistry", "name": "DNA molecule", "glyph": "dna" },
+    { "subject": "physics", "label": "Physics", "name": "V8 engine", "glyph": "engine" }
   ],
   "classroom_library_cta": "Browse the entire 3D model library",
   "classroom_library_note": "Model previews are placeholders; real thumbnails will be added soon.",
 
-  "classroom_form_headline": "Try Eddy Classroom for free",
+  "classroom_form_headline": "Try Eddy Classroom",
   "classroom_form_lede": "Leave a request — our manager will help connect your school, choose a plan, and run a platform demo for your staff.",
   "classroom_form_title": "Request for Eddy Classroom",
   "classroom_form_fields": [
@@ -166,11 +175,11 @@
     { "value": "admin", "label": "Administration representative" },
     { "value": "other", "label": "Other" }
   ],
-  "classroom_form_submit": "Try Eddy Classroom for free",
+  "classroom_form_submit": "Send request",
   "classroom_form_sending": "Sending...",
   "classroom_form_success": "✓ Request sent",
   "classroom_form_success_hint": "Thank you! We will respond within one business day.",
-  "classroom_form_error": "Try Eddy Classroom for free",
+  "classroom_form_error": "Send request",
   "classroom_form_error_hint": "Sending error. Please try again or contact us directly.",
   "classroom_form_thanks": "Thanks for your request!",
   "classroom_form_thanks_sub": "An Eddy Classroom manager will contact you soon."

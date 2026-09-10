@@ -16,12 +16,16 @@
  */
 import type { GlobeHandle } from './earth';
 
+export interface LessonRound {
+  q: string;
+  result: string;
+}
+
 export interface LessonCopy {
   ask: string;
-  question: string;
+  rounds: LessonRound[];
   answered: string;
-  result: string;
-  insight: string;
+  next: string;
   offlineState: string;
   offlineChip: string;
   again: string;
@@ -30,12 +34,29 @@ export interface LessonCopy {
 const CLASS_SIZE = 22;
 
 /**
- * Votes per layer, in layer order. Deliberately not a clean sweep: 17 of 22 is
- * a real classroom, and the four who picked the mantle are exactly the four
- * the analytics line then names.
+ * The three rounds, as votes per layer in layer order (crust, mantle, outer
+ * core, inner core) plus which of them is right.
+ *
+ * One question was enough to prove the loop runs; three are what make it look
+ * like a lesson, because the interesting part of the product is the SHAPE of
+ * the answers changing. So none of these is a clean sweep and no two fail the
+ * same way: the liquid layer splits between the two cores, the thinnest is
+ * nearly unanimous, and the one about heat is the one a class actually gets
+ * wrong — a third of them put the heat in the outer core.
+ *
+ * Every distribution sums to CLASS_SIZE. The check is worth stating because
+ * a short round silently leaves dots unlit and the counter reading 20/22.
  */
-const VOTES = [1, 4, 17, 0];
-const CORRECT = 2;
+interface Round {
+  votes: number[];
+  correct: number;
+}
+
+const ROUNDS: Round[] = [
+  { votes: [1, 4, 17, 0], correct: 2 },
+  { votes: [19, 2, 1, 0], correct: 0 },
+  { votes: [0, 3, 5, 14], correct: 3 }
+];
 
 /** A pupil answers every 70-210 ms — uneven, because people are. */
 const ANSWER_MIN = 70;
@@ -52,9 +73,9 @@ interface Refs {
 }
 
 /** Shuffled so the bars fill in a plausible order rather than block by block. */
-function ballots(): number[] {
+function ballots(votes: number[]): number[] {
   const bag: number[] = [];
-  VOTES.forEach((n, layer) => {
+  votes.forEach((n, layer) => {
     for (let i = 0; i < n; i++) bag.push(layer);
   });
   for (let i = bag.length - 1; i > 0; i--) {
@@ -68,7 +89,7 @@ export function startLesson(
   root: HTMLElement,
   globe: GlobeHandle,
   copy: LessonCopy,
-  outside: { insight: HTMLElement | null; liveText: HTMLElement | null; roster: HTMLElement | null }
+  outside: { liveText: HTMLElement | null; roster: HTMLElement | null }
 ): () => void {
   const q = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel);
 
@@ -102,7 +123,7 @@ export function startLesson(
 
   // ---- turn every layer tag into an answer option ----
   const options: { tag: HTMLElement; fill: HTMLElement; count: HTMLElement }[] = [];
-  for (let i = 0; i < VOTES.length; i++) {
+  for (let i = 0; i < ROUNDS[0].votes.length; i++) {
     const tag = globe.tag(i);
     if (!tag) continue;
 
@@ -125,13 +146,25 @@ export function startLesson(
     options.push({ tag, fill, count });
   }
 
-  refs.question.textContent = copy.question;
   refs.ask.textContent = copy.ask;
 
   // ---- state ----
   let phase: 'idle' | 'asking' | 'polling' | 'done' = 'idle';
   const tally = [0, 0, 0, 0];
   let answered = 0;
+  /* Which of the three is on the board. It survives a reset — asking again
+     moves the class ON to the next question rather than re-running the one
+     they have just answered — and wraps at the end, so the panel can be left
+     running without ever showing an exhausted state. */
+  let round = 0;
+  const votes = () => ROUNDS[round].votes;
+  const correct = () => ROUNDS[round].correct;
+  const last = () => round === ROUNDS.length - 1;
+
+  function showQuestion() {
+    refs.question.textContent = copy.rounds[round]?.q ?? '';
+  }
+  showQuestion();
 
   function paint() {
     refs.answered.textContent = String(answered);
@@ -147,7 +180,7 @@ export function startLesson(
   }
 
   function poll() {
-    const bag = ballots();
+    const bag = ballots(votes());
     const tick = (n: number) => {
       if (n >= bag.length) {
         after(420, reveal);
@@ -169,36 +202,32 @@ export function startLesson(
 
     // if the visitor cut the poll short by answering, finish it on paper
     answered = CLASS_SIZE;
-    VOTES.forEach((n, i) => { tally[i] = n; });
+    votes().forEach((n, i) => { tally[i] = n; });
     dots.forEach((d) => d.classList.add('is-in'));
     paint();
 
     root.classList.remove('is-quiz');
     root.classList.add('is-marked');
-    options[CORRECT]?.tag.classList.add('is-correct');
-    globe.flash(CORRECT, 900);
+    options[correct()]?.tag.classList.add('is-correct');
+    globe.flash(correct(), 900);
 
-    refs.result.textContent = copy.result;
+    refs.result.textContent = copy.rounds[round]?.result ?? '';
     root.classList.add('is-result');
 
-    // the line the head teacher actually buys: not "we have analytics" but a
-    // specific thing to do next lesson, caused by what the visitor just did
-    after(700, () => {
-      if (!outside.insight) return;
-      outside.insight.classList.add('is-on');
-      if (reduced) {
-        outside.insight.textContent = copy.insight;
-      } else {
-        let i = 0;
-        const type = () => {
-          outside.insight!.textContent = copy.insight.slice(0, ++i);
-          if (i < copy.insight.length) after(16, type);
-        };
-        type();
-      }
-    });
+    /* The dropped connection is a story point, not a feature of every round:
+       it lands once, after the first question, where it reads as "and this
+       kept working". Told three times it would read as a flaky product. */
+    if (round === 0) {
+      after(2200, offline);
+    } else {
+      after(1400, arm);
+    }
+  }
 
-    after(2200, offline);
+  /** Put the button back, labelled with what it will actually do next. */
+  function arm() {
+    refs.ask.textContent = last() ? copy.again : copy.next;
+    root.classList.add('is-again');
   }
 
   function offline() {
@@ -216,14 +245,31 @@ export function startLesson(
       live?.parentElement?.classList.remove('is-down');
       if (live) live.textContent = was;
       root.classList.remove('is-offline');
-      refs.ask.textContent = copy.again;
-      root.classList.add('is-again');
+      arm();
     });
   }
 
   function ask() {
     if (phase !== 'idle' && phase !== 'done') return;
-    if (phase === 'done') return reset();
+
+    /*
+     * Finished a round. "Next question" has to BE the next question — clearing
+     * the board and then waiting for a second click on a button that has
+     * quietly renamed itself back to "ask the class" is a dead beat, and it
+     * was the first thing that looked broken when three questions replaced
+     * one. So the middle rounds wipe the slate and go straight on, with the
+     * model left open and compact: nothing folds up only to unfold again.
+     *
+     * The end of the set is the exception. There the panel really is starting
+     * over, so the model closes and hands the invitation back, exactly as it
+     * did the first time.
+     */
+    if (phase === 'done') {
+      const wrapping = last();
+      round = wrapping ? 0 : round + 1;
+      reset(!wrapping);
+      if (wrapping) return;
+    }
     phase = 'polling';
     root.classList.remove('is-invited');
     root.classList.add('is-quiz', 'is-polling');
@@ -232,7 +278,7 @@ export function startLesson(
     after(reduced ? 0 : 520, poll);
   }
 
-  function reset() {
+  function reset(keepOpen = false) {
     clear();
     phase = 'idle';
     answered = 0;
@@ -240,11 +286,10 @@ export function startLesson(
     dots.forEach((d) => d.classList.remove('is-in'));
     options.forEach((o) => o.tag.classList.remove('is-correct', 'is-picked'));
     root.classList.remove('is-polling', 'is-marked', 'is-result', 'is-again', 'is-offline');
-    if (outside.insight) {
-      outside.insight.classList.remove('is-on');
-      outside.insight.textContent = '';
-    }
+    refs.result.textContent = '';
+    showQuestion();
     paint();
+    if (keepOpen) return;
     globe.compact(false);
     // and hand the model back: `ask` latched it apart, and nothing else ever
     // unlatches it, so without this the hero stays exploded and stone still

@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <radialGradient id="body" cx="33%" cy="16%" r="92%">
+      <stop offset="0%" stop-color="#A3AEFF"/>
+      <stop offset="40%" stop-color="#5C6BF7"/>
+      <stop offset="100%" stop-color="#3140CC"/>
+    </radialGradient>
+    <radialGradient id="nose" cx="32%" cy="14%" r="95%">
+      <stop offset="0%" stop-color="#FFF0B4"/>
+      <stop offset="45%" stop-color="#F9CD52"/>
+      <stop offset="100%" stop-color="#E0A521"/>
+    </radialGradient>
+    <linearGradient id="finL" x1="0.9" y1="0" x2="0.1" y2="0.9">
+      <stop offset="0%" stop-color="#FFE083"/>
+      <stop offset="50%" stop-color="#F4C244"/>
+      <stop offset="100%" stop-color="#D2921A"/>
+    </linearGradient>
+    <linearGradient id="finR" x1="0.1" y1="0" x2="0.95" y2="0.9">
+      <stop offset="0%" stop-color="#F6CB55"/>
+      <stop offset="55%" stop-color="#E5AE30"/>
+      <stop offset="100%" stop-color="#B87C11"/>
+    </linearGradient>
+    <radialGradient id="glass" cx="30%" cy="22%" r="88%">
+      <stop offset="0%" stop-color="#F2F8FF"/>
+      <stop offset="42%" stop-color="#A6CBFF"/>
+      <stop offset="100%" stop-color="#4B7BD6"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="55%" stop-color="#EEF1FA"/>
+      <stop offset="100%" stop-color="#BDC6E0"/>
+    </linearGradient>
+    <linearGradient id="nozzle" x1="0" y1="0" x2="1" y2="0.3">
+      <stop offset="0%" stop-color="#4E5CE8"/>
+      <stop offset="30%" stop-color="#7C89FF"/>
+      <stop offset="100%" stop-color="#2A32A0"/>
+    </linearGradient>
+    <radialGradient id="flameOut" cx="50%" cy="8%" r="85%">
+      <stop offset="0%" stop-color="#FFD05A"/>
+      <stop offset="50%" stop-color="#FF9426"/>
+      <stop offset="100%" stop-color="#F0561B"/>
+    </radialGradient>
+    <linearGradient id="flameIn" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#FFFBE6"/>
+      <stop offset="100%" stop-color="#FFCF3F"/>
+    </linearGradient>
+    <filter id="b3" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="3"/></filter>
+    <filter id="b7" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="7"/></filter>
+    <filter id="b12" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="12"/></filter>
+    <clipPath id="bodyClip">
+      <path d="M128 20 C137 20 146 28 153 40 C167 64 176 100 176 132 C176 156 170 174 162 186 L94 186 C86 174 80 156 80 132 C80 100 89 64 103 40 C110 28 119 20 128 20 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- soft ground shadow -->
+  <ellipse cx="128" cy="234" rx="62" ry="12" fill="#2A2140" opacity=".2" filter="url(#b7)"/>
+  <!-- warm glow from the exhaust -->
+  <ellipse cx="128" cy="212" rx="46" ry="24" fill="#FF9A2E" opacity=".28" filter="url(#b12)"/>
+
+  <!-- flame -->
+  <path d="M128 250 C104 222 92 204 92 188 C92 176 108 169 128 169 C148 169 164 176 164 188 C164 204 152 222 128 250 Z" fill="url(#flameOut)"/>
+  <path d="M128 228 C114 210 107 198 107 189 C107 181 116 176 128 176 C140 176 149 181 149 189 C149 198 142 210 128 228 Z" fill="url(#flameIn)"/>
+
+  <!-- fins -->
+  <path d="M84 128 C64 146 50 172 45 196 C43 205 49 211 58 209 L100 200 C90 182 85 156 84 128 Z" fill="url(#finL)"/>
+  <path d="M172 128 C192 146 206 172 211 196 C213 205 207 211 198 209 L156 200 C166 182 171 156 172 128 Z" fill="url(#finR)"/>
+  <path d="M84 128 C72 142 62 160 55 178 C63 184 72 192 78 200 L92 197 C86 178 84 152 84 128 Z" fill="#FFFFFF" opacity=".2" filter="url(#b3)"/>
+
+  <!-- nozzle -->
+  <path d="M96 176 L160 176 C165 176 168 180 167 185 L163 200 C162 205 158 208 153 208 L103 208 C98 208 94 205 93 200 L89 185 C88 180 91 176 96 176 Z" fill="url(#nozzle)"/>
+  <path d="M100 180 L112 180 L108 204 L98 204 Z" fill="#FFFFFF" opacity=".22" filter="url(#b3)"/>
+
+  <!-- body -->
+  <path d="M128 20 C137 20 146 28 153 40 C167 64 176 100 176 132 C176 156 170 174 162 186 L94 186 C86 174 80 156 80 132 C80 100 89 64 103 40 C110 28 119 20 128 20 Z" fill="url(#body)"/>
+
+  <g clip-path="url(#bodyClip)">
+    <!-- nose cone -->
+    <path d="M128 20 C137 20 146 28 153 40 C159 50 164 64 168 79 C156 87 142 91 128 91 C114 91 100 87 88 79 C92 64 97 50 103 40 C110 28 119 20 128 20 Z" fill="url(#nose)"/>
+    <path d="M88 79 C100 87 114 91 128 91 C142 91 156 87 168 79 L170 89 C157 98 143 102 128 102 C113 102 99 98 86 89 Z" fill="#C98C14" opacity=".5" filter="url(#b3)"/>
+    <!-- key light down the left flank -->
+    <ellipse cx="100" cy="140" rx="15" ry="40" fill="#FFFFFF" opacity=".32" filter="url(#b7)"/>
+    <!-- rim light on the shaded flank -->
+    <ellipse cx="169" cy="146" rx="8" ry="38" fill="#B6C0FF" opacity=".4" filter="url(#b7)"/>
+    <!-- occlusion where the body meets the nozzle -->
+    <ellipse cx="128" cy="192" rx="56" ry="22" fill="#1D2480" opacity=".55" filter="url(#b7)"/>
+  </g>
+
+  <!-- porthole -->
+  <circle cx="128" cy="132" r="33" fill="url(#ring)"/>
+  <circle cx="128" cy="132" r="33" fill="none" stroke="#8E98B8" stroke-opacity=".3" stroke-width="1.5"/>
+  <circle cx="128" cy="132" r="24.5" fill="url(#glass)"/>
+  <ellipse cx="118" cy="122" rx="12" ry="7.5" transform="rotate(-32 118 122)" fill="#FFFFFF" opacity=".7"/>
+  <ellipse cx="138" cy="143" rx="5.5" ry="3.2" transform="rotate(-32 138 143)" fill="#FFFFFF" opacity=".38"/>
+</svg>

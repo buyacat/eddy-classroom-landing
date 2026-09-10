@@ -15,6 +15,13 @@ const phoneHref = 'tel:' + phone.replace(/\s/g, '');
 /* Cross-brand "family" row — same pattern as the sibling Eddy sites
    (e.g. drstem.eu): a row of links out to the rest of the group. */
 const familyLinks = tArray<{ label: string; url: string }>(locale, 'footer_family_links');
+
+/* Two of the TZ's footer bullets: the tender-requirements list and the free
+   teacher course. The brief names both but supplies no destination for
+   either, so an entry with an empty `url` renders as plain text — a footer
+   full of href="#" is worse than a footer that simply states what exists.
+   Fill in the URL in site.json and it becomes a link, no code change. */
+const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_links');
 ---
 
 <footer class="footer" itemscope itemtype="https://schema.org/Organization">
@@ -32,6 +39,15 @@ const familyLinks = tArray<{ label: string; url: string }>(locale, 'footer_famil
           <a href={phoneHref}>{phone}</a>
           <a href={`mailto:${t(locale, 'footer_service_email')}`}>{t(locale, 'footer_service_email')}</a>
           <span>{t(locale, 'footer_service_warranty')}</span>
+        </div>
+
+        <div class="fcol">
+          <h4>{t(locale, 'footer_col_docs')}</h4>
+          {docsLinks.map((link) => (
+            link.url
+              ? <a href={link.url} target="_blank" rel="noopener noreferrer">{link.label}</a>
+              : <span class="soon">{link.label}</span>
+          ))}
         </div>
 
         <div class="fcol">
@@ -104,11 +120,13 @@ const familyLinks = tArray<{ label: string; url: string }>(locale, 'footer_famil
 
   .footer-top {
     display: grid;
-    grid-template-columns: 1.6fr 1fr 1fr;
+    grid-template-columns: 1.5fr 1fr 1.15fr 1fr;
     gap: clamp(24px, 3vw, 48px);
     padding-bottom: 34px;
   }
   .footer-brand p { margin-top: 18px; font-size: .875rem; line-height: 1.55; max-width: 42ch; }
+  /* a footer entry that has no destination yet: stated, not linked */
+  .fcol .soon { opacity: .7; }
 
   .fcol { display: flex; flex-direction: column; gap: 10px; }
   .fcol h4 {
@@ -165,6 +183,9 @@ const familyLinks = tArray<{ label: string; url: string }>(locale, 'footer_famil
   @media (max-width: 860px) {
     .footer-top { grid-template-columns: 1fr 1fr; }
     .footer-brand { grid-column: span 2; }
+  }
+  @media (max-width: 860px) {
+    .footer-top { grid-template-columns: 1fr 1fr 1fr; }
   }
   @media (max-width: 520px) {
     .footer-top { grid-template-columns: 1fr; }

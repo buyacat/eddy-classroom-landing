@@ -1,7 +1,7 @@
 ---
 import { t, tArray } from '../utils/i18n';
 import type { Locale } from '../utils/i18n';
-import LibGlyph from './LibGlyph.astro';
+import { withBase } from '../utils/url';
 
 interface Props { locale: Locale }
 const { locale } = Astro.props;
@@ -12,11 +12,21 @@ const cards = tArray<{ subject: string; label: string; name: string; glyph: stri
 /*
  * PLACEHOLDER IMAGERY — the real 3D preview thumbnails are still on the
  * client's Drive. Until they land, each cell is a flat colour block from
- * the mock's palette plus a drawn object (see LibGlyph.astro). One colour
- * per subject, so the colour carries meaning instead of decorating, and
- * one drawn object per MODEL, so a cell named "Молекула ДНК" is not a
- * flame. Swap the glyph for a real preview <img> when the assets arrive;
- * nothing else in this component has to change.
+ * the mock's palette plus one rendered object. One colour per subject, so
+ * the colour carries meaning instead of decorating, and one object per
+ * MODEL, so a cell named "Молекула ДНК" is not a flame.
+ *
+ * The objects in /assets/icons/lib are rendered, not drawn: hand-cut SVG
+ * imitating the bought 3D set lost that comparison every time. They are
+ * built as signed-distance solids and lit with the measured light of the
+ * bought set — one key from the upper left, a bounce off the lower right,
+ * saturation peaking in the light rather than in the shadow. Three
+ * subjects are substituted, because the bought language has no
+ * cross-sections and no diagrams anywhere: the volcano is exterior, the
+ * plates are a faulted step, and the DNA is a molecule.
+ *
+ * Swap the <img> src for a real preview when the assets arrive; nothing
+ * else in this component has to change.
  *
  * The cells are hexagons in a honeycomb, and there are nine of them. Nine
  * is the point: this band is a sample of a 1200-model library, not an
@@ -60,7 +70,35 @@ const subjectBlock: Record<string, string> = {
         <article class={`hex ${subjectBlock[c.subject] || 'is-blue'}`} data-subject={c.subject}>
           <span class="hex-face">
             <span class="hex-in">
-              <LibGlyph name={c.glyph} cls="hex-obj" />
+              <span class="hex-art">
+                <img class={`hex-obj${c.glyph === 'dna' ? ' is-spin' : ''}`}
+                     src={withBase(`/assets/icons/lib/${c.glyph}.png`)}
+                     width="256" height="256" alt="" loading="lazy" decoding="async" />
+                {c.glyph === 'heart' && (
+                  <svg class="hex-spark" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                    <g transform="translate(-40.39 -44.15) scale(3.5083)">
+                      <path class="s-glow" pathLength="100" d="M20 50h10.5l4.5-9 6.5 18 5.5-11 4 6H76" />
+                      <path class="s-core" pathLength="100" d="M20 50h10.5l4.5-9 6.5 18 5.5-11 4 6H76" />
+                    </g>
+                  </svg>
+                )}
+                {c.glyph === 'volcano' && (
+                  /* Five gobbets thrown from the vent. Each sits at the origin
+                     of a <g> already rotated about the crater, so the CSS only
+                     ever has to move it straight up its own axis and the spray
+                     fans out for free. They fade while still climbing: lava
+                     that reached the rim would have to run back down the cone,
+                     and a loop that ends with paint on the model is a loop that
+                     has to clean up after itself. */
+                  <svg class="hex-lava" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                    <g transform="translate(126 58) rotate(-31)"><ellipse class="gob g1" rx="15" ry="18" /></g>
+                    <g transform="translate(126 58) rotate(-14)"><ellipse class="gob g2" rx="19" ry="23" /></g>
+                    <g transform="translate(126 58) rotate(2)"><ellipse class="gob g3" rx="13" ry="16" /></g>
+                    <g transform="translate(126 58) rotate(17)"><ellipse class="gob g4" rx="18" ry="21" /></g>
+                    <g transform="translate(126 58) rotate(33)"><ellipse class="gob g5" rx="12" ry="15" /></g>
+                  </svg>
+                )}
+              </span>
               <span class="nm">{c.name}</span>
               <span class="sub">{c.label}</span>
             </span>
@@ -250,6 +288,12 @@ const subjectBlock: Record<string, string> = {
 
   /* the label stack sits in the cell's widest band, dead centre — the
      corners of a hexagon are unusable, so nothing is anchored to them */
+  .hex {
+    /* one clock for every glyph in the band */
+    --glyph-t: 880ms;
+    --glyph-e: cubic-bezier(.42, 0, .22, 1);
+  }
+
   .hex-in {
     width: 100%;
     padding: 0 15%;
@@ -260,10 +304,115 @@ const subjectBlock: Record<string, string> = {
     gap: 7px;
     text-align: center;
   }
-  /* the glyph sizes itself (LibGlyph.astro) — a scoped rule here cannot
-     cross into a child component, so only the hover lift lives out here,
-     and it has to be :global to land on the child's root */
-  .hex:hover :global(.glyph) { transform: translateY(-3px) rotate(-6deg) scale(1.07); }
+  .hex-art {
+    position: relative;
+    display: block;
+    width: 46%;
+    max-width: 78px;
+    transition: transform 420ms cubic-bezier(.34, 1.4, .5, 1);
+  }
+  .hex:hover .hex-art { transform: translateY(-3px) rotate(-5deg) scale(1.07); }
+  .hex-obj {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 9px 12px rgba(0, 0, 0, .3));
+  }
+
+  /* The DNA is the one cell whose model reads as a thing you would TURN, so
+     hovering turns it. A rendered PNG has no far side, so the middle of the
+     revolution is a flat edge and the second half is a mirror image — at 78px
+     and 880ms neither survives long enough to register, and the alternative,
+     a timid rock back and forth, does not read as "you can spin this". */
+  .hex-art { perspective: 620px; }
+  .hex:hover .hex-obj.is-spin { animation: dna-spin var(--glyph-t) var(--glyph-e); }
+  @keyframes dna-spin { to { transform: rotateY(360deg); } }
+
+  /* Every glyph animation runs on the same clock as the heart's pulse: one
+     hover, one beat, no cell livelier than its neighbour. */
+  .hex-lava {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .hex-lava .gob {
+    fill: #FF8E22;
+    opacity: 0;
+    filter: drop-shadow(0 0 6px rgba(255, 150, 40, .85));
+  }
+  .hex:hover .hex-lava .gob { animation: lava-throw var(--glyph-t) cubic-bezier(.25, .6, .35, 1); }
+  /* --h is how high each gobbet gets: the middle of the spray is thrown
+     hardest, the edges barely clear the rim. */
+  .hex-lava .g1 { --h: -60px; fill: #FFA83C; animation-delay: 40ms; }
+  .hex-lava .g2 { --h: -84px; animation-delay: 0ms; }
+  .hex-lava .g3 { --h: -94px; fill: #FFC24E; animation-delay: 70ms; }
+  .hex-lava .g4 { --h: -80px; animation-delay: 25ms; }
+  .hex-lava .g5 { --h: -56px; fill: #FF7A16; animation-delay: 90ms; }
+  /* The glyph renders at 78px, so the whole throw happens inside about 24
+     real pixels: a gobbet that never reaches full size is a gobbet nobody
+     sees. It leaves the vent small, is at its largest just clear of the rim,
+     and only shrinks on the way out as it cools. */
+  @keyframes lava-throw {
+    0%   { transform: translateY(8px) scale(.3); opacity: 0; }
+    16%  { transform: translateY(-8px) scale(1); opacity: 1; }
+    64%  { opacity: .9; }
+    100% { transform: translateY(var(--h, -70px)) scale(.5); opacity: 0; }
+  }
+
+  /* The heart's own pulse, traced. The trace is a separate overlay because
+     the object is a rendered PNG — the path below is the exact pulse from
+     the drawing the render was made of, mapped into the 256 frame by the
+     crop-and-fit that produced heart.png (translate/scale, do not touch
+     one without the other). A short gold dash runs the length of it once
+     per hover, then leaves. */
+  .hex-spark {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .hex-spark path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    /* pathLength=100 on the path, so the dash maths is in percent of the
+       trace and does not depend on the geometry */
+    stroke-dasharray: 24 100;
+    stroke-dashoffset: 24;
+    opacity: 0;
+  }
+  /* two passes: a wide amber body and a hot core, so the streak reads as
+     light travelling rather than as a coloured line */
+  .hex-spark .s-glow {
+    stroke: #FFC33A;
+    stroke-width: 8.4;
+    filter: drop-shadow(0 0 5px rgba(255, 186, 40, .95));
+  }
+  .hex-spark .s-core {
+    stroke: #FFF4CE;
+    stroke-width: 3.4;
+    stroke-dasharray: 15 100;
+    stroke-dashoffset: 15;
+  }
+  .hex:hover .hex-spark .s-glow { animation: hex-whoosh var(--glyph-t) var(--glyph-e); }
+  .hex:hover .hex-spark .s-core { animation: hex-whoosh-core var(--glyph-t) var(--glyph-e); }
+  @keyframes hex-whoosh {
+    0%   { stroke-dashoffset: 24;   opacity: 0; }
+    9%   { opacity: 1; }
+    76%  { opacity: 1; }
+    100% { stroke-dashoffset: -110; opacity: 0; }
+  }
+  @keyframes hex-whoosh-core {
+    0%   { stroke-dashoffset: 15;   opacity: 0; }
+    9%   { opacity: 1; }
+    76%  { opacity: 1; }
+    100% { stroke-dashoffset: -101; opacity: 0; }
+  }
   .hex .nm {
     font-family: var(--font-display);
     font-weight: 800;
@@ -282,8 +431,10 @@ const subjectBlock: Record<string, string> = {
   .hex.is-blue .sub, .hex.is-ink .sub { color: rgba(255, 255, 255, .6); }
 
   @media (prefers-reduced-motion: reduce) {
-    .hex, .hex-face { transition: none; }
-    :global(.glyph) { transition: none; }
+    .hex, .hex-face, .hex-art { transition: none; }
+    .hex:hover .hex-spark path,
+    .hex:hover .hex-lava .gob,
+    .hex:hover .hex-obj.is-spin { animation: none; }
   }
 
   /* ---- footer of the band ----

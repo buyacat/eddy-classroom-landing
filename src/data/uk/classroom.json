@@ -150,8 +150,8 @@
     { "subject": "physics", "label": "Фізика", "name": "Термодинаміка", "glyph": "thermo" },
     { "subject": "geography", "label": "Географія", "name": "Вулкан у розрізі", "glyph": "volcano" },
     { "subject": "biology", "label": "Біологія", "name": "Система кровообігу", "glyph": "heart" },
-    { "subject": "geography", "label": "Географія", "name": "Тектонічні плити", "glyph": "plates" },
-    { "subject": "physics", "label": "Фізика", "name": "Восьмициліндровий двигун", "glyph": "engine" },
+    { "subject": "geography", "label": "Географія", "name": "Тектонічні плити", "glyph": "crust" },
+    { "subject": "physics", "label": "Фізика", "name": "Восьмициліндровий двигун", "glyph": "gear" },
     { "subject": "chemistry", "label": "Хімія", "name": "Молекула ДНК", "glyph": "dna" }
   ],
   "classroom_library_note": "Прев'ю моделей — заглушки; реальні мініатюри будуть додані найближчим часом.",

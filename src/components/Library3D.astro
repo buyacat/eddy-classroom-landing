@@ -70,13 +70,6 @@ const subjectBlock: Record<string, string> = {
       ))}
     </div>
 
-    <div class="lib-foot reveal">
-      <a href="#demo" class="btn btn-dark">{t(locale, 'classroom_library_cta')}</a>
-      <figure class="shot is-sm lib-proof">
-        <img src={withBase("/assets/shots/shot-pagination.png")} width="540" height="90"
-             alt="Сторінки каталогу бібліотеки Eddy Classroom" loading="lazy" decoding="async" />
-      </figure>
-    </div>
     <p class="note lib-note">{t(locale, 'classroom_library_note')}</p>
   </div>
 </section>
@@ -183,7 +176,7 @@ const subjectBlock: Record<string, string> = {
      a shelf of things you could pick up, so the gap is wide enough to see
      the ground between them and the corners are rounded off.
 
-     Eight cells, not nine: eight is what fills the comb symmetrically. */
+     Eight cells, not nine — three, three and two. */
   .lib-comb {
     position: relative;   /* offsetParent for the pointer field in app.js */
     --hex-cols: 3;
@@ -196,11 +189,11 @@ const subjectBlock: Record<string, string> = {
     flex-wrap: wrap;
     column-gap: var(--hex-gap);
     row-gap: 0;
-    /* exactly `cols` cells wide (+1px of slack against sub-pixel rounding).
-       An indented row therefore holds one cell fewer, and eight cells fall
-       into the symmetric 3 / 2 / 3 comb on their own. */
-    width: calc(var(--hex-cols) * var(--hex-w)
-                + (var(--hex-cols) - 1) * var(--hex-gap) + 1px);
+    /* cols full cells plus one half cell, so an indented row still holds a
+       full `cols` and eight cells run 3 / 3 / 2 (+1px of slack so
+       sub-pixel rounding cannot push a cell onto a line of its own) */
+    width: calc(var(--hex-cols) * (var(--hex-w) + var(--hex-gap))
+                + (var(--hex-w) + var(--hex-gap)) / 2 - var(--hex-gap) + 1px);
     max-width: 100%;
     margin: clamp(32px, 3.5vw, 52px) auto 0;
     /* every cell is pulled up, first row included — give that back here */
@@ -294,18 +287,12 @@ const subjectBlock: Record<string, string> = {
     :global(.glyph) { transition: none; }
   }
 
-  /* ---- footer of the band ---- */
-  .lib-foot {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: clamp(16px, 2.5vw, 34px);
-    flex-wrap: wrap;
-    margin-top: clamp(32px, 3.5vw, 48px);
-  }
-  .lib-proof { width: 270px; border-radius: var(--r-md); }
-  .lib-proof img { width: 100%; height: auto; }
-  .lib-note { text-align: center; margin-top: 16px; opacity: .8; }
+  /* ---- footer of the band ----
+     The band used to end on a "see the whole library" button next to a
+     screenshot of the catalogue's page numbers, running to 3068. Eight
+     cells are a sample, and a sample does not need a door to the archive
+     behind it — the CTA the page actually wants is the lead form. */
+  .lib-note { text-align: center; margin-top: clamp(26px, 3vw, 40px); opacity: .8; }
 
   @media (max-width: 900px) {
     .lib-head { grid-template-columns: 1fr; align-items: start; }
@@ -315,8 +302,5 @@ const subjectBlock: Record<string, string> = {
   /* two cells per row below this — three would put the labels under 12px */
   @media (max-width: 700px) {
     .lib-comb { --hex-cols: 2; --hex-gap: 12px; --hex-w: min(34vw, 200px); }
-  }
-  @media (max-width: 620px) {
-    .lib-proof { display: none; }
   }
 </style>

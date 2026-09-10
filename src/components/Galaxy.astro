@@ -9,9 +9,13 @@
  *
  * The arms are real logarithmic spirals (r = a·e^(b·θ), squashed and tilted
  * so the disc reads as a plate seen at an angle) generated once and frozen
- * into the path data — nothing is computed at runtime. The whole disc turns,
- * slowly enough that you notice it only if you stay on the page; the sky
- * behind it does not, because the stars are foreground, not part of the wheel.
+ * into the path data — nothing is computed at runtime.
+ *
+ * It does NOT turn, and that is deliberate. The disc used to rotate once every
+ * 72s, which looked right on its own and wrong in the row: the rocket and the
+ * dinosaur beside it are still PNGs, so the one moving badge read as the only
+ * finished one rather than as the liveliest. Either all three move or none do,
+ * and none is the cheaper promise to keep.
  *
  * Bottom left, three aligned stars: Orion's belt. It is the one thing in the
  * hero a pupil can point at and say they have seen it.
@@ -153,27 +157,6 @@
     opacity: .9;
   }
   .gx-arm.is-faint { stroke-width: 5; opacity: .38; }
-
-  /* One turn every 72s. Fast enough to catch on a second look, slow enough
-     that it never competes with the globe next to it. */
-  .gx-wheel {
-    transform-box: fill-box;
-    transform-origin: center;
-    animation: gx-turn 72s linear infinite;
-  }
-
-  .gx-nucleus { animation: gx-pulse 5.5s ease-in-out infinite; }
-  .gx-belt circle { animation: gx-twinkle 3.4s ease-in-out infinite; }
-  .gx-belt circle:nth-child(2) { animation-duration: 4.6s; }
-  .gx-belt circle:nth-child(3) { animation-duration: 2.9s; }
-
-  @keyframes gx-turn { to { transform: rotate(360deg); } }
-  @keyframes gx-pulse { 0%, 100% { opacity: .82; } 50% { opacity: 1; } }
-  @keyframes gx-twinkle { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
-
-  @media (prefers-reduced-motion: reduce) {
-    .gx-wheel, .gx-nucleus, .gx-belt circle { animation: none; }
-  }
 
   @media (max-width: 700px) {
     .gx { width: 42px; height: 42px; }

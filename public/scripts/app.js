@@ -125,21 +125,18 @@
       }
       if (avail > 0) {
         // -2px covers the 1px of slack the track adds plus any rounding
-        var w = (avail - 2 - (cols - 1) * gap) / cols;
+        var w = (avail - 2 - (cols - .5) * gap) / (cols + .5);
         grid.style.setProperty("--hex-w", Math.max(112, Math.min(236, Math.floor(w))) + "px");
       }
       var shown = tiles.filter(function (t) {
         return current === "all" || t.dataset.subject === current;
       });
       tiles.forEach(function (t) { t.classList.remove("is-shift"); });
-      /* The track is exactly `cols` cells wide, so an indented row fits one
-         cell fewer and flex-wrap breaks it by itself: 3 / 2 / 3. That is the
-         symmetric comb — the old 3.5-cell track produced 3 / 3 / 3 with one
-         edge always ragged. Only the first cell of an indented row carries
-         the indent, so the rows have to be walked, not divided. */
-      for (var i = 0, row = 0; i < shown.length; row++) {
-        if (row % 2) shown[i].classList.add("is-shift");
-        i += row % 2 ? cols - 1 : cols;
+      /* The track is `cols` cells plus a half, so an indented row still
+         holds a full `cols` and eight cells run 3 / 3 / 2. Only the first
+         cell of an indented row carries the indent. */
+      for (var i = 0; i < shown.length; i += cols) {
+        if ((i / cols) % 2) shown[i].classList.add("is-shift");
       }
       // one short row looks abandoned at the left edge of the track
       grid.classList.toggle("is-short", shown.length <= cols);

@@ -71,9 +71,47 @@ const subjectBlock: Record<string, string> = {
           <span class="hex-face">
             <span class="hex-in">
               <span class="hex-art">
-                <img class={`hex-obj${c.glyph === 'dna' ? ' is-spin' : ''}`}
+                {c.glyph === 'thermo' && (
+                  <img class="hex-rod" src={withBase('/assets/icons/lib/thermo-rod.png')}
+                       width="256" height="256" alt="" loading="lazy" decoding="async" />
+                )}
+                <img class={`hex-obj${c.glyph === 'dna' ? ' is-spin' : ''}${c.glyph === 'gear' ? ' is-turn' : ''}`}
                      src={withBase(`/assets/icons/lib/${c.glyph}.png`)}
                      width="256" height="256" alt="" loading="lazy" decoding="async" />
+                {c.glyph === 'cell' && (
+                  <svg class="hex-fx fx-cell" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                    <circle class="r1" cx="94.6" cy="114.8" r="34" />
+                    <circle class="r2" cx="94.6" cy="114.8" r="34" />
+                  </svg>
+                )}
+
+                {c.glyph === 'periodic' && (
+                  <svg class="hex-fx fx-grid" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                    <rect class="c1" x="33" y="60" width="47" height="47" rx="13" />
+                    <rect class="c2" x="89" y="114" width="47" height="47" rx="13" />
+                    <rect class="c3" x="146" y="170" width="47" height="47" rx="13" />
+                  </svg>
+                )}
+
+                {c.glyph === 'thermo' && (
+                  <svg class="hex-fx fx-heat" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                    <defs>
+                      <radialGradient id="fx-heat-g" cx=".5" cy=".55" r=".5">
+                        <stop offset="0" stop-color="#FF7A2F" stop-opacity=".95" />
+                        <stop offset=".65" stop-color="#FF5A1F" stop-opacity=".45" />
+                        <stop offset="1" stop-color="#FF5A1F" stop-opacity="0" />
+                      </radialGradient>
+                    </defs>
+                    <ellipse cx="129" cy="142" rx="74" ry="86" fill="url(#fx-heat-g)" />
+                  </svg>
+                )}
+
+                {c.glyph === 'crust' && (
+                  <svg class="hex-fx fx-seam" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                    <path d="M107 118.6 L145.3 76.8" />
+                  </svg>
+                )}
+
                 {c.glyph === 'heart' && (
                   <svg class="hex-spark" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
                     <g transform="translate(-40.39 -44.15) scale(3.5083)">
@@ -362,6 +400,111 @@ const subjectBlock: Record<string, string> = {
     100% { transform: translateY(var(--h, -70px)) scale(.5); opacity: 0; }
   }
 
+  /* ---- the remaining four overlays ----
+     Every coordinate below is a point of the 3D model pushed through the
+     same camera that rendered the icon, so a line lands on the object's
+     own feature instead of near it. `.hex-fx` is deliberately not
+     `.hex-spark`: the heart's dash defaults live on that class and would
+     leak into shapes that are not dashes. */
+  .hex-fx {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  /* Будова клітини — a ripple leaving the nucleus */
+  .fx-cell circle {
+    fill: none;
+    stroke: #FFF3C4;
+    stroke-width: 7;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+  }
+  .hex:hover .fx-cell .r1 { animation: fx-ripple calc(var(--glyph-t) * 1.3) ease-out; }
+  .hex:hover .fx-cell .r2 { animation: fx-ripple calc(var(--glyph-t) * 1.3) ease-out 260ms; }
+  @keyframes fx-ripple {
+    0%   { transform: scale(.34); opacity: 0; }
+    18%  { opacity: .95; }
+    100% { transform: scale(2.9); opacity: 0; }
+  }
+
+  /* Періодична система — the highlight hops down the table, one cell at a
+     time, on the same diagonal the plaque is turned along */
+  .fx-grid rect {
+    fill: rgba(255, 214, 92, .28);
+    stroke: #FFD75C;
+    stroke-width: 7;
+    opacity: 0;
+  }
+  .hex:hover .fx-grid .c1 { animation: fx-flash 340ms ease-out; }
+  .hex:hover .fx-grid .c2 { animation: fx-flash 340ms ease-out 190ms; }
+  .hex:hover .fx-grid .c3 { animation: fx-flash 340ms ease-out 380ms; }
+  @keyframes fx-flash {
+    0%, 100% { opacity: 0; }
+    40%      { opacity: 1; }
+  }
+
+  /* Термодинаміка — a heat engine, so the rod takes a stroke and the
+     barrel flushes warm at the bottom of it. The rod is its own render
+     sitting BEHIND the barrel, which is why the stroke really does
+     swallow it instead of sliding a flat shape over a picture. The travel
+     below is the cylinder axis projected through the render camera:
+     5.6 / 35.6 px of a 256 frame, written as percent of the box. */
+  .hex-rod {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 6px 9px rgba(0, 0, 0, .26));
+  }
+  .hex:hover .hex-rod { animation: fx-stroke var(--glyph-t) cubic-bezier(.36, 0, .28, 1); }
+  @keyframes fx-stroke {
+    0%   { transform: translate(0, 0); }
+    38%  { transform: translate(2.2%, 13.9%); }
+    100% { transform: translate(0, 0); }
+  }
+  .fx-heat ellipse { opacity: 0; mix-blend-mode: screen; }
+  .hex:hover .fx-heat ellipse { animation: fx-flush var(--glyph-t) ease-out; }
+  @keyframes fx-flush {
+    0%, 100% { opacity: 0; }
+    38%      { opacity: .85; }
+    62%      { opacity: .5; }
+  }
+
+  /* Тектонічні плити — the fault flares twice and the ground shudders */
+  .fx-seam path {
+    fill: none;
+    stroke: #FFA53A;
+    stroke-width: 15;
+    stroke-linecap: round;
+    opacity: 0;
+    filter: drop-shadow(0 0 7px rgba(255, 140, 40, .95));
+  }
+  .hex:hover .fx-seam path { animation: fx-flare var(--glyph-t) ease-out; }
+  @keyframes fx-flare {
+    0%, 100% { opacity: 0; }
+    22%      { opacity: .95; }
+    58%      { opacity: .35; }
+    76%      { opacity: .9; }
+  }
+  .hex:hover .fx-seam { animation: fx-shudder 480ms ease-in-out; }
+  @keyframes fx-shudder {
+    0%, 100% { transform: translate(0, 0); }
+    22%  { transform: translate(1.6px, -1px); }
+    46%  { transform: translate(-1.6px, 1px); }
+    72%  { transform: translate(1px, .6px); }
+  }
+
+  /* Двигун — it turns, which is the whole of what a gear does. In plane,
+     not in depth: a gear seen edge-on is a disc, and the DNA next door is
+     already using the rotateY read. */
+  .hex:hover .hex-obj.is-turn { animation: fx-turn calc(var(--glyph-t) * 4) linear infinite; }
+  @keyframes fx-turn { to { transform: rotate(360deg); } }
+
   /* The heart's own pulse, traced. The trace is a separate overlay because
      the object is a rendered PNG — the path below is the exact pulse from
      the drawing the render was made of, mapped into the 256 frame by the
@@ -434,7 +577,14 @@ const subjectBlock: Record<string, string> = {
     .hex, .hex-face, .hex-art { transition: none; }
     .hex:hover .hex-spark path,
     .hex:hover .hex-lava .gob,
-    .hex:hover .hex-obj.is-spin { animation: none; }
+    .hex:hover .hex-obj.is-spin,
+    .hex:hover .hex-obj.is-turn,
+    .hex:hover .hex-fx,
+    .hex:hover .hex-fx path,
+    .hex:hover .hex-fx rect,
+    .hex:hover .hex-fx circle,
+    .hex:hover .hex-fx ellipse,
+    .hex:hover .hex-rod { animation: none; }
   }
 
   /* ---- footer of the band ----

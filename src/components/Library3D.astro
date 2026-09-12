@@ -65,7 +65,7 @@ const subjectBlock: Record<string, string> = {
       </div>
     </div>
 
-    <div class="lib-comb reveal" id="lib-grid">
+    <div class="lib-comb" id="lib-grid">
       {cards.map((c) => (
         <article class={`hex ${subjectBlock[c.subject] || 'is-blue'}`} data-subject={c.subject}>
           <span class="hex-face">
@@ -293,6 +293,53 @@ const subjectBlock: Record<string, string> = {
                 filter 260ms var(--ease-out), opacity 200ms var(--ease-out);
   }
   .hex.is-shift { margin-left: calc((var(--hex-w) + var(--hex-gap)) / 2); }
+
+  /* ---- the cells fly in and assemble ----
+     Only `transform` moves. The comb's geometry is solved in JS (--hex-w,
+     is-shift); animating anything that affects layout would re-run that
+     maths mid-flight and tear the rows apart.
+
+     `backwards`, never `forwards`: this animation and the cursor field
+     both drive `transform` on .hex, and a forwards fill would freeze the
+     final keyframe in place and kill the field for good. With backwards
+     the element holds the first frame through its delay and then hands
+     `transform` back to the rule above.
+
+     Which side a cell comes from is set at run time (see initLibrary), not
+     here — the layout is 3/3/2 on a desktop and 2/1/2/1/2 on a phone, and
+     filtering reshuffles it again.
+
+     `is-staged` is put on by the script rather than hanging the hidden
+     state off the document's `.js` class: Astro scopes every compound
+     selector it is given, so `.js .lib-comb .hex` compiles to
+     `.js[data-astro-cid-…]`, and <html> carries no such attribute. Both
+     classes here sit on elements of this component, so both get scoped
+     together — and with no script at all nothing is ever hidden. */
+  .lib-comb.is-staged .hex { opacity: 0; }
+  .lib-comb.is-staged.is-armed .hex {
+    opacity: 1;
+    animation: hex-assemble 760ms cubic-bezier(.16, .84, .26, 1) var(--fly-d, 0ms) backwards;
+  }
+  /* that rule outranks `.hex.is-out`, which is what fades a cell the subject
+     filter is dropping — restate it at the same weight or filtering stops
+     fading and starts blinking */
+  .lib-comb.is-staged.is-armed .hex.is-out { opacity: 0; }
+  @keyframes hex-assemble {
+    0% {
+      opacity: 0;
+      transform: translate3d(var(--fly-x, 0), var(--fly-y, 0), 0)
+                 rotate(var(--fly-r, 0deg)) scale(.86);
+    }
+    38% { opacity: 1; }
+    100% {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lib-comb.is-staged .hex { opacity: 1; }
+    .lib-comb.is-staged.is-armed .hex { animation: none; }
+  }
 
   .hex-face {
     display: grid;

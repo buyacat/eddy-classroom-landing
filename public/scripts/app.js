@@ -246,8 +246,57 @@
       });
     }
 
+    /* ---- assembling the comb ----
+       Where a cell flies in from is a layout fact, not a design choice: the
+       comb is 3/3/2 on a desktop and 2/1/2/1/2 on a phone, so the sides are
+       read off the finished layout. Cells near the middle land first and the
+       flanks close in after, which reads as a pattern assembling rather than
+       as a list appearing. Offsets are written as custom properties; the
+       keyframes in Library3D do the moving. */
+    function layoutFly() {
+      var cx = grid.clientWidth / 2, cy = grid.clientHeight / 2;
+      var meta = [];
+      tiles.forEach(function (t) {
+        if (t.classList.contains("is-hidden")) return;
+        meta.push({
+          el: t,
+          dx: t.offsetLeft + t.offsetWidth / 2 - cx,
+          dy: t.offsetTop + t.offsetHeight / 2 - cy
+        });
+      });
+      if (!meta.length) return;
+      var far = 1;
+      meta.forEach(function (m) { far = Math.max(far, Math.abs(m.dx)); });
+      meta.sort(function (a, b) { return Math.abs(a.dx) - Math.abs(b.dx); });
+      meta.forEach(function (m, i) {
+        var k = Math.abs(m.dx) / far;               // 0 at the middle, 1 at the flank
+        var dir = m.dx < 0 ? -1 : 1;
+        m.el.style.setProperty("--fly-x", Math.round(dir * (120 + 150 * k)) + "px");
+        m.el.style.setProperty("--fly-y", Math.round(m.dy * 0.22) + "px");
+        m.el.style.setProperty("--fly-r", (dir * (6 + 8 * k)).toFixed(1) + "deg");
+        m.el.style.setProperty("--fly-d", i * 55 + "ms");
+      });
+    }
+
+    function armAssembly() {
+      // nothing is hidden unless we are certain we can show it again
+      if (reduce || !("IntersectionObserver" in window)) return;
+      grid.classList.add("is-staged");
+      var io = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (!entries[i].isIntersecting) continue;
+          layoutFly();
+          grid.classList.add("is-armed");
+          io.disconnect();
+          return;
+        }
+      }, { threshold: 0.2, rootMargin: "0px 0px -10% 0px" });
+      io.observe(grid);
+    }
+
     reposition();
     comb();
+    armAssembly();
     // Ukrainian subject labels reflow once Inter swaps in
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(reposition);
     var tid;

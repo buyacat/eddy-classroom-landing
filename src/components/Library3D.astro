@@ -316,14 +316,14 @@ const subjectBlock: Record<string, string> = {
      classes here sit on elements of this component, so both get scoped
      together — and with no script at all nothing is ever hidden. */
   .lib-comb.is-staged .hex { opacity: 0; }
-  .lib-comb.is-staged.is-armed .hex {
+  .lib-comb.is-staged .hex.is-in {
     opacity: 1;
-    animation: hex-assemble 760ms cubic-bezier(.16, .84, .26, 1) var(--fly-d, 0ms) backwards;
+    animation: hex-assemble 720ms cubic-bezier(.16, .84, .26, 1) var(--fly-d, 0ms) backwards;
   }
   /* that rule outranks `.hex.is-out`, which is what fades a cell the subject
      filter is dropping — restate it at the same weight or filtering stops
      fading and starts blinking */
-  .lib-comb.is-staged.is-armed .hex.is-out { opacity: 0; }
+  .lib-comb.is-staged .hex.is-in.is-out { opacity: 0; }
   @keyframes hex-assemble {
     0% {
       opacity: 0;
@@ -338,7 +338,7 @@ const subjectBlock: Record<string, string> = {
   }
   @media (prefers-reduced-motion: reduce) {
     .lib-comb.is-staged .hex { opacity: 1; }
-    .lib-comb.is-staged.is-armed .hex { animation: none; }
+    .lib-comb.is-staged .hex.is-in { animation: none; }
   }
 
   .hex-face {

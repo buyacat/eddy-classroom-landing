@@ -96,6 +96,7 @@
     var opts = [].slice.call(seg.querySelectorAll(".seg-opt"));
     var tiles = [].slice.call(grid.querySelectorAll(".hex"));
     var current = "all";
+    var combRows = null;
     if (!opts.length) return;
 
     /* The honeycomb nests in CSS, but which cell STARTS a row is a runtime
@@ -246,35 +247,46 @@
       });
     }
 
-    /* ---- assembling the comb ----
-       Where a cell flies in from is a layout fact, not a design choice: the
-       comb is 3/3/2 on a desktop and 2/1/2/1/2 on a phone, so the sides are
-       read off the finished layout. Cells near the middle land first and the
-       flanks close in after, which reads as a pattern assembling rather than
-       as a list appearing. Offsets are written as custom properties; the
-       keyframes in Library3D do the moving. */
-    function layoutFly() {
-      var cx = grid.clientWidth / 2, cy = grid.clientHeight / 2;
-      var meta = [];
+    /* ---- assembling the comb, a row at a time ----
+       A row arrives when the scroll reaches it, not when the band does: all
+       eight at once is one event the reader has already scrolled past by the
+       time it finishes. Within a row the middle cell lands first and the
+       flanks close in, and which side a cell comes from is read off the
+       finished layout — the comb is 3/3/2 on a desktop and 2/1/2/1/2 on a
+       phone, and the subject filter reshuffles it again.
+
+       Cells are grouped by offsetTop rather than by index for the same
+       reason: an indented row holds a different number of cells depending
+       on the breakpoint, so index arithmetic would split rows in half. */
+    function buildRows() {
+      var cx = grid.clientWidth / 2;
+      var byTop = {}, keys = [];
       tiles.forEach(function (t) {
         if (t.classList.contains("is-hidden")) return;
-        meta.push({
-          el: t,
-          dx: t.offsetLeft + t.offsetWidth / 2 - cx,
-          dy: t.offsetTop + t.offsetHeight / 2 - cy
-        });
+        var key = Math.round(t.offsetTop / 8) * 8;
+        if (!byTop[key]) { byTop[key] = []; keys.push(key); }
+        byTop[key].push(t);
       });
-      if (!meta.length) return;
-      var far = 1;
-      meta.forEach(function (m) { far = Math.max(far, Math.abs(m.dx)); });
-      meta.sort(function (a, b) { return Math.abs(a.dx) - Math.abs(b.dx); });
-      meta.forEach(function (m, i) {
-        var k = Math.abs(m.dx) / far;               // 0 at the middle, 1 at the flank
-        var dir = m.dx < 0 ? -1 : 1;
-        m.el.style.setProperty("--fly-x", Math.round(dir * (120 + 150 * k)) + "px");
-        m.el.style.setProperty("--fly-y", Math.round(m.dy * 0.22) + "px");
-        m.el.style.setProperty("--fly-r", (dir * (6 + 8 * k)).toFixed(1) + "deg");
-        m.el.style.setProperty("--fly-d", i * 55 + "ms");
+      keys.sort(function (p, q) { return p - q; });
+      keys.forEach(function (key) {
+        var row = byTop[key];
+        var far = 1;
+        row.forEach(function (t) {
+          far = Math.max(far, Math.abs(t.offsetLeft + t.offsetWidth / 2 - cx));
+        });
+        row.slice().sort(function (p, q) {
+          return Math.abs(p.offsetLeft + p.offsetWidth / 2 - cx)
+               - Math.abs(q.offsetLeft + q.offsetWidth / 2 - cx);
+        }).forEach(function (t, i) {
+          var dx = t.offsetLeft + t.offsetWidth / 2 - cx;
+          var k = Math.abs(dx) / far;
+          var dir = dx < 0 ? -1 : 1;
+          t.style.setProperty("--fly-x", Math.round(dir * (130 + 140 * k)) + "px");
+          t.style.setProperty("--fly-y", Math.round(10 + 10 * k) + "px");
+          t.style.setProperty("--fly-r", (dir * (6 + 8 * k)).toFixed(1) + "deg");
+          t.style.setProperty("--fly-d", i * 95 + "ms");
+          t.flyRow = row;
+        });
       });
     }
 
@@ -282,16 +294,20 @@
       // nothing is hidden unless we are certain we can show it again
       if (reduce || !("IntersectionObserver" in window)) return;
       grid.classList.add("is-staged");
+      buildRows();
       var io = new IntersectionObserver(function (entries) {
-        for (var i = 0; i < entries.length; i++) {
-          if (!entries[i].isIntersecting) continue;
-          layoutFly();
-          grid.classList.add("is-armed");
-          io.disconnect();
-          return;
-        }
-      }, { threshold: 0.2, rootMargin: "0px 0px -10% 0px" });
-      io.observe(grid);
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          // arm the whole row together, or a wide row half-fills itself
+          var row = e.target.flyRow || [e.target];
+          row.forEach(function (t) {
+            t.classList.add("is-in");
+            io.unobserve(t);
+          });
+        });
+      }, { threshold: 0.34, rootMargin: "0px 0px -6% 0px" });
+      tiles.forEach(function (t) { io.observe(t); });
+      combRows = buildRows;   // let the resize handler re-derive the rows
     }
 
     reposition();
@@ -302,7 +318,13 @@
     var tid;
     window.addEventListener("resize", function () {
       clearTimeout(tid);
-      tid = setTimeout(function () { reposition(); comb(); }, 120);
+      tid = setTimeout(function () {
+        reposition();
+        comb();
+        // the breakpoint may have changed 3/3/2 into 2/1/2/1/2; cells that
+        // have not arrived yet need their side and delay re-derived
+        if (combRows) combRows();
+      }, 120);
     });
   }
 

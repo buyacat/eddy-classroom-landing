@@ -392,8 +392,9 @@ const subjectBlock: Record<string, string> = {
   .hex-art {
     position: relative;
     display: block;
-    width: 46%;
-    max-width: 78px;
+    /* 20% down from 46% / 78px */
+    width: 37%;
+    max-width: 62px;
     transition: transform 420ms cubic-bezier(.34, 1.4, .5, 1);
   }
   .hex:hover .hex-art { transform: translateY(-3px) rotate(-5deg) scale(1.07); }

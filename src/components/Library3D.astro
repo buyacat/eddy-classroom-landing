@@ -58,14 +58,15 @@ const subjectBlock: Record<string, string> = {
         <div class="seg" id="lib-tabs" role="tablist">
           <span class="seg-pill" aria-hidden="true"></span>
           {subjects.map((s, i) => (
-            <button class={`seg-opt${i === 0 ? ' is-active' : ''}`} data-subject={s.id} type="button" role="tab"
+            <button class={`seg-opt${i === 0 ? ' is-active' : ''}`} id={`lib-tab-${s.id}`} data-subject={s.id}
+                    type="button" role="tab" aria-controls="lib-grid"
                     aria-selected={i === 0 ? 'true' : 'false'}>{s.label}</button>
           ))}
         </div>
       </div>
     </div>
 
-    <div class="lib-comb" id="lib-grid">
+    <div class="lib-comb" id="lib-grid" role="tabpanel" aria-labelledby={`lib-tab-${subjects[0]?.id ?? 'all'}`}>
       {cards.map((c) => (
         <article class={`hex ${subjectBlock[c.subject] || 'is-blue'}`} data-subject={c.subject}>
           <span class="hex-face">

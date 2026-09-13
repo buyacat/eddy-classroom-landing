@@ -275,7 +275,7 @@ export function startLesson(
     root.classList.add('is-quiz', 'is-polling');
     globe.open(true);
     globe.compact(true);
-    after(reduced ? 0 : 520, poll);
+    after(520, poll);
   }
 
   function reset(keepOpen = false) {

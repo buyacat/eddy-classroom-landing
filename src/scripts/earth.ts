@@ -737,10 +737,10 @@ function buildRecipes(
 }
 
 interface Layer {
-  name: string;
   holder: Group;
   spin: Group;
   anchor: Object3D;
+  /** the caption, positioned by the frame loop */
   el: HTMLElement;
 }
 
@@ -749,7 +749,7 @@ function buildLayer(
   index: number,
   recipe: Recipe,
   maps: EarthMaps
-): Omit<Layer, 'name' | 'el'> {
+): Omit<Layer, 'el'> {
   const holder = new Group();
   const spin = new Group();
   spin.rotation.x = BASE_PITCH;
@@ -875,16 +875,15 @@ export async function mountGlobe(
     const built = buildLayer(def, i, recipes[def.kind], maps);
     stack.add(built.holder);
 
-    const name = specs[i]?.name ?? '';
     const el = document.createElement('span');
     el.className = 'globe-tag';
     el.innerHTML =
       '<i class="globe-tag-dot">' + (i + 1) + '</i><span><b></b><em></em></span>';
-    (el.querySelector('b') as HTMLElement).textContent = name;
+    (el.querySelector('b') as HTMLElement).textContent = specs[i]?.name ?? '';
     (el.querySelector('em') as HTMLElement).textContent = specs[i]?.meta ?? '';
     labelHost.appendChild(el);
 
-    return { ...built, name, el };
+    return { ...built, el };
   });
 
   /*

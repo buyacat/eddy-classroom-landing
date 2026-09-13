@@ -35,10 +35,13 @@ const lesson = {
 };
 ---
 
+<!-- The picture is the canvas, so that is what carries the image role and
+     the alt. It used to sit on the whole panel, which made everything inside
+     it presentational for a screen reader — including the "ask the class"
+     button and the live result line the lesson writes into. -->
 <div class="globe" data-globe data-layers={JSON.stringify(layers)}
-     data-lesson={JSON.stringify(lesson)}
-     role="img" aria-label={t(locale, 'classroom_hero_globe_alt')}>
-  <canvas class="globe-canvas"></canvas>
+     data-lesson={JSON.stringify(lesson)}>
+  <canvas class="globe-canvas" role="img" aria-label={t(locale, 'classroom_hero_globe_alt')}></canvas>
   <div class="globe-tags" aria-hidden="true"></div>
   <span class="globe-hint">{t(locale, 'classroom_hero_globe_hint')}</span>
 

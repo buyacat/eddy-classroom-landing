@@ -287,6 +287,11 @@ const subjectBlock: Record<string, string> = {
     flex: 0 0 var(--hex-w);
     height: var(--hex-h);
     margin-top: calc(var(--hex-h) * -.25 + var(--hex-gap) * .5);
+    /* one clock for every glyph animation in the band (see the hover
+       overlays below): one hover, one beat, no cell livelier than its
+       neighbour */
+    --glyph-t: 880ms;
+    --glyph-e: cubic-bezier(.42, 0, .22, 1);
     cursor: pointer;
     transform: translate3d(var(--px, 0px), var(--py, 0px), 0);
     transition: transform 500ms cubic-bezier(.22, .9, .28, 1),
@@ -373,12 +378,6 @@ const subjectBlock: Record<string, string> = {
 
   /* the label stack sits in the cell's widest band, dead centre — the
      corners of a hexagon are unusable, so nothing is anchored to them */
-  .hex {
-    /* one clock for every glyph in the band */
-    --glyph-t: 880ms;
-    --glyph-e: cubic-bezier(.42, 0, .22, 1);
-  }
-
   .hex-in {
     width: 100%;
     padding: 0 15%;
@@ -414,9 +413,16 @@ const subjectBlock: Record<string, string> = {
   .hex:hover .hex-obj.is-spin { animation: dna-spin var(--glyph-t) var(--glyph-e); }
   @keyframes dna-spin { to { transform: rotateY(360deg); } }
 
-  /* Every glyph animation runs on the same clock as the heart's pulse: one
-     hover, one beat, no cell livelier than its neighbour. */
-  .hex-lava {
+  /* ---- the hover overlays ----
+     Every one is an SVG laid over the render, the size of the art, and
+     invisible to the pointer so it cannot steal the cell's own hover. One
+     box for all of them, but three class names on purpose: `.hex-spark`
+     carries the heart's dash defaults on its paths, and those would leak
+     into shapes that are not dashes if the lava or the other four shared
+     its name. Every coordinate in them is a point of the 3D model pushed
+     through the same camera that rendered the icon, so a line lands on the
+     object's own feature instead of near it. */
+  .hex-lava, .hex-fx, .hex-spark {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -424,6 +430,7 @@ const subjectBlock: Record<string, string> = {
     overflow: visible;
     pointer-events: none;
   }
+
   .hex-lava .gob {
     fill: #FF8E22;
     opacity: 0;
@@ -446,21 +453,6 @@ const subjectBlock: Record<string, string> = {
     16%  { transform: translateY(-8px) scale(1); opacity: 1; }
     64%  { opacity: .9; }
     100% { transform: translateY(var(--h, -70px)) scale(.5); opacity: 0; }
-  }
-
-  /* ---- the remaining four overlays ----
-     Every coordinate below is a point of the 3D model pushed through the
-     same camera that rendered the icon, so a line lands on the object's
-     own feature instead of near it. `.hex-fx` is deliberately not
-     `.hex-spark`: the heart's dash defaults live on that class and would
-     leak into shapes that are not dashes. */
-  .hex-fx {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    pointer-events: none;
   }
 
   /* Будова клітини — a ripple leaving the nucleus */
@@ -559,14 +551,6 @@ const subjectBlock: Record<string, string> = {
      crop-and-fit that produced heart.png (translate/scale, do not touch
      one without the other). A short gold dash runs the length of it once
      per hover, then leaves. */
-  .hex-spark {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    pointer-events: none;
-  }
   .hex-spark path {
     fill: none;
     stroke-linecap: round;

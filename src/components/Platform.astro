@@ -95,7 +95,7 @@ const roster = [
       {items.map((it, i) => {
         const shot = shots[it.icon];
         const cls = [
-          'plat-card', 'reveal',
+          'card', 'plat-card', 'reveal',
           blocks[it.icon] || '',
           it.wide ? 'is-wide' : '',
           half.has(it.icon) ? 'is-half' : '',
@@ -186,30 +186,25 @@ const roster = [
     margin-top: clamp(52px, 5vw, 76px);
   }
 
+  /* A `.card` (style.css) with the padding moved off the card and onto
+     `.plat-body`, because the browser window below has to run edge to edge
+     of the card. Surface, radius, hover lift, heading/body type and the
+     colour-block variants all come from the shared rule. */
   .plat-card {
     grid-column: span 2;
-    position: relative;
     display: flex;
     flex-direction: column;
-    background: var(--surface);
-    border-radius: var(--r-xl);
+    padding: 0;
     --obj: 96px;
-    transition: transform var(--t-hover) var(--ease-out), box-shadow var(--t-hover) var(--ease-out);
   }
-  .plat-card:hover { transform: translateY(-4px); box-shadow: var(--e3); }
 
   .plat-body { padding: var(--pad-card) var(--pad-card) clamp(18px, 1.7vw, 26px); }
-  .plat-card h3 { margin-bottom: 10px; }
   /* a one- and a two-line title in the same row must still align their
      body copy — Ukrainian card titles wrap unpredictably (same as WhyUs) */
   .plat-card:not(.is-wide) h3 { min-height: calc(2 * 1.22em); }
-  .plat-card p { font-size: .9375rem; line-height: 1.55; color: var(--ink-3); margin: 0; }
 
-  .plat-card.is-yellow { background: var(--yellow); }
-  .plat-card.is-yellow p { color: rgba(0, 0, 0, .68); }
-  .plat-card.is-blue { background: var(--blue); box-shadow: var(--e-blue); }
-  .plat-card.is-blue h3 { color: #fff; }
-  .plat-card.is-blue p { color: var(--ink-inv-2); }
+  /* the one blue card carries the page's only coloured shadow at rest */
+  .plat-card.is-blue { box-shadow: var(--e-blue); }
   .plat-card.is-blue:hover { box-shadow: 0 18px 40px -14px rgba(64, 80, 255, .6); }
 
   /* ---- wide cards: the two that carry a full product screen ----
@@ -358,16 +353,9 @@ const roster = [
   .plat-roster .t1 { font-family: var(--font-display); font-weight: 800; font-size: 13.5px; color: var(--ink); }
   .plat-roster .t2 { font-size: 11.5px; font-weight: 600; color: var(--ink-3); white-space: nowrap; }
   .plat-roster .t2 b { color: var(--ink); font-variant-numeric: tabular-nums; }
-  /* the LIVE pill is defined under `.shot-bar` in style.css, so it is
-     restated here for the roster panel */
-  .plat-roster .shot-live {
-    margin-left: auto; flex: none;
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--green); color: var(--ink);
-    border-radius: var(--r-pill); padding: 4px 11px;
-    font-size: .6875rem; font-weight: 800; letter-spacing: .05em;
-  }
-  .plat-roster .shot-live i { width: 6px; height: 6px; border-radius: 50%; background: var(--ink); position: relative; }
+  /* the LIVE pill itself is the shared `.shot-live` from style.css; the
+     roster only pins it to the right and gives it a pixel more height */
+  .plat-roster .shot-live { margin-left: auto; flex: none; padding-block: 4px; }
 
   @media (max-width: 1000px) {
     .plat-grid { grid-template-columns: repeat(4, 1fr); }

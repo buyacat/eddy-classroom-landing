@@ -202,6 +202,15 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
   @media (max-width: 860px) {
     .footer-top { grid-template-columns: 1fr 1fr 1fr; }
   }
+  @media (max-width: 1024px) {
+    /* The links are phone numbers and mail addresses — things a thumb
+       actually taps — set 21px tall with 10px between them. The padding
+       grows the hit area to ~41px and the negative margin gives the same
+       space straight back, so the column does not get any taller. 1024
+       and not 760 because a tablet held sideways is still a thumb. */
+    .fcol a, .fl a { padding-block: 10px; margin-block: -10px; }
+    .soc a { width: 42px; height: 42px; }
+  }
   @media (max-width: 520px) {
     .footer-top { grid-template-columns: 1fr; }
     .footer-brand { grid-column: span 1; }

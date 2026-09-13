@@ -383,6 +383,10 @@ const roster = [
        image itself, not on the custom property */
     .plat-card.is-analytics .win-view { height: 176px; }
     .plat-card.is-analytics .win-view img { width: 112%; }
+    /* the half card is 346px here and the roster's avatars and LIVE pill
+       leave the text 95px — "4 дистанційно · 22 на зв'язку" on one line
+       was cut off after the 22 */
+    .plat-roster .t2 { white-space: normal; }
   }
   @media (max-width: 760px) {
     .plat-grid { grid-template-columns: 1fr; }

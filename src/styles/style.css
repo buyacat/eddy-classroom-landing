@@ -570,8 +570,29 @@ body {
 .form-ok .ic { width: 96px; height: 96px; margin: 0 auto 18px; }
 .form-ok .sub { color: var(--ink-3); font-size: .9375rem; margin-top: 8px; }
 
+/* iOS Safari zooms the whole page in when a focused field is set under
+   16px, and does not zoom back out on blur. 15px is the desktop size for a
+   reason (the labels are 11px and the ratio matters), so only the touch
+   widths go up. */
+@media (max-width: 760px) {
+  .field input,
+  .field select,
+  .field textarea { font-size: 16px; }
+}
+
 @media (max-width: 560px) {
   .field.row { grid-template-columns: 1fr; }
+  /* "Назва навчального закладу / Організації" is 218px at 11px; in a
+     232px field at 360px it wrapped, and a floating label two lines tall
+     hangs down over the value. Cut it with an ellipsis instead — the
+     placeholder underneath still says what goes in the box. */
+  .field > label,
+  .field.row > div > label {
+    max-width: calc(100% - 28px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 /* ==========================================================================

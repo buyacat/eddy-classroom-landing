@@ -149,6 +149,11 @@
       if (panel && btn.id) panel.setAttribute("aria-labelledby", btn.id);
       if (focus) btn.focus();
       movePill(btn, true);
+      // on a phone the capsule scrolls; a tab tapped at its cut edge
+      // should end up in view, not stay half-hidden under the pill
+      if (seg.scrollWidth > seg.clientWidth && btn.scrollIntoView) {
+        btn.scrollIntoView({ block: "nearest", inline: "center", behavior: reduce ? "auto" : "smooth" });
+      }
       onPick(btn.dataset.subject);
     }
 
@@ -253,6 +258,15 @@
 
     function buildRows() {
       var cx = grid.clientWidth / 2;
+      /* How far a cell may start from its seat: the desktop distance, or
+         the room between the cell and the viewport edge plus half a cell,
+         whichever is less. On a 1440 canvas the comb has 270px of margin
+         and the cap never bites; on a phone the outer cells have 18px,
+         and a cell launched from 270px away would spend most of its flight
+         off-screen and simply appear at the edge mid-move. Half a cell
+         outside is still "from outside"; it just starts in view. */
+      var gridLeft = grid.getBoundingClientRect().left;
+      var vw = document.documentElement.clientWidth;
       var byTop = {}, keys = [];
       tiles.forEach(function (t) {
         if (t.classList.contains("is-hidden")) return;
@@ -274,7 +288,11 @@
           var dx = t.offsetLeft + t.offsetWidth / 2 - cx;
           var k = Math.abs(dx) / far;
           var dir = dx < 0 ? -1 : 1;
-          t.style.setProperty("--fly-x", Math.round(dir * (130 + 140 * k)) + "px");
+          var room = dir < 0
+            ? gridLeft + t.offsetLeft
+            : vw - (gridLeft + t.offsetLeft + t.offsetWidth);
+          var fly = Math.min(130 + 140 * k, room + t.offsetWidth / 2);
+          t.style.setProperty("--fly-x", Math.round(dir * fly) + "px");
           t.style.setProperty("--fly-y", Math.round(10 + 10 * k) + "px");
           t.style.setProperty("--fly-r", (dir * (6 + 8 * k)).toFixed(1) + "deg");
           t.style.setProperty("--fly-d", i * 95 + "ms");

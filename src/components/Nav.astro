@@ -266,6 +266,14 @@ const alt = altPath(locale);
     pointer-events: none;
     transition: opacity var(--t-hover) var(--ease-out), transform var(--t-hover) var(--ease-out);
   }
+  /* A phone on its side is ~375px tall: six links at 50px each ran past
+     the bottom of it, and a menu that has no scroller of its own simply
+     loses the last ones. dvh, not vh — on mobile Safari 100vh is the height
+     WITHOUT the address bar, which is exactly the strip that would be cut. */
+  .mobile-menu {
+    max-height: calc(100dvh - var(--nav-h) - 18px);
+    overflow-y: auto;
+  }
   .mobile-menu.open { opacity: 1; transform: none; pointer-events: auto; }
   .mobile-menu-inner {
     padding: 14px 18px 22px;
@@ -290,17 +298,39 @@ const alt = altPath(locale);
   }
 
   @media (max-width: 1180px) {
-    .gnav-link { padding-inline: 10px; font-size: .875rem; }
+    /* a tablet on its side still shows the full menu, and 30px links are
+       a mouse target, not a finger's — the bar has 68px, use it */
+    .gnav-link { padding: 8px 10px; font-size: .875rem; }
+    .gnav-lang { height: 40px; }
   }
   @media (max-width: 1000px) {
     .gnav-inner { grid-template-columns: 1fr auto; }
     .gnav-links { display: none; }
     .gnav-burger { display: grid; }
+    /* the two controls left in the bar are now tapped, not clicked —
+       36px was under the 40px a thumb needs */
+    .gnav-lang, .gnav-burger { height: 40px; }
   }
   @media (max-width: 620px) {
     .gnav-brand { gap: 10px; }
     .gnav-eddy { height: 21px; }
     .gnav-mark { height: 19px; }
     .gnav-vline { height: 19px; }
+  }
+  /* The lockup has to fit next to the two pills: at 360px that leaves
+     216px for it, and the 21px/19px pair needs 248. Before this step the
+     global `img { max-width: 100% }` did the fitting — by squeezing the
+     group mark to 104px wide at a fixed 21px tall, i.e. squashing it. */
+  @media (max-width: 430px) {
+    .gnav-inner { gap: 12px; }
+    .gnav-brand { gap: 8px; }
+    .gnav-eddy { height: 18px; }
+    .gnav-mark { height: 16px; }
+    .gnav-vline { height: 16px; }
+  }
+  /* below 340px even that pair does not fit: the group mark is the
+     constant, the product mark is what goes */
+  @media (max-width: 340px) {
+    .gnav-vline, .gnav-product { display: none; }
   }
 </style>

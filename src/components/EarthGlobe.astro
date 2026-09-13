@@ -360,6 +360,10 @@ const lesson = {
     .lesson-result { font-size: 12px; }
     .lesson-ask { padding: 9px 16px; font-size: 12.5px; }
     .globe-note { font-size: 9.5px; }
+    /* the roster badge sits over the panel's top-left corner on a phone
+       (Hero.astro, `top: 4%`), and at 5% the hint ran into it — drop the
+       hint below the badge; the sphere itself starts lower still */
+    .globe-hint { top: 13%; }
   }
 
   @media (prefers-reduced-motion: reduce) {

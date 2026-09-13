@@ -627,13 +627,40 @@ const subjectBlock: Record<string, string> = {
      behind it — the CTA the page actually wants is the lead form. */
   .lib-note { text-align: center; margin-top: clamp(26px, 3vw, 40px); opacity: .8; }
 
+  @media (max-width: 1024px) {
+    /* The cells fly in from up to a cell and a half outside the comb. The
+       band cannot clip (its light has to reach the neighbours, see
+       style.css), but the comb can, and on a touch screen nothing is lost
+       to it: the hover shadow that would be cut at the sides never fires.
+       Without this a cell arriving from the right widened the document for
+       the length of its flight — mobile Safari lets a finger pan into that. */
+    .lib-comb { overflow-x: clip; }
+  }
   @media (max-width: 900px) {
     .lib-head { grid-template-columns: 1fr; align-items: start; }
     .lib-head-r { justify-content: flex-start; }
     .lib-comb { --hex-w: clamp(112px, 18vw, 200px); }
+    /* the tabs scroll sideways here; a tab that is cut at the edge is the
+       cue that they do, and the padding lets the snapped one sit clear of
+       the capsule's own rounding */
+    .seg { scroll-padding-inline: 6px; }
   }
   /* two cells per row below this — three would put the labels under 12px */
   @media (max-width: 700px) {
     .lib-comb { --hex-cols: 2; --hex-gap: 12px; --hex-w: min(34vw, 200px); }
+    /* A 123px cell at 360px: the label stack stayed desktop-sized while
+       the object shrank with the cell, so the object came out at 32px —
+       a smudge under three lines of type. Narrower side padding gives the
+       lines room (the cell's waist is its full width), the gap tightens,
+       and the object takes 48% of what is left: 47px at 360, 52px at 390. */
+    .hex-in { padding: 0 10%; gap: 5px; }
+    .hex-art { width: 48%; }
+    .hex .sub { font-size: 9.5px; letter-spacing: .06em; }
+    /* "Восьмициліндровий" is 127px of bold 13px in a 98px line: it ran
+       out through the mask on both sides. The word carries a soft hyphen
+       in classroom.json (`­`, after «Восьми»), so it breaks there and
+       only there, and only when it has to — from 768px up the line is wide
+       enough and the hyphen never shows. `hyphens: auto` was rejected: it
+       would also split words that fit on the next line perfectly well. */
   }
 </style>

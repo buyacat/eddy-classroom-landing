@@ -95,7 +95,8 @@ const stats = tArray<{ text: string; offline?: boolean }>(locale, 'classroom_sta
           </form>
 
           <div class="form-ok">
-            <img class="ic" src={withBase("/assets/icons/check.png")} width="256" height="256" alt="" />
+            <img class="ic" src={withBase("/assets/icons/check.png")} width="256" height="256" alt=""
+                 loading="lazy" decoding="async" />
             <h3>{t(locale, 'classroom_form_thanks')}</h3>
             <div class="sub">{t(locale, 'classroom_form_thanks_sub')}</div>
           </div>

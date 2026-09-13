@@ -82,11 +82,14 @@ const tools = [
         </span>
       </div>
 
+      {/* No loading="lazy" on these two: they are in the first viewport at
+          every width, and a lazy image above the fold is fetched only after
+          layout — it used to arrive after its own 500ms entrance cue. */}
       {tools.map((tool, i) => (
         <div class={`badge badge-tool ${tool.cls} enter`} style={`--d:${500 + i * 80}ms`} title={tool.title}>
           {tool.key === 'galaxy'
             ? <Galaxy />
-            : <img class="obj is-inline" src={withBase(`/assets/icons/${tool.key}.png`)} width="256" height="256" alt="" loading="lazy" />}
+            : <img class="obj is-inline" src={withBase(`/assets/icons/${tool.key}.png`)} width="256" height="256" alt="" decoding="async" />}
         </div>
       ))}
     </div>

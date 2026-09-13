@@ -1,6 +1,6 @@
 ---
 import '../styles/style.css';
-import { t, altPath } from '../utils/i18n';
+import { t } from '../utils/i18n';
 import { withBase } from '../utils/url';
 import type { Locale } from '../utils/i18n';
 
@@ -106,9 +106,6 @@ const schema = JSON.stringify({
 
   <script type="application/ld+json" set:html={schema} />
   <script is:inline>document.documentElement.classList.add('js');</script>
-  <script define:vars={{ altHref: altPath(locale) }}>
-    window.EDDY_ALT_PATH = altHref;
-  </script>
 </head>
 <body>
   <!-- Google Tag Manager (noscript) — must be the first node in <body> or

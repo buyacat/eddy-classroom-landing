@@ -349,10 +349,6 @@ body {
 .btn-ghost { background: transparent; color: var(--ink); border-color: var(--ink); }
 .btn-ghost:hover { background: var(--ink); color: #fff; transform: translateY(-2px); }
 
-.btn-white { background: #fff; color: var(--ink); }
-.btn-white:hover { transform: translateY(-2px); box-shadow: var(--e3); }
-
-.btn-sm { padding: 10px 18px; font-size: .8125rem; border-width: 1.5px; }
 .btn:active { transform: scale(.98); }
 
 :focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--r-sm); }
@@ -376,8 +372,6 @@ body {
 .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink); flex: none; position: relative; }
 .chip.is-green { background: var(--green); }
 .chip.is-white { background: #fff; }
-.chip.is-dark { background: var(--ink); color: #fff; }
-.chip.is-dark .dot { background: var(--green); }
 
 .pulse::after {
   content: "";
@@ -432,9 +426,6 @@ body {
 .shot-bar .shot-live.is-down i { background: var(--ink-inv); animation: none; }
 .shot img { width: 100%; height: auto; }
 .shot.is-hero { border-radius: var(--r-2xl); box-shadow: var(--e4); }
-.shot.is-sm { border-radius: var(--r-lg); box-shadow: var(--e2); }
-.shot.is-sm .shot-bar { height: 30px; gap: 5px; padding-inline: 12px; }
-.shot.is-sm .shot-bar i { width: 7px; height: 7px; }
 
 /* ==========================================================================
    cards + the 3D object system

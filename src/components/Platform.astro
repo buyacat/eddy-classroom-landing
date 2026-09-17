@@ -2,6 +2,8 @@
 import { t, tArray } from '../utils/i18n';
 import type { Locale } from '../utils/i18n';
 import { withBase } from '../utils/url';
+import WheelIcon from './WheelIcon.astro';
+import PlatformMock from './PlatformMock.astro';
 
 interface Props { locale: Locale }
 const { locale } = Astro.props;
@@ -13,47 +15,38 @@ const items = tArray<{ icon: string; title: string; text: string; shot_alt?: str
 
 /*
  * This is the band that has to prove the feature list is real, so five of
- * the seven cards carry an actual screen of the shipping app. Alt text
- * comes from the locale file (`shot_alt`), so /en/ does not get Ukrainian
- * alts.
+ * the seven cards carry a window onto the product. Those windows used to
+ * hold real captures of the shipping app; the captures had drifted out of
+ * date (an old build's UI), so each one is now a drawn stand-in — see
+ * PlatformMock.astro for why a sketch beats a stale screenshot.
  */
-/*
- * Every screenshot in this band sits in the same browser window: chrome on
- * top, the screen under it, the frame running off the bottom edge of its
- * card. Cropped screenshots bleeding straight into a rounded corner read
- * as a broken image; the same crop inside a window reads as a product you
- * are looking at. `zoom` is the displayed width of the screen inside that
- * window — 100% shows the whole page, more than that is a crop, and each
- * screen has its own density, so a single value would leave some
- * unreadably small. `pan` slides the viewport down the page when the part
- * worth showing is not the very top.
- */
-const shots: Record<string, { src: string; w: number; h: number; zoom: string; url: string; pan?: string }> = {
-  web: { src: withBase('/assets/shots/shot-library.jpg'), w: 1400, h: 711, zoom: '100%', url: 'app.eddy.school/library' },
-  /* The one screen that shows the product doing its whole job at once: the
+const shots: Record<string, { url: string }> = {
+  web: { url: 'classroom.eddygroup.eu/library' },
+  /* The one window that shows the product doing its whole job at once: the
      class answering on the right, the teacher's live table on the left. */
-  session: { src: withBase('/assets/shots/shot-session.jpg'), w: 1430, h: 824, zoom: '100%', url: 'app.eddy.school/session' },
-  student: { src: withBase('/assets/shots/shot-quiz.png'), w: 1100, h: 646, zoom: '156%', url: 'app.eddy.school/quiz' },
-  panel: { src: withBase('/assets/shots/shot-pins.jpg'), w: 820, h: 615, zoom: '118%', url: 'app.eddy.school/board', pan: '-46px' },
-  analytics: { src: withBase('/assets/shots/shot-results.jpg'), w: 1400, h: 390, zoom: '168%', url: 'app.eddy.school/results' }
+  session: { url: 'classroom.eddygroup.eu/session' },
+  student: { url: 'classroom.eddygroup.eu/quiz' },
+  panel: { url: 'classroom.eddygroup.eu/board' },
+  analytics: { url: 'classroom.eddygroup.eu/results' }
 };
 
-/* Two sizes of object only: 96px on cards that carry a screenshot, 128px on
-   the two half-width cards that carry a live mini-UI instead. Every object
-   in this band is a colour object: the grey ones (contract, pen, search)
-   sank into the white cards and read as switched-off. `document` repeats a
-   WhyUs object one band up, which is the lesser evil — the blue folder is
-   what a teacher's workspace of courses looks like. `location` is the pin
-   the whiteboard card's own screenshot is covered in. */
-const objects: Record<string, string> = {
-  web: 'document',
-  session: 'apple',   // the band already has a medal on analytics; two awards read as one idea
-  student: 'key',
-  panel: 'location',
-  analytics: 'medal',
-  games: 'gift',
-  virtual: 'chat'
-};
+/*
+ * No hanging 3D object on these cards, and that absence is the design.
+ *
+ * The band used to carry seven of them at 96–128px — folder, apple, key,
+ * pin, medal, gift, speech bubbles — on top of five browser windows, two
+ * colour blocks, three tinted tool tiles and a roster panel. The client read
+ * the result as crowded ("нагромадженість"), and the objects were the part
+ * doing the crowding: each one is a saturated focal point competing with the
+ * screenshot directly under it, and several of them (an apple for a group
+ * test, a key for student access) were decorating rather than explaining.
+ *
+ * So the page now splits the two jobs between bands. WhyUs is the object
+ * band: six claims, six objects, nothing else to look at. Platform is the
+ * proof band: the product's own screens carry it, and the only icons left
+ * are the three inside the games card, where they are the content and wear
+ * their own labels.
+ */
 
 /* One colour block per row, on a diagonal: yellow top-left of the second
    row, blue bottom-right of the third. Blue is the product's own colour and
@@ -64,16 +57,24 @@ const blocks: Record<string, string> = {
   virtual: 'is-blue'
 };
 
-/* `games` and `virtual` have no shipping screen worth cropping. Instead of a
-   colour block and an oversized object they get a state of the product: the
-   three in-lesson tools the hero already floats next to the globe, and a
-   roster with a LIVE chip — the same grammar as the hero's roster badge. */
+/* `games` and `virtual` have no shipping screen worth cropping, so instead
+   of a crop they show a state of the product: the three in-lesson tools, and
+   a roster with a LIVE chip — the same grammar as the hero's roster badge.
+   That is why they are the two cards that still carry an image of their own
+   after the band's decorative objects were dropped. */
 const half = new Set(['games', 'virtual']);
 
+/* The three in-lesson tools. Two of them used to be named by their reward
+   instead of by themselves: a gold coin for the fortune wheel said "prize"
+   when the point is the spin that picks a pupil, and a music note for the
+   noise meter said "music" when the point is the noise. The wheel is drawn
+   for this site (src/assets/icon-src/wheel.svg) because the pack has none;
+   the megaphone is the pack's own object, and it is the one the client
+   pointed at. The alarm clock was right the first time. */
 const tools = [
-  { key: 'coin', title: t(locale, 'classroom_hero_wheel_title'), tint: 'is-yellow' },
+  { key: 'wheel', title: t(locale, 'classroom_hero_wheel_title'), tint: 'is-yellow' },
   { key: 'clock', title: t(locale, 'classroom_hero_timer_title'), tint: 'is-blue' },
-  { key: 'music', title: t(locale, 'classroom_hero_noise_title'), tint: 'is-green' }
+  { key: 'megaphone', title: t(locale, 'classroom_hero_noise_title'), tint: 'is-green' }
 ];
 
 const roster = [
@@ -104,21 +105,18 @@ const roster = [
         return (
           <article class={cls} style={`--i:${i}`}>
             <div class="plat-body">
-              <img class="obj" src={withBase(`/assets/icons/${objects[it.icon] || 'book'}.png`)}
-                   width="256" height="256" alt="" loading="lazy" decoding="async" />
               <h3>{it.title}</h3>
               <p>{it.text}</p>
             </div>
 
             {shot && (
-              <div class="plat-win" style={`--zoom:${shot.zoom};--pan:${shot.pan ?? '0px'}`}>
+              <div class="plat-win">
                 <span class="win-bar" aria-hidden="true">
                   <i class="d1"></i><i class="d2"></i><i class="d3"></i>
                   <span class="win-url">{shot.url}</span>
                 </span>
                 <span class="win-view">
-                  <img src={shot.src} width={shot.w} height={shot.h} alt={it.shot_alt ?? it.title}
-                       loading="lazy" decoding="async" />
+                  <PlatformMock variant={it.icon as 'web' | 'session' | 'student' | 'panel' | 'analytics'} />
                 </span>
               </div>
             )}
@@ -126,9 +124,19 @@ const roster = [
             {it.icon === 'games' && (
               <ul class="plat-tools" aria-label={it.title}>
                 {tools.map((tool) => (
-                  <li class={`plat-tool ${tool.tint}`}>
-                    <img class="obj is-inline" src={withBase(`/assets/icons/${tool.key}.png`)}
-                         width="256" height="256" alt="" loading="lazy" decoding="async" />
+                  <li class={`plat-tool ${tool.tint} is-${tool.key}`}>
+                    <span class="tool-ic" aria-hidden="true">
+                      {tool.key === 'wheel'
+                        ? <WheelIcon />
+                        : <img class="obj is-inline" src={withBase(`/assets/icons/${tool.key}.png`)}
+                               width="256" height="256" alt="" loading="lazy" decoding="async" />}
+                      {tool.key === 'clock' && (
+                        <>
+                          <i class="buzz buzz-l"></i>
+                          <i class="buzz buzz-r"></i>
+                        </>
+                      )}
+                    </span>
                     <span>{tool.title}</span>
                   </li>
                 ))}
@@ -179,11 +187,19 @@ const roster = [
         rgba(var(--amb-green), 0) var(--amb-fade));
   }
 
+  /* A wider gutter than the rest of the page uses. This band carries seven
+     cards where WhyUs carries six, and five of them hold a second framed
+     object inside — at the shared --gap-card the frames were only ~16px
+     apart and the row read as one striped slab. The extra air is bought
+     back by the ~64px of object overhang every card just lost, so the band
+     is shorter than before, not longer. */
   .plat-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: var(--gap-card);
-    margin-top: clamp(52px, 5vw, 76px);
+    gap: clamp(18px, 1.8vw, 26px);
+    /* no objects hang off these cards any more, so the grid no longer needs
+       headroom for them — this is now just the gap under the band head */
+    margin-top: clamp(40px, 3.6vw, 56px);
   }
 
   /* A `.card` (style.css) with the padding moved off the card and onto
@@ -195,13 +211,21 @@ const roster = [
     display: flex;
     flex-direction: column;
     padding: 0;
-    --obj: 96px;
   }
 
-  .plat-body { padding: var(--pad-card) var(--pad-card) clamp(18px, 1.7vw, 26px); }
+  .plat-body { padding: clamp(26px, 2.4vw, 34px) var(--pad-card) clamp(20px, 1.9vw, 28px); }
   /* a one- and a two-line title in the same row must still align their
      body copy — Ukrainian card titles wrap unpredictably (same as WhyUs) */
   .plat-card:not(.is-wide) h3 { min-height: calc(2 * 1.22em); }
+
+  /* Three tiers of card, and the type says which is which. With the objects
+     gone the only thing left to rank the seven items is the text itself, so
+     the two product screens lead at 26px, the two product states sit at the
+     shared 22px, and the three supporting features drop to 19px with lighter
+     body copy. Seven items at one size is the other way a grid reads as a
+     pile. */
+  .plat-card:not(.is-wide):not(.is-half) h3 { font-size: clamp(1.0625rem, 1rem + .3vw, 1.1875rem); }
+  .plat-card:not(.is-wide):not(.is-half) p { font-size: .875rem; }
 
   /* the one blue card carries the page's only coloured shadow at rest */
   .plat-card.is-blue { box-shadow: var(--e-blue); }
@@ -212,7 +236,7 @@ const roster = [
      viewport heights before the small cards even appeared. Paired at half
      width they read as one "here is the product" row, and the band lands
      in three rows: 2 screens / 3 features / 2 states. */
-  .plat-card.is-wide { grid-column: span 3; --obj: 112px; }
+  .plat-card.is-wide { grid-column: span 3; }
   .plat-card.is-wide .plat-body { flex: none; }
   .plat-card.is-wide h3 { font-size: clamp(1.25rem, 1.05rem + .55vw, 1.625rem); }
   .plat-card.is-wide p { font-size: .9375rem; max-width: 46ch; }
@@ -270,25 +294,9 @@ const roster = [
     background: #fff;
   }
   .plat-card.is-wide .win-view { height: clamp(172px, 14vw, 204px); }
-  /* `cover` is what keeps the window a window: a screen shorter than the
-     viewport would otherwise leave a white band under it, which reads as a
-     rendering bug rather than as a page you have scrolled to the end of */
-  .win-view img {
-    display: block;
-    width: var(--zoom, 100%);
-    max-width: none;
-    height: 100%;
-    object-fit: cover;
-    object-position: left top;
-    transform: translateY(var(--pan, 0px));
-    transition: transform var(--t-card) var(--ease-out);
-  }
-  /* on hover the window scrolls a little further down the page — the same
-     "there is more of this" gesture the crops make when they scale */
-  .plat-card:hover .win-view img { transform: translateY(calc(var(--pan, 0px) - 14px)); }
 
   /* ---- half cards: the two that show a product state instead of a crop ---- */
-  .plat-card.is-half { grid-column: span 3; --obj: 128px; }
+  .plat-card.is-half { grid-column: span 3; }
   .plat-card.is-half .plat-body { flex: 1; }
   .plat-card.is-half p { max-width: 44ch; }
 
@@ -319,12 +327,140 @@ const roster = [
   .plat-tool.is-yellow { background: var(--yellow-soft); }
   .plat-tool.is-blue { background: var(--blue-soft); }
   .plat-tool.is-green { background: var(--green-soft); }
-  .plat-tool .obj { width: 52px; height: 52px; filter: drop-shadow(0 8px 10px rgba(0, 0, 0, .14)); }
-  /* the tools take turns lifting on hover — same spring as the card objects,
-     staggered so the row reads as three things, not one image */
-  .plat-card:hover .plat-tool:nth-child(1) .obj { transform: translateY(-4px) rotate(-6deg); }
-  .plat-card:hover .plat-tool:nth-child(2) .obj { transform: translateY(-4px) rotate(4deg); transition-delay: 50ms; }
-  .plat-card:hover .plat-tool:nth-child(3) .obj { transform: translateY(-4px) rotate(-4deg); transition-delay: 100ms; }
+
+  /* ---- the three tools wake up together, each answers on its own --------
+     Hovering the card used to tilt all three objects at once with no other
+     cue, which said "this is a picture on a card". It is not: it is three
+     tools a teacher presses in a lesson. So the card hover now only lifts
+     all three a touch — "these are pressable" — and the specific thing each
+     tool does (the wheel spins and coasts to a stop, the timer trembles,
+     the noise meter puts out sound) still only plays on the tile actually
+     under the pointer. No tilt anywhere: an object doing its job does not
+     lean. */
+  .plat-tool {
+    transition: transform var(--t-hover) var(--ease-out),
+                box-shadow var(--t-hover) var(--ease-out);
+  }
+  .plat-tool:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(31, 44, 46, .09); }
+
+  .plat-tool .tool-ic {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+  }
+  .plat-tool .obj {
+    width: 52px;
+    height: 52px;
+    /* the wheel is an inline <svg> now, so it needs the box stated twice */
+    flex: none;
+    filter: drop-shadow(0 8px 10px rgba(0, 0, 0, .14));
+    transition: transform var(--t-card) var(--ease-spring);
+  }
+  /* the card-level hover lifts all three objects together — the shared
+     "these are pressable" cue — while the specific animation below still
+     only fires on the one tile actually under the pointer */
+  .plat-card:hover .plat-tool .obj { transform: translateY(-3px); }
+
+  /* wheel: the spin lives in WheelIcon.astro, because only the wedges turn
+     and the flapper has to be knocked aside by them. Nothing here. */
+
+  /* timer: an alarm clock that has just gone off — the body trembles and the
+     two bells throw off buzz lines. The tremble is deliberately small and
+     fast (2.5deg at 14Hz): any wider and it swings like a pendulum, which is
+     a different object doing a different thing. */
+  @keyframes tool-tremble {
+    0%, 100% { transform: translate(0, -3px) rotate(0deg); }
+    20%      { transform: translate(-.8px, -3px) rotate(-2.5deg); }
+    40%      { transform: translate(.8px, -3.4px) rotate(2.5deg); }
+    60%      { transform: translate(-.7px, -2.8px) rotate(-2deg); }
+    80%      { transform: translate(.7px, -3.2px) rotate(1.8deg); }
+  }
+  /* two short rings with a beat of silence between them, like a real alarm
+     catching its breath, rather than one continuous shake — each ring is
+     4.5 cycles (~0.5s, 10% off the even half of the old single 10-cycle
+     run), then ~0.15s still, then the second ring plays the same length */
+  .plat-card .plat-tool.is-clock:hover .obj {
+    animation: tool-tremble .11s linear 4.5,
+               tool-tremble .11s linear 4.5 .65s;
+  }
+
+  /* the buzz lines sit off the bells, not off the middle of the clock: two
+     arcs a side, the outer one a beat behind the inner one, so the sound
+     reads as leaving the bell rather than as a halo around the icon */
+  .plat-tool.is-clock .buzz {
+    position: absolute;
+    top: -5px;
+    width: 15px;
+    height: 15px;
+    border: 2.5px solid transparent;
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    opacity: 0;
+  }
+  .plat-tool.is-clock .buzz::before {
+    content: '';
+    position: absolute;
+    inset: 3.5px;
+    border: 2.5px solid transparent;
+    border-top-color: var(--blue);
+    border-radius: 50%;
+  }
+  .plat-tool.is-clock .buzz-l { left: -7px; rotate: -48deg; }
+  .plat-tool.is-clock .buzz-r { right: -7px; rotate: 48deg; }
+  @keyframes tool-buzz {
+    0%   { opacity: 0; scale: .7; }
+    35%  { opacity: 1; scale: 1; }
+    100% { opacity: 0; scale: 1.25; }
+  }
+  /* same two-ring shape as the tremble above: one buzz pair per ring,
+     each pulse 10% shorter than before, the second pair timed to the
+     second ring at .65s */
+  .plat-tool.is-clock:hover .buzz-l {
+    animation: tool-buzz .4s ease-out,
+               tool-buzz .4s ease-out .65s;
+  }
+  .plat-tool.is-clock:hover .buzz-r {
+    animation: tool-buzz .4s ease-out .2s,
+               tool-buzz .4s ease-out .85s;
+  }
+
+  /* noise meter: arcs leaving the horn. Two of them, half a beat apart, so
+     it reads as sound coming out rather than one ring pulsing. */
+  .plat-tool.is-megaphone .tool-ic::before,
+  .plat-tool.is-megaphone .tool-ic::after {
+    content: '';
+    position: absolute;
+    /* the horn opens up and to the right, so the arcs leave from there and
+       are tipped to match it — waves square to the tile read as a loading
+       spinner rather than as sound */
+    top: 34%;
+    right: -9px;
+    width: 20px;
+    height: 20px;
+    border: 3px solid transparent;
+    border-right-color: var(--green-deep);
+    border-radius: 50%;
+    opacity: 0;
+    transform: translateY(-50%) rotate(-22deg) scale(.4);
+  }
+  @keyframes tool-wave {
+    0%   { opacity: 0; transform: translateY(-50%) rotate(-22deg) scale(.4); }
+    20%  { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-50%) rotate(-22deg) scale(1.5); }
+  }
+  .plat-card .plat-tool.is-megaphone:hover .obj { transform: translate(2px, -3px); }
+  .plat-tool.is-megaphone:hover .tool-ic::before { animation: tool-wave 1.15s ease-out 2; }
+  .plat-tool.is-megaphone:hover .tool-ic::after { animation: tool-wave 1.15s ease-out .38s 2; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .plat-card .plat-tool.is-clock:hover .obj { animation: none; }
+    .plat-tool.is-clock:hover .buzz-l,
+    .plat-tool.is-clock:hover .buzz-r,
+    .plat-tool.is-megaphone:hover .tool-ic::before,
+    .plat-tool.is-megaphone:hover .tool-ic::after { animation: none; opacity: 0; }
+  }
 
   /* a roster with a LIVE chip: the hero's badge grammar, sitting inside the
      blue card as a white panel */
@@ -364,13 +500,10 @@ const roster = [
        legible; everything else pairs up */
     .plat-card.is-wide { grid-column: span 4; }
     .plat-card.is-half { grid-column: span 2; }
-    /* five cards in pairs leave a hole; the analytics screen is a wide
-       table, so it is the one that takes a full row without stretching */
+    /* five cards in pairs leave a hole; the analytics window is a wide
+       chart, so it is the one that takes a full row without stretching */
     .plat-card.is-analytics { grid-column: span 4; }
-    /* `--zoom` is an inline style on the window, so it is overridden on the
-       image itself, not on the custom property */
     .plat-card.is-analytics .win-view { height: 176px; }
-    .plat-card.is-analytics .win-view img { width: 112%; }
     /* the half card is 346px here and the roster's avatars and LIVE pill
        leave the text 95px — "4 дистанційно · 22 на зв'язку" on one line
        was cut off after the 22 */
@@ -380,13 +513,10 @@ const roster = [
     .plat-grid { grid-template-columns: 1fr; }
     .plat-card, .plat-card.is-wide, .plat-card.is-half, .plat-card.is-analytics { grid-column: span 1; }
     .plat-card:not(.is-wide) h3 { min-height: 0; }
-    .plat-card.is-wide { --obj: 112px; }
-    .plat-card.is-wide .plat-body { padding-right: var(--pad-card); }
     .win-view, .plat-card.is-wide .win-view { height: 168px; }
     .plat-card.is-analytics .win-view img { width: var(--zoom); }
-    .plat-card.is-half { --obj: 112px; }
     .plat-tool { padding: 12px 6px 10px; font-size: .75rem; }
-    .plat-tool .obj { width: 44px; height: 44px; }
+    .plat-tool .obj, .plat-tool .tool-ic { width: 44px; height: 44px; }
     .plat-roster { gap: 10px; padding: 10px 12px 10px 10px; }
     .plat-roster .t2 { white-space: normal; }
   }

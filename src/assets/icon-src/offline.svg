@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!--
+    "Працює без стабільного інтернету" — the struck-through wifi the client
+    asked for, and the right call even though the glyph negates something:
+    the CARD's own headline is written as a negation too ("без стабільного
+    інтернету"), so icon and heading say the same sentence. A "downloaded
+    ahead" icon would have illustrated the body copy instead of the promise,
+    and at 88px nothing beats this silhouette for being understood in a
+    glance.
+
+    What keeps it from reading as an error state: the ribs stay brand blue
+    (a live product, not a dead router) and the bar is ink, not red. In this
+    grid a red X would be the only alarm on the page.
+
+    THE BAR IS NOT PAINTED OVER THE RIBS. `ofCut` knocks a 16px groove out of
+    them along the bar's line, and the 10px bar sits inside it with 3px of
+    daylight on each side. Bar and groove use butt caps, not round — round
+    caps on a bar this thin read as a sausage; a flat-cut end reads as a
+    slash. That gap is the whole difference between a
+    struck-through sign and a stick lying on top of one: the eye has to see
+    the card's own background through the glyph to read the two parts as one
+    object. The first version was a 26px slab with no groove, and it read as
+    a foreign body.
+
+    THE RIBS SPAN 140°, NOT 90°. A 45° bar through the fan's centre meets a
+    90° rib exactly at its end point — it grazes the tip instead of cutting
+    the rib, which is why the first version looked lopsided: there was
+    nothing left of the bar to see, so the whole fan appeared to lean right.
+    At 140° the cut lands 25° in from the end and every rib keeps a real
+    stub on BOTH sides of the groove, which is the thing that makes a
+    struck-through sign read as struck through. 120° was tried first and
+    the stubs were still too short to survive the groove.
+
+    The bar's volume comes from a gradient laid ACROSS it, not along it
+    (`ofBar` is userSpaceOnUse, its axis perpendicular to the 45° run), plus
+    a cream specular on the lit flank and a dark line on the shaded one. A
+    flat bar next to modelled ribs is the other half of why the old one
+    looked pasted on.
+  -->
+  <defs>
+    <linearGradient id="ofArc" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#A7B1FF"/>
+      <stop offset="42%" stop-color="#4E5EFF"/>
+      <stop offset="100%" stop-color="#2830BC"/>
+    </linearGradient>
+    <linearGradient id="ofBar" gradientUnits="userSpaceOnUse" x1="118.3" y1="134.7" x2="102.7" y2="150.3">
+      <stop offset="0%" stop-color="#6D7695"/>
+      <stop offset="42%" stop-color="#333A54"/>
+      <stop offset="100%" stop-color="#141827"/>
+    </linearGradient>
+    <radialGradient id="ofDot" cx="30%" cy="24%" r="88%">
+      <stop offset="0%" stop-color="#C3CAFF"/>
+      <stop offset="46%" stop-color="#4E5EFF"/>
+      <stop offset="100%" stop-color="#242CB0"/>
+    </radialGradient>
+    <filter id="ofb2" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="2"/></filter>
+    <filter id="ofb4" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="4"/></filter>
+    <filter id="ofb7" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="7"/></filter>
+
+    <!-- the groove. Coordinates are the icon's own, so this mask has to be
+         referenced from INSIDE the scaling wrapper, not outside it. -->
+    <mask id="ofCut" maskUnits="userSpaceOnUse" x="-40" y="-40" width="340" height="340">
+      <rect x="-40" y="-40" width="340" height="340" fill="#FFFFFF"/>
+      <path d="M55 87 L167 199" fill="none" stroke="#000000" stroke-width="16" stroke-linecap="butt"/>
+    </mask>
+  </defs>
+
+  <!-- Scaled to fill the 256 box the way the bought objects do: they run
+       246px corner to corner, and an icon drawn to 195 sits visibly
+       smaller than its neighbours on the same row. -->
+  <g transform="translate(128 128) scale(1.22) translate(-128 -136)">
+
+    <g mask="url(#ofCut)">
+      <!-- three ribs and the base dot, drawn outside-in so the near ones
+           overlap the far ones the way stacked plastic would -->
+      <g fill="none" stroke="url(#ofArc)" stroke-width="24" stroke-linecap="round">
+        <path d="M41.6 136.5 A92 92 0 0 1 214.4 136.5"/>
+        <path d="M66 145.4 A66 66 0 0 1 190 145.4"/>
+        <path d="M90.4 154.3 A40 40 0 0 1 165.6 154.3"/>
+      </g>
+
+      <!-- Specular. Short, bright and barely blurred — the bought objects
+           put one hot streak on the lit face and leave the rest of the
+           surface alone; a soft sheen spread over the whole rib is what
+           made this set read matte next to them. -->
+      <g fill="none" stroke="#FFFFFF" stroke-linecap="round" filter="url(#ofb2)">
+        <path d="M82 88.3 A92 92 0 0 1 136 76.4" stroke-opacity=".8" stroke-width="6"/>
+        <path d="M95 110.8 A66 66 0 0 1 130.3 102" stroke-opacity=".7" stroke-width="5"/>
+        <path d="M108 133.4 A40 40 0 0 1 128 128" stroke-opacity=".6" stroke-width="4"/>
+      </g>
+      <!-- and the shaded flank, where each rib turns away from the light -->
+      <g fill="none" stroke="#141C86" stroke-opacity=".38" stroke-width="9" stroke-linecap="round" filter="url(#ofb4)">
+        <path d="M187.2 97.5 A92 92 0 0 1 207.7 122"/>
+        <path d="M170.4 117.4 A66 66 0 0 1 185.2 135"/>
+      </g>
+
+      <circle cx="128" cy="168" r="17" fill="url(#ofDot)"/>
+      <ellipse cx="121.5" cy="161.5" rx="6.5" ry="4.2" transform="rotate(-32 121.5 161.5)" fill="#FFFFFF" opacity=".85"/>
+    </g>
+
+    <!-- the bar casts into its own groove; kept weak so the daylight in the
+         gap stays daylight -->
+    <path d="M55 87 L167 199" fill="none" stroke="#0B0E1A" stroke-opacity=".14" stroke-width="13" stroke-linecap="butt" filter="url(#ofb4)"/>
+    <path d="M55 87 L167 199" fill="none" stroke="url(#ofBar)" stroke-width="10" stroke-linecap="butt"/>
+    <path d="M83 103 L144 176" fill="none" stroke="#FFFFFF" stroke-opacity=".5" stroke-width="2.5" stroke-linecap="butt" filter="url(#ofb2)"/>
+    <path d="M78 109 L139 182" fill="none" stroke="#000000" stroke-opacity=".3" stroke-width="2.5" stroke-linecap="butt" filter="url(#ofb2)"/>
+  </g>
+</svg>

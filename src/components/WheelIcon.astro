@@ -1,0 +1,205 @@
+---
+/*
+ * Колесо фортуни — the same drawing as src/assets/icon-src/wheel.svg, but
+ * inline and taken apart, because the PNG could only ever spin as one lump.
+ * A wheel is two things that move differently:
+ *
+ *   .wh-seg   the eight wedges — the only part that turns
+ *   .wh-pin   the flapper — it does not turn, it gets knocked aside by every
+ *             ridge that passes under it and drops back into the next gap
+ *
+ * Everything else (the rim, the lighting, the hub) stays put: the light in
+ * the room does not travel with the wheel, and a rim whose gradient spins
+ * reads as a rolling coin instead of a spinning disc.
+ *
+ * The two animations are one table. A ridge crosses the flapper every 45deg,
+ * so `wh-spin` is keyed at 22.5 + 45k degrees with the timings of an
+ * ease-out spin, and `wh-flick` fires at exactly those same percentages.
+ * That is what makes the knock look caused by the wedge rather than merely
+ * near it — and why the ticks crowd together at the start and stretch out as
+ * the wheel runs down. Two full turns, so it comes to rest in the position
+ * it started from and nothing jumps when the pointer leaves.
+ */
+---
+
+<svg class="obj is-inline wh" viewBox="0 0 256 256" width="256" height="256"
+     aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="whRim" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="55%" stop-color="#F0F2F8"/>
+      <stop offset="100%" stop-color="#BFC6D8"/>
+    </linearGradient>
+    <linearGradient id="whHub" x1="0.25" y1="0" x2="0.75" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#F4F6FB"/>
+      <stop offset="100%" stop-color="#C9D0E0"/>
+    </linearGradient>
+    <linearGradient id="whPin" x1="0.2" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#4A5270"/>
+      <stop offset="45%" stop-color="#2B3148"/>
+      <stop offset="100%" stop-color="#141827"/>
+    </linearGradient>
+    <filter id="whb4" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="4"/></filter>
+    <filter id="whb10" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="10"/></filter>
+    <filter id="whb16" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="16"/></filter>
+    <clipPath id="whDisc"><circle cx="128" cy="140" r="92"/></clipPath>
+  </defs>
+
+  <g transform="translate(-18.55 -15.46) scale(1.145)">
+    <!-- rim: static, so its gradient keeps facing the same light -->
+    <circle cx="128" cy="140" r="92" fill="url(#whRim)"/>
+
+    <!-- the wedges, and only the wedges, turn -->
+    <g class="wh-seg">
+      <path d="M128 140 L96.62 64.24 A82 82 0 0 1 159.38 64.24 Z" fill="#4050FF"/>
+      <path d="M128 140 L159.38 64.24 A82 82 0 0 1 203.76 108.62 Z" fill="#FFF7E2"/>
+      <path d="M128 140 L203.76 108.62 A82 82 0 0 1 203.76 171.38 Z" fill="#5AE3A8"/>
+      <path d="M128 140 L203.76 171.38 A82 82 0 0 1 159.38 215.76 Z" fill="#F7DE52"/>
+      <path d="M128 140 L159.38 215.76 A82 82 0 0 1 96.62 215.76 Z" fill="#4050FF"/>
+      <path d="M128 140 L96.62 215.76 A82 82 0 0 1 52.24 171.38 Z" fill="#FFF7E2"/>
+      <path d="M128 140 L52.24 171.38 A82 82 0 0 1 52.24 108.62 Z" fill="#5AE3A8"/>
+      <path d="M128 140 L52.24 108.62 A82 82 0 0 1 96.62 64.24 Z" fill="#F7DE52"/>
+    </g>
+
+    <!-- one light source over the whole disc, rim included -->
+    <g clip-path="url(#whDisc)">
+      <ellipse cx="84" cy="90" rx="60" ry="42" transform="rotate(-28 84 90)" fill="#FFFFFF" opacity=".4" filter="url(#whb16)"/>
+      <path d="M56.7 90.1 A87 87 0 0 1 105.5 55.9" fill="none" stroke="#FFFFFF" stroke-opacity=".9" stroke-width="9" stroke-linecap="round" filter="url(#whb4)"/>
+      <ellipse cx="184" cy="204" rx="76" ry="58" transform="rotate(-28 184 204)" fill="#0E1330" opacity=".38" filter="url(#whb16)"/>
+      <circle cx="128" cy="140" r="82" fill="none" stroke="#0E1330" stroke-opacity=".22" stroke-width="5" filter="url(#whb4)"/>
+      <circle cx="128" cy="140" r="88" fill="none" stroke="#FFFFFF" stroke-opacity=".7" stroke-width="5" filter="url(#whb4)"/>
+    </g>
+
+    <!-- hub: it hides the eight wedge tips, which always converge into mush -->
+    <circle cx="128" cy="140" r="19" fill="url(#whHub)"/>
+    <circle cx="128" cy="140" r="8.5" fill="#4050FF"/>
+    <ellipse cx="121" cy="132" rx="6.5" ry="4" transform="rotate(-32 121 132)" fill="#FFFFFF" opacity=".95"/>
+
+    <!-- flapper: hinged at its wide end, so the knock swings the tip -->
+    <g class="wh-pin">
+      <path d="M128 68 L107 34 Q128 17 149 34 Z" fill="#0B0E1A" opacity=".3" filter="url(#whb10)"/>
+      <path d="M128 66 L107 32 Q128 15 149 32 Z" fill="url(#whPin)"/>
+      <path d="M124 56 L114 38 Q121 31 128 30 Z" fill="#FFFFFF" opacity=".45" filter="url(#whb4)"/>
+    </g>
+  </g>
+</svg>
+
+<style>
+  /* the global `.obj{width:var(--obj,88px)}` rule in style.css is scoped to
+     elements Platform.astro renders itself, so — like the hover rules below —
+     it never reaches this component's own <svg>. Without this, the wheel was
+     falling through to that rule's 88px fallback instead of the 52px every
+     other tool icon gets, rendering it nearly twice the size of its tile and
+     spilling into the label under it no matter how its innards were
+     positioned. State the real box size here, where it actually applies. */
+  .wh { display: block; width: 52px; height: 52px; }
+  .wh-seg { transform-origin: 128px 140px; }
+  /* hinge at the wide end of the flapper, not at its tip */
+  .wh-pin { transform-origin: 128px 22px; }
+
+  /* `:global` because the tile that owns the hover lives in Platform.astro */
+  :global(.plat-tool.is-wheel:hover) .wh-seg {
+    animation: wh-spin 2s linear both;
+  }
+  :global(.plat-tool.is-wheel:hover) .wh-pin {
+    animation: wh-flick 2s linear both;
+  }
+
+  /* the shared `.card:hover .obj` rule in style.css (translateY + rotate +
+     scale) is scoped to elements Platform.astro renders itself, so it never
+     actually reaches this component's own <svg> — the wheel was falling
+     through to the *global*, unscoped copy of that rule instead, which is
+     why it alone tilted and grew on hover while the clock/megaphone (plain
+     <img> tags written straight into Platform.astro) got the plain
+     straight-up lift. Give the wheel that same straight lift explicitly, at
+     higher specificity than the global rule, so it just rises like the
+     other two. */
+  :global(.plat-card:hover .plat-tool) .wh {
+    transform: translateY(-3px);
+  }
+
+  @keyframes wh-spin {
+    0.00% { transform: rotate(0deg); }
+    1.05% { transform: rotate(22.5deg); }
+    3.23% { transform: rotate(67.5deg); }
+    5.51% { transform: rotate(112.5deg); }
+    7.90% { transform: rotate(157.5deg); }
+    10.42% { transform: rotate(202.5deg); }
+    13.10% { transform: rotate(247.5deg); }
+    15.95% { transform: rotate(292.5deg); }
+    19.01% { transform: rotate(337.5deg); }
+    22.32% { transform: rotate(382.5deg); }
+    25.94% { transform: rotate(427.5deg); }
+    29.95% { transform: rotate(472.5deg); }
+    34.48% { transform: rotate(517.5deg); }
+    39.75% { transform: rotate(562.5deg); }
+    46.14% { transform: rotate(607.5deg); }
+    54.57% { transform: rotate(652.5deg); }
+    68.50% { transform: rotate(697.5deg); }
+    70.76% { transform: rotate(702deg); }
+    73.77% { transform: rotate(707deg); }
+    77.69% { transform: rotate(712deg); }
+    82.29% { transform: rotate(716deg); }
+    88.84% { transform: rotate(719deg); }
+    100.00% { transform: rotate(720deg); }
+  }
+
+  @keyframes wh-flick {
+    0.00% { transform: rotate(0deg); }
+    0.61% { transform: rotate(0deg); }
+    1.05% { transform: rotate(16deg); }
+    1.75% { transform: rotate(0deg); }
+    2.31% { transform: rotate(0deg); }
+    3.23% { transform: rotate(16deg); }
+    3.96% { transform: rotate(0deg); }
+    4.55% { transform: rotate(0deg); }
+    5.51% { transform: rotate(16deg); }
+    6.27% { transform: rotate(0deg); }
+    6.89% { transform: rotate(0deg); }
+    7.90% { transform: rotate(16deg); }
+    8.71% { transform: rotate(0deg); }
+    9.36% { transform: rotate(0deg); }
+    10.42% { transform: rotate(16deg); }
+    11.28% { transform: rotate(0deg); }
+    11.98% { transform: rotate(0deg); }
+    13.10% { transform: rotate(16deg); }
+    14.01% { transform: rotate(0deg); }
+    14.75% { transform: rotate(0deg); }
+    15.95% { transform: rotate(16deg); }
+    16.93% { transform: rotate(0deg); }
+    17.72% { transform: rotate(0deg); }
+    19.01% { transform: rotate(16deg); }
+    20.01% { transform: rotate(0deg); }
+    20.93% { transform: rotate(0deg); }
+    22.32% { transform: rotate(16deg); }
+    23.32% { transform: rotate(0deg); }
+    24.42% { transform: rotate(0deg); }
+    25.94% { transform: rotate(16deg); }
+    26.94% { transform: rotate(0deg); }
+    28.26% { transform: rotate(0deg); }
+    29.95% { transform: rotate(16deg); }
+    30.95% { transform: rotate(0deg); }
+    32.58% { transform: rotate(0deg); }
+    34.48% { transform: rotate(16deg); }
+    35.48% { transform: rotate(0deg); }
+    37.75% { transform: rotate(0deg); }
+    39.75% { transform: rotate(16deg); }
+    40.75% { transform: rotate(0deg); }
+    44.14% { transform: rotate(0deg); }
+    46.14% { transform: rotate(16deg); }
+    47.14% { transform: rotate(0deg); }
+    52.57% { transform: rotate(0deg); }
+    54.57% { transform: rotate(16deg); }
+    55.57% { transform: rotate(0deg); }
+    66.50% { transform: rotate(0deg); }
+    68.50% { transform: rotate(16deg); }
+    69.50% { transform: rotate(0deg); }
+    100.00% { transform: rotate(0deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.plat-tool.is-wheel:hover) .wh-seg,
+    :global(.plat-tool.is-wheel:hover) .wh-pin { animation: none; }
+  }
+</style>

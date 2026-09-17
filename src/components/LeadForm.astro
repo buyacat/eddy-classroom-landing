@@ -111,7 +111,11 @@ const stats = tArray<{ text: string; offline?: boolean }>(locale, 'classroom_sta
      background is gone so the ambient plane shows through. */
   .cta-band {
     position: relative;
-    padding-block: clamp(20px, 3vw, 44px) clamp(48px, 6vw, 88px);
+    /* Bottom is double: the footer contributes no top padding of its own
+       (its ambient light is this band's overhang, not a pool of its own —
+       see Footer.astro), so this side alone has to cover the same visual
+       gap that the other seams split between two sections. */
+    padding-block: var(--pad-band) calc(var(--pad-band) * 2);
   }
 
   /* The one place on this page where a gradient does structural work. Without

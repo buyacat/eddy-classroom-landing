@@ -1,0 +1,716 @@
+---
+import { t, tArray } from '../utils/i18n';
+import type { Locale } from '../utils/i18n';
+import { withBase } from '../utils/url';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+
+/*
+ * The client's note on this band was about tenders: a buyer is shown a wall
+ * of 3D-object cells and asks, reasonably, to see one. So one model out of
+ * the 1200 is here in full — the same .glb a teacher opens in a lesson —
+ * turned with a finger, pulled apart with a slider, with every structure in
+ * it named and explained.
+ *
+ * Three rules shaped the markup below, in this order:
+ *
+ * 1. The file is 1.7 MB and NOBODY pays for it by scrolling past. Nothing is
+ *    fetched — not the model, not three.js, not the loader — until the visitor
+ *    presses the button, which is why the stage starts as a closed cover with
+ *    the weight printed on it rather than as an empty rectangle that fills in.
+ *
+ * 2. The structure list is not a control panel for the 3D — it is the content.
+ *    It reads and works with no WebGL, no JavaScript module and no model: the
+ *    names and the descriptions are in the HTML, and picking one swaps the
+ *    text under it. The viewer, when it loads, only adds the highlight and the
+ *    caption on the model itself. That is what the no-WebGL branch falls back
+ *    to, so the fallback is the page minus an ornament, not a hole.
+ *
+ * 3. Every piece of copy that changes at runtime is handed over as one payload
+ *    (`data-copy`), the same bargain EarthGlobe makes: the module gets to be
+ *    about the model, and the strings stay where translators can find them.
+ */
+const parts = tArray<{ node: string; label: string; desc: string }>(
+  locale,
+  'classroom_library_model_parts'
+);
+
+const copy = {
+  loading: t(locale, 'classroom_library_model_loading'),
+  error: t(locale, 'classroom_library_model_error'),
+  /* Read by Library3D's tab-row script, not by this file's own script — see
+     the "soon" state below. Keeping the string here instead of duplicating
+     a translation call in the other component is the same bargain the rest
+     of `copy` already makes. */
+  soonBadge: t(locale, 'classroom_library_soon_badge'),
+  soonDesc: t(locale, 'classroom_library_soon_desc')
+};
+---
+
+<section class="mv reveal" data-model-viewer
+         data-src={withBase('/assets/models/human-eye.glb')}
+         data-parts={JSON.stringify(parts)}
+         data-copy={JSON.stringify(copy)}
+         data-nowebgl={t(locale, 'classroom_library_model_nowebgl')}>
+  <!-- The controls are a SIBLING of the stage, not a child of it. On a
+       desktop they float over the bottom of the picture, where a viewer's
+       controls belong; on a phone the stage is square and the bar, two rows
+       tall there, sat on the lower quarter of the model. Below the stage they
+       cost the model nothing, and one `position` switch moves them. -->
+  <div class="mv-view">
+    <div class="mv-stage" data-stage>
+      <canvas class="mv-canvas" role="img" aria-label={t(locale, 'classroom_library_model_alt')}></canvas>
+
+      <!-- the cover. It carries the price of pressing it, because a 1.7 MB
+           download on a school's connection is a thing to be told about, not
+           a thing to discover from a stalled progress bar. -->
+      <div class="mv-gate" data-gate>
+        <button class="btn btn-primary mv-start" type="button" data-start>
+          {t(locale, 'classroom_library_model_cta')}
+        </button>
+        <p class="mv-weight">{t(locale, 'classroom_library_model_weight')}</p>
+      </div>
+
+      <div class="mv-load" data-load hidden>
+        <span class="mv-track"><i data-bar></i></span>
+        <p class="mv-load-txt" data-load-txt>{copy.loading}</p>
+      </div>
+
+      <div class="mv-fail" data-fail hidden>
+        <p class="mv-fail-txt" data-fail-txt>{copy.error}</p>
+        <button class="btn btn-ghost mv-retry" type="button" data-retry>
+          {t(locale, 'classroom_library_model_retry')}
+        </button>
+      </div>
+
+      {/* Shown instead of the stage's other three states when a sample tab
+          above (Library3D.astro) is clicked — none of those eight have a
+          real .glb yet, so this owns up to that rather than pretending to
+          load one. Toggled purely by the `.mv.is-soon` class; the icon is
+          filled in by the tab-row script, not written here. */}
+      <div class="mv-soon" data-soon>
+        <img class="mv-soon-ic" data-soon-icon src="" width="120" height="120" alt="" />
+        <p class="mv-soon-badge">{copy.soonBadge}</p>
+      </div>
+
+      <!-- The caption for whichever structure is picked, as a callout: a dot
+           ON the geometry, a hairline leading off it, and the name standing
+           clear of the model at the end of the line. It used to be a pill laid
+           straight over the point, which meant the label covered the very
+           structure it was naming — the worst thing a label can do. -->
+      <span class="mv-marker" data-marker hidden aria-hidden="true">
+        <i class="mv-marker-dot"></i>
+        <i class="mv-marker-line"></i>
+        <b data-marker-label></b>
+      </span>
+
+      <span class="mv-hint" data-hint hidden>{t(locale, 'classroom_library_model_hint')}</span>
+    </div>
+
+    <div class="mv-tools" data-tools hidden>
+      <label class="mv-slider">
+        <span class="mv-slider-lbl">{t(locale, 'classroom_library_model_explode')}</span>
+        <input type="range" min="0" max="100" step="1" value="0" data-explode-range />
+      </label>
+      <span class="mv-buttons">
+        <button class="mv-btn" type="button" data-zoom="out"
+                aria-label={t(locale, 'classroom_library_model_zoom_out')}>
+          <span aria-hidden="true">–</span>
+        </button>
+        <button class="mv-btn" type="button" data-zoom="in"
+                aria-label={t(locale, 'classroom_library_model_zoom_in')}>
+          <span aria-hidden="true">+</span>
+        </button>
+        <button class="mv-btn is-wide" type="button" data-reset>
+          {t(locale, 'classroom_library_model_reset')}
+        </button>
+      </span>
+    </div>
+  </div>
+
+  <div class="mv-side">
+    <span class="eyebrow">{t(locale, 'classroom_library_model_eyebrow')}</span>
+    <h3 class="mv-ttl">{t(locale, 'classroom_library_model_title')}</h3>
+    <p class="mv-meta">{t(locale, 'classroom_library_model_meta')}</p>
+    <p class="mv-desc">{t(locale, 'classroom_library_model_desc')}</p>
+
+    <p class="mv-parts-ttl">{t(locale, 'classroom_library_model_parts_title')}</p>
+    <ul class="mv-parts">
+      {parts.map((p, i) => (
+        <li>
+          <button class={`mv-part${i === 0 ? ' is-on' : ''}`} type="button"
+                  data-part={p.node} aria-pressed={i === 0 ? 'true' : 'false'}>
+            {p.label}
+          </button>
+        </li>
+      ))}
+    </ul>
+    {/* Written server-side with the first structure's text, so the panel is
+        complete before a single byte of script runs — and so the live region
+        below has something to replace rather than something to announce. */}
+    <p class="mv-part-desc" data-part-desc aria-live="polite">{parts[0]?.desc}</p>
+  </div>
+</section>
+
+<style>
+  .mv {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: clamp(20px, 2.6vw, 40px);
+    align-items: start;
+    margin-top: clamp(28px, 3.4vw, 48px);
+    padding: clamp(16px, 1.8vw, 24px);
+    background: #fff;
+    border-radius: var(--r-2xl);
+    box-shadow: var(--e3);
+  }
+
+  /* ---- the stage ---- */
+  /* 4:3, not square. The column beside it runs to about 450px of copy, and a
+     square stage stood a head taller than that — the card ended on 150px of
+     empty white under the structure list. The model is framed on its own
+     bounding sphere, so a shorter stage costs it nothing but air. */
+  .mv-stage {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    /* The same two-pool plate the hero panel uses, so a model in the library
+       and a model in the hero are lit by one room. Blue behind the body of
+       the object, warm off to the upper right where the key light is. */
+    background:
+      radial-gradient(circle at 50% 48%,
+        rgba(var(--amb-blue), var(--amb-2)) 0%,
+        rgba(var(--amb-blue), 0) 62%),
+      radial-gradient(circle at 76% 24%,
+        rgba(var(--amb-yellow), var(--amb-2)) 0%,
+        rgba(var(--amb-yellow), 0) 58%),
+      var(--surface);
+  }
+
+  .mv-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: grab;
+    opacity: 0;
+    transition: opacity 520ms var(--ease-out);
+  }
+  .mv.is-live .mv-canvas { opacity: 1; }
+  .mv-canvas:active { cursor: grabbing; }
+
+  /* ---- cover / loading / failure / soon: one box, four states ---- */
+  .mv-gate, .mv-load, .mv-fail, .mv-soon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 24px;
+    text-align: center;
+  }
+  .mv-gate[hidden], .mv-load[hidden], .mv-fail[hidden] { display: none; }
+
+  /* ---- the "soon" state ----
+     One class on the root swaps the whole stage and hides the structures
+     list, instead of a `hidden` attribute this file's own script would have
+     to keep juggling for a state it does not drive. */
+  .mv-soon { display: none; gap: 16px; }
+  .mv.is-soon .mv-soon { display: flex; }
+  .mv.is-soon .mv-gate, .mv.is-soon .mv-load, .mv.is-soon .mv-fail,
+  .mv.is-soon .mv-canvas, .mv.is-soon .mv-marker, .mv.is-soon .mv-hint,
+  .mv.is-soon .mv-tools { display: none; }
+  .mv.is-soon .mv-parts-ttl, .mv.is-soon .mv-parts, .mv.is-soon .mv-part-desc { display: none; }
+
+  .mv-soon-ic {
+    width: 84px;
+    height: 84px;
+    filter: drop-shadow(0 10px 16px rgba(0, 0, 0, .22));
+  }
+  .mv-soon-badge {
+    margin: 0;
+    padding: 5px 14px;
+    border-radius: var(--r-pill);
+    background: var(--surface-sunken);
+    color: var(--ink-2);
+    font-family: var(--font-display);
+    font-size: .75rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .mv-weight, .mv-load-txt, .mv-fail-txt {
+    margin: 0;
+    font-size: .8125rem;
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--ink-3);
+    max-width: 30ch;
+  }
+
+  /* A real bar, not a spinner: the point of the state is the SIZE of what is
+     arriving, and a spinner says nothing about that. It falls back to a slow
+     indeterminate sweep only when the server refuses to declare a length. */
+  .mv-track {
+    width: min(220px, 70%);
+    height: 6px;
+    border-radius: var(--r-pill);
+    background: var(--surface-sunken);
+    overflow: hidden;
+  }
+  .mv-track i {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: var(--r-pill);
+    background: var(--blue);
+    transition: width 180ms linear;
+  }
+  .mv-load.is-unknown .mv-track i {
+    width: 40%;
+    animation: mv-sweep 1.3s var(--ease-in-out) infinite;
+  }
+  @keyframes mv-sweep {
+    0% { transform: translateX(-110%); }
+    100% { transform: translateX(260%); }
+  }
+
+  /* ---- the caption pinned to the model ---- */
+  /* ---- the callout ----
+     A row: dot, hairline, name. The module writes the projected point into
+     `transform`; `translate` then shifts the row so that the DOT — its first
+     child — lands on that point, and the name ends up a leader's length away.
+     Two properties rather than one composed translate, because `translate` is
+     applied before `transform` and both are pure translations: the order
+     costs nothing and keeps the module ignorant of how wide the chip is.
+
+     Which way it points is decided every frame in the module, because the
+     model turns; `is-left` reverses the row and re-hangs it off its own right
+     edge, so the dot stays on the point either way. */
+  .mv-marker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    translate: -5px -50%;
+    pointer-events: none;
+  }
+  .mv-marker.is-left {
+    flex-direction: row-reverse;
+    translate: calc(-100% + 5px) -50%;
+  }
+  .mv-marker[hidden] { display: none; }
+
+  .mv-marker-dot {
+    width: 10px;
+    height: 10px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--yellow);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, .85);
+  }
+
+  /* One pixel, and grey. Its job is to connect, not to be noticed — the
+     accent belongs to the dot and to the structure lit up behind it. The
+     length is written by the module, which shortens it rather than let the
+     name run off the edge of the stage. */
+  .mv-marker-line {
+    width: var(--lead, 92px);
+    height: 1px;
+    flex: none;
+    background: var(--ink-4);
+    opacity: .6;
+  }
+
+  .mv-marker b {
+    /* it may wrap, and at two lines the leader still meets it in the middle */
+    max-width: 44%;
+    padding: 4px 11px;
+    border-radius: var(--r-pill);
+    background: rgba(255, 255, 255, .94);
+    box-shadow: var(--e2);
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.3;
+    color: var(--ink);
+  }
+
+  /* The panel wears the page's shared `.reveal`, and the library band has its
+     own guard against a reader who jumps into the middle of it (initSnap in
+     app.js). When that guard fires, the fade has already been missed — the
+     class is added on a screen the panel is standing in the middle of — so
+     the transition comes off and the card is simply there. Three classes,
+     one deeper than `.reveal.is-visible`, so it wins wherever it is injected. */
+  .reveal.mv.is-jumped { transition: none; }
+
+  /* the stage's positioning context, and the toolbar's */
+  .mv-view { position: relative; }
+
+  /* ---- controls ---- */
+  .mv-tools {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    border-radius: var(--r-lg);
+    background: rgba(255, 255, 255, .92);
+    backdrop-filter: blur(6px);
+    box-shadow: var(--e3);
+  }
+  .mv-tools[hidden] { display: none; }
+
+  .mv-slider { display: flex; align-items: center; gap: 10px; flex: 1 1 180px; min-width: 0; }
+  .mv-slider-lbl {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  /* The one range input on the site, so it is styled here rather than in the
+     shared sheet — track and thumb both have to be spelled out twice because
+     WebKit and Firefox disagree about which pseudo-element owns them. */
+  .mv-slider input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: var(--r-pill);
+    background: var(--surface-sunken);
+    cursor: pointer;
+  }
+  .mv-slider input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    background: var(--blue);
+    box-shadow: var(--e2);
+  }
+  .mv-slider input::-moz-range-thumb {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    background: var(--blue);
+    box-shadow: var(--e2);
+  }
+  .mv-slider input:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+  .mv-buttons { display: flex; align-items: center; gap: 6px; }
+  .mv-btn {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: var(--r-pill);
+    background: var(--surface-sunken);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+    transition: background var(--t-micro) linear;
+  }
+  .mv-btn.is-wide { font-size: 11.5px; padding: 0 12px; }
+  .mv-btn:hover { background: var(--line); }
+  .mv-btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+  .mv-hint {
+    position: absolute;
+    left: 50%;
+    top: 14px;
+    translate: -50% 0;
+    padding: 6px 13px;
+    border-radius: var(--r-pill);
+    background: rgba(13, 13, 15, .82);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .mv-hint[hidden] { display: none; }
+  /* it has said its piece by the time a hand has been on the model */
+  .mv.is-touched .mv-hint { opacity: 0; transition: opacity 300ms var(--ease-out); }
+
+  /* ---- the side: what the thing actually is ---- */
+  .mv-side { padding: clamp(6px, 1vw, 16px) clamp(4px, 1vw, 14px); }
+  .mv-ttl { margin-top: 16px; font-size: clamp(1.375rem, 1.05rem + 1.1vw, 1.875rem); }
+  .mv-meta {
+    margin-top: 8px;
+    font-size: .75rem;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+  }
+  .mv-desc { margin-top: 14px; font-size: .9375rem; line-height: 1.55; color: var(--ink-2); }
+
+  .mv-parts-ttl {
+    margin: clamp(18px, 2vw, 26px) 0 10px;
+    font-family: var(--font-display);
+    font-size: .8125rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .mv-parts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mv-part {
+    border: 0;
+    border-radius: var(--r-pill);
+    padding: 7px 13px;
+    background: var(--surface);
+    color: var(--ink-2);
+    font-family: var(--font-display);
+    font-size: 12.5px;
+    font-weight: 800;
+    line-height: 1.2;
+    text-align: left;
+    cursor: pointer;
+    transition: background var(--t-micro) linear, color var(--t-micro) linear;
+  }
+  .mv-part:hover { background: var(--surface-sunken); color: var(--ink); }
+  .mv-part.is-on { background: var(--ink); color: #fff; }
+  .mv-part:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+  /* Reserved height, not a growing box. The descriptions run from two lines
+     to six, and letting the panel resize under the pointer moves the very
+     buttons the reader is working through. */
+  .mv-part-desc {
+    margin-top: 14px;
+    min-height: 6.4em;
+    font-size: .875rem;
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 900px) {
+    .mv { grid-template-columns: 1fr; }
+    /* stacked, the stage has the full column to itself and the height it
+       gives back would only be white space — so it takes the room */
+    .mv-stage { aspect-ratio: 1 / 1; }
+    .mv-part-desc { min-height: 0; }
+
+    /* The callout loses its words here and keeps its dot. A 358px stage has
+       no room for a leader plus a name like "Передня камера (водяниста
+       волога)" without putting it back over the model, which is the thing
+       this was changed to stop — and the name is not lost: the structure's
+       own button is the lit one in the list right below, with its description
+       under that. The dot says WHERE; the list says WHAT. */
+    .mv-marker-line, .mv-marker b { display: none; }
+  }
+  @media (max-width: 560px) {
+    /* out from over the picture and under it. At this width the bar needs two
+       rows, and two rows over a square stage covered the lower quarter of the
+       model — including, more often than not, the very structure that had
+       just been picked. */
+    .mv-tools {
+      position: static;
+      margin-top: 10px;
+      padding: 10px 12px;
+      gap: 9px;
+      background: var(--surface);
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+    .mv-slider { flex-basis: 140px; }
+    .mv-hint { font-size: 10px; padding: 5px 10px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mv-canvas, .mv-track i { transition: none; }
+    .mv-load.is-unknown .mv-track i { animation: none; }
+  }
+</style>
+
+<script>
+  import type { PartSpec, ViewerHandle } from '../scripts/model-viewer';
+
+  function hasWebGL(): boolean {
+    try {
+      const c = document.createElement('canvas');
+      return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch {
+      return false;
+    }
+  }
+
+  const root = document.querySelector<HTMLElement>('[data-model-viewer]');
+
+  if (root) {
+    const q = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+
+    const parts = JSON.parse(root.dataset.parts || '[]') as PartSpec[];
+    const copy = JSON.parse(root.dataset.copy || '{}') as { loading: string; error: string };
+
+    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-part]'));
+    const partDesc = q('[data-part-desc]');
+    const markerLabel = q('[data-marker-label]');
+
+    const gate = q('[data-gate]');
+    const load = q('[data-load]');
+    const loadTxt = q('[data-load-txt]');
+    const bar = q<HTMLElement>('[data-bar]');
+    const fail = q('[data-fail]');
+    const tools = q('[data-tools]');
+    const hint = q('[data-hint]');
+    const range = q<HTMLInputElement>('[data-explode-range]');
+
+    let viewer: ViewerHandle | null = null;
+    /* The panel ships with the first structure already chosen (see the markup
+       above), so the caption the model will wear is filled in to match before
+       anything can mount and ask for it. */
+    let current = parts[0]?.node ?? null;
+    markerLabel.textContent = parts[0]?.label ?? '';
+
+    /*
+     * The list drives the panel whether or not there is ever a model: the
+     * copy is already in the page, and this only moves the highlight and
+     * swaps the paragraph. Everything to do with the 3D is guarded, so the
+     * same function serves the mounted viewer and the browser that could not
+     * mount one.
+     */
+    function pick(node: string | null, fromClick: boolean) {
+      current = node;
+      const spec = parts.find((p) => p.node === node) ?? null;
+
+      for (const b of buttons) {
+        const on = b.dataset.part === node;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-pressed', String(on));
+      }
+      partDesc.textContent = spec?.desc ?? '';
+      markerLabel.textContent = spec?.label ?? '';
+      viewer?.select(node);
+
+      /* A structure chosen while the model is shut is a structure sealed
+         inside three other ones. Rather than light something nobody can see,
+         the model opens — and it opens by moving the slider, so the state is
+         on screen and the visitor can wind it straight back. */
+      if (fromClick && viewer && Number(range.value) < 35) {
+        range.value = '100';
+        viewer.setExplode(1);
+      }
+    }
+
+    for (const b of buttons) {
+      b.addEventListener('click', () => pick(b.dataset.part ?? null, true));
+    }
+
+    if (!hasWebGL()) {
+      /* No 3D here. The stage cover stops being a button and becomes the
+         explanation, and the structure list below carries on doing the
+         informative half of the job on its own. */
+      gate.innerHTML = '';
+      const note = document.createElement('p');
+      note.className = 'mv-weight';
+      note.textContent = root.dataset.nowebgl || '';
+      gate.appendChild(note);
+    } else {
+      const start = q<HTMLButtonElement>('[data-start]');
+      const retry = q<HTMLButtonElement>('[data-retry]');
+
+      function progress(fraction: number) {
+        // -1 means the server never said how big the file is; sweep instead
+        // of printing a percentage that would be a guess
+        load.classList.toggle('is-unknown', fraction < 0);
+        if (fraction < 0) {
+          loadTxt.textContent = copy.loading + '…';
+          return;
+        }
+        bar.style.width = Math.round(fraction * 100) + '%';
+        loadTxt.textContent = copy.loading + ' · ' + Math.round(fraction * 100) + '%';
+      }
+
+      let fetching = false;
+
+      function fetchModel() {
+        if (fetching || viewer) return;
+        fetching = true;
+        gate.hidden = true;
+        fail.hidden = true;
+        load.hidden = false;
+        bar.style.width = '0%';
+        progress(-1);
+
+        /* Both the module and the model leave the network here and nowhere
+           else — three.js, the glTF loader and 1.7 MB of geometry are all
+           paid for by this one press. */
+        import('../scripts/model-viewer')
+          .then((mod) =>
+            mod.mountViewer({
+              host: q('[data-stage]'),
+              canvas: q<HTMLCanvasElement>('.mv-canvas'),
+              marker: q('[data-marker]'),
+              caption: markerLabel,
+              url: root.dataset.src || '',
+              parts,
+              onProgress: progress
+            })
+          )
+          .then((handle) => {
+            viewer = handle;
+            load.hidden = true;
+            tools.hidden = false;
+            hint.hidden = false;
+            root.classList.add('is-live');
+            // reflect the selection the page already made, WITHOUT the
+            // auto-open above: nobody asked for the model to be apart yet
+            handle.select(current);
+          })
+          .catch((err) => {
+            console.warn('[model] not mounted:', err);
+            load.hidden = true;
+            fail.hidden = false;
+          })
+          .finally(() => {
+            fetching = false;
+          });
+      }
+
+      start.addEventListener('click', fetchModel);
+      retry.addEventListener('click', fetchModel);
+
+      range.addEventListener('input', () => {
+        viewer?.setExplode(Number(range.value) / 100);
+      });
+
+      for (const b of root.querySelectorAll<HTMLButtonElement>('[data-zoom]')) {
+        b.addEventListener('click', () => {
+          viewer?.zoom(b.dataset.zoom === 'in' ? 1.22 : 1 / 1.22);
+        });
+      }
+
+      q<HTMLButtonElement>('[data-reset]').addEventListener('click', () => viewer?.resetView());
+
+      // the hint has done its job the moment a hand lands on the model
+      q('[data-stage]').addEventListener('pointerdown', () => {
+        root.classList.add('is-touched');
+      }, { once: true });
+    }
+  }
+</script>

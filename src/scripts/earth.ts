@@ -104,8 +104,9 @@ const PHI_LENGTH = Math.PI * 1.34;
 /**
  * Screen-space direction the layers cascade along.
  *
- * Horizontal, not stacked. The panel is square, but the lesson strip takes its
- * bottom quarter, so the vertical budget is the scarce one — a column made the
+ * Horizontal, not stacked. The panel is square, but its bottom edge carries the
+ * caveat line and the explode button, so the vertical budget is the scarce one
+ * all the same — a column made the
  * layers fight each other for room and forced them all smaller. Laid out
  * across, the labels get their own row underneath, and the slight rise stops
  * it reading as a dead flat line.
@@ -163,13 +164,50 @@ const STAGES = stageWindows(STAGE_D);
 const TOTAL_TRAVEL = totalTravel(STAGE_D);
 
 /**
- * Where the tags hang, just clear of the largest shell. They alternate between
- * two rows: four names this long will not fit across one panel side by side,
- * and staggering them buys each tag twice the width without shrinking the type
- * or pushing the spheres further apart.
+ * Where the tags hang, just clear of the largest shell. They sit in two rows:
+ * four names this long will not fit across one panel side by side, and
+ * staggering them buys each tag twice the width without shrinking the type or
+ * pushing the spheres further apart.
+ *
+ * The DROP is in model units and shrinks with the model; the gap between the
+ * two rows is in PIXELS, and is the height of a tag plus clear air. That split
+ * is the fix for a real bug: the stagger used to be a model-space offset too,
+ * so on a 390px phone — where the model is drawn small and the type is not —
+ * the two rows converged until they printed on the same line, eight pixels
+ * apart, with the panel's own foot running between them.
+ *
+ * WHICH row a tag lands in is decided by the half of the picture its shell is
+ * in, not by whether its index is odd — see the loop below. That is what keeps
+ * the leader lines from crossing.
  */
 const TAG_DROP = 1.16;
-const TAG_STAGGER = 0.8;
+const TAG_ROW_GAP = 6;
+
+/**
+ * The leader line: a hairline from the bottom of a shell down to the caption
+ * that names it, the same device the library's model viewer uses on the eye.
+ *
+ * It starts just below the silhouette and stops just short of the pill, so it
+ * touches neither: a line that runs into a shell reads as part of the drawing,
+ * and a line that runs under a pill reads as a mistake.
+ */
+const LEAD_FROM = 3;
+const LEAD_TO = 4;
+/**
+ * Below this panel width the leaders come off altogether.
+ *
+ * Measured rather than guessed, because the guess was wrong: the fear was that
+ * four lines could not work on a phone at all, and they do. Walked from 288px
+ * to 620px with the model open, counting lines whose box crosses a caption
+ * that is not its own — at 288px (a 320px phone) two of the four cross, since
+ * the captions no longer fit the panel and spreadRow has to push them through
+ * each other's columns; from 328px up (a 360px phone) nothing crosses
+ * anything. So the cut is just under that, and every real phone keeps them.
+ *
+ * Where they do come off, nothing is lost that is not said twice already: the
+ * caption still sits under its own shell and still carries the shell's number.
+ */
+const LEAD_MIN_PANEL = 310;
 
 /**
  * How far off the cut-facing pose the model may sit and still be allowed to
@@ -183,8 +221,8 @@ const TAG_STAGGER = 0.8;
  * twisted and opened at the same time and neither read.
  *
  * So orientation is now a gate, not a blend, and it governs every way the
- * model can open, the lesson's own `open(true)` included: while it is turned
- * away, nothing separates. Idle rock alone (0.17 rad) is enough to hold the
+ * model can open, the panel's own explode button included: while it is turned
+ * away, nothing separates. Idle rock alone (ROCK rad) is enough to hold the
  * gate shut, which is what gives the pull its first act — the planet swings
  * round to face you, and only then does it start to come apart.
  */
@@ -194,8 +232,23 @@ const ALIGN_BLOCK = 0.1;
 /** Clear air kept between two captions in the same row, in pixels. */
 const TAG_PAD = 8;
 
-/** Keep pulling this far past the end and the lesson starts on its own. */
-const OVERPULL = 1.35;
+/*
+ * Everything that moves here on its own — the idle rock, the Moon on its
+ * orbit — is ambient: nobody asked for it. So a visitor who has asked the
+ * system for less movement gets none of it, and still gets every part of the
+ * model that answers a gesture.
+ *
+ * What the page used to do instead was refuse to mount the globe at all,
+ * which left the hero one empty white panel. That was arguable while the
+ * panel was a running quiz; now the model IS the hero, and withholding it
+ * withholds the page from the very people most likely to read the captions.
+ */
+const REDUCED =
+  typeof window !== 'undefined' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** Amplitude of the idle rock, in radians. Zero when motion is not wanted. */
+const ROCK = REDUCED ? 0 : 0.17;
 
 /**
  * The demo: how far the model opens itself, once, to say that it opens.
@@ -221,8 +274,16 @@ const OPEN_SHRINK = 0.5;
  * crust at the top is three times the radius of the core at the bottom — so
  * re-centring on the middle of the travel still hangs it low. These pull the
  * open fan back to the optical centre of the panel.
+ *
+ * The Y lift also buys the foot its room. The lesson strip used to do that
+ * job with its own transform (`compact`, now gone): it shrank and raised the
+ * whole picture while a quiz was running. What sits down there now is two
+ * lines at most — the caveat and the explode button — and they are only there
+ * once the model is open, which is exactly when this lift applies. One number
+ * instead of a second eased transform, and the captions clear the button at
+ * every panel width we ship.
  */
-const OPEN_LIFT_Y = 0.12;
+const OPEN_LIFT_Y = 0.3;
 // nudged off the right edge, where the floating tool badges overlap the panel
 const OPEN_LIFT_X = -0.06;
 
@@ -269,16 +330,16 @@ const MOON_TILT_Z = 0.09;
  * thing this drawing must never show.
  *
  * Deleting it outright works and is dull: the companion that gave the planet
- * its scale simply stops existing the moment the lesson starts. So it steps
+ * its scale simply stops existing the moment the model opens. So it steps
  * out of the way instead — up and to the right of the crust, where the top
  * corner is empty once the layers have gone left and the captions have
  * dropped under them, and where the sun already is (2.6, 2.2, 3.8), so the
  * parked face is the lit one.
  *
  * Offsets are in the units the open stack is drawn at and ride its scale, so
- * "one crust-diameter up" stays one crust-diameter up when the lesson strip
- * shrinks the picture. Smaller than in orbit, because up there it is scenery
- * and not the subject.
+ * "one crust-diameter up" stays one crust-diameter up however far the row has
+ * opened. Smaller than in orbit, because up there it is scenery and not the
+ * subject.
  */
 const MOON_PARK_DIR = new Vector3(0.22, 1, 0).normalize();
 /**
@@ -739,17 +800,21 @@ function buildRecipes(
 interface Layer {
   holder: Group;
   spin: Group;
+  /** where the caption hangs */
   anchor: Object3D;
+  /** the bottom of the shell's silhouette, where its leader starts */
+  rim: Object3D;
   /** the caption, positioned by the frame loop */
   el: HTMLElement;
+  /** the hairline from the rim to the caption */
+  lead: HTMLElement;
 }
 
 function buildLayer(
   def: LayerDef,
-  index: number,
   recipe: Recipe,
   maps: EarthMaps
-): Omit<Layer, 'el'> {
+): Omit<Layer, 'el' | 'lead'> {
   const holder = new Group();
   const spin = new Group();
   spin.rotation.x = BASE_PITCH;
@@ -799,14 +864,22 @@ function buildLayer(
   // The tag rides the holder, not the spinner, so it stays put while the
   // model turns — a label that orbits with the mesh is unreadable.
   // Every tag hangs at the same depth below its layer, so the four of them
-  // line up as a caption row instead of scattering with the radii. Anchored by
-  // its own top-centre (see the CSS transform), so a name never covers the
-  // thing it names.
+  // line up as a caption row instead of scattering with the radii. Which of
+  // the two rows it lands in is settled in screen space by the frame loop,
+  // not here. Anchored by its own top-centre (see the CSS transform), so a
+  // name never covers the thing it names.
   const anchor = new Object3D();
-  anchor.position.set(0, -(TAG_DROP + (index % 2) * TAG_STAGGER), 0);
+  anchor.position.set(0, -TAG_DROP, 0);
   holder.add(anchor);
 
-  return { holder, spin, anchor };
+  /* The lowest point of the shell, which is where its leader starts. A sphere
+     looks the same from every angle, so this is the bottom of the silhouette
+     whatever the model's yaw — no need to follow the spin. */
+  const rim = new Object3D();
+  rim.position.set(0, -def.rOut, 0);
+  holder.add(rim);
+
+  return { holder, spin, anchor, rim };
 }
 
 /* ------------------------------------------------------------------ mount */
@@ -815,16 +888,14 @@ export interface GlobeHandle {
   destroy(): void;
   /** Latch the model apart (or back together), overriding the idle state. */
   open(apart: boolean): void;
-  /** Brief green pulse on one layer — how the model answers a question. */
-  flash(index: number, ms?: number): void;
-  /** The tag element for a layer, so a lesson can turn it into an option. */
-  tag(index: number): HTMLElement | undefined;
-  /** Fires once, the first time the visitor pulls the model fully apart. */
-  onOpen(cb: () => void): void;
-  /** Fires when the visitor keeps pulling past the end of the travel. */
-  onOverpull(cb: () => void): void;
-  /** Lift and shrink, to hand the bottom of the panel to the lesson strip. */
-  compact(on: boolean): void;
+  /**
+   * Fires whenever the model crosses between "a planet" and "a row of layers",
+   * however it got there. The panel's explode button is the only caller, and
+   * it needs this precisely because it is not the only way the model opens: a
+   * button still labelled "take it apart" over a model a drag has already
+   * pulled apart is lying about what pressing it will do.
+   */
+  onOpenChange(cb: (open: boolean) => void): void;
   /** Open a little way and close again, once, to show that it opens at all. */
   demo(): void;
 }
@@ -865,14 +936,8 @@ export async function mountGlobe(
   const stack = new Group();
   scene.add(stack);
 
-  /** Saved so a flash can hand every material back exactly as it was. */
-  const restore = new Map<MeshStandardMaterial, [Color, number]>();
-  const remember = (m: MeshStandardMaterial) => {
-    if (!restore.has(m)) restore.set(m, [m.emissive.clone(), m.emissiveIntensity]);
-  };
-
   const layers: Layer[] = LAYERS.map((def, i) => {
-    const built = buildLayer(def, i, recipes[def.kind], maps);
+    const built = buildLayer(def, recipes[def.kind], maps);
     stack.add(built.holder);
 
     const el = document.createElement('span');
@@ -883,7 +948,14 @@ export async function mountGlobe(
     (el.querySelector('em') as HTMLElement).textContent = specs[i]?.meta ?? '';
     labelHost.appendChild(el);
 
-    return { ...built, el };
+    /* Prepended, not appended: every leader has to paint under every pill,
+       not merely under its own, or a line grazing a neighbour's corner would
+       be drawn on top of it. */
+    const lead = document.createElement('i');
+    lead.className = 'globe-lead';
+    labelHost.prepend(lead);
+
+    return { ...built, el, lead };
   });
 
   /*
@@ -897,9 +969,7 @@ export async function mountGlobe(
    * panel mid-fade and read as broken rather than as leaving.
    *
    * Parented to the scene it is a fixed frame instead: the path holds its
-   * size and its centre, and the planet opens INSIDE it. The one transform it
-   * still follows is `compact`, because that is the panel making room for the
-   * lesson strip — the whole picture moves, so the orbit moves with it.
+   * size and its centre, and the planet opens INSIDE it.
    *
    * The path is drawn as a real ring rather than implied: with depth testing
    * on, the planet occludes the far half of it, which is the whole lesson —
@@ -1000,25 +1070,33 @@ export async function mountGlobe(
    */
   const TAP_SLOP = coarse ? 12 : 7;
 
-  let openCb: (() => void) | null = null;
-  let overpullCb: (() => void) | null = null;
-  let announced = false;
-  let overpulled = false;
-  // the lesson strip takes the bottom of the panel; the model gets out of its
-  // way rather than being drawn underneath it
-  let compact = 0;
-  let compactTarget = 0;
+  let openCb: ((open: boolean) => void) | null = null;
+  /** Last state handed to openCb, so it fires on a crossing and not per frame. */
+  let wasOpen = false;
 
   const worldPos = new Vector3();
   const recentre = new Vector3();
 
+  /* The strip along the bottom of the panel — the caveat and the explode
+     button. The captions have to stay above it, and where its top is depends
+     on the breakpoint and on whether the model is open, so it is measured
+     rather than assumed. */
+  const foot = host.querySelector<HTMLElement>('.globe-foot');
+
   /*
-   * Tag widths, cached. They are re-measured rather than computed because the
-   * lesson appends a vote count and a bar to each tag after mount, and because
-   * the copy is translated. Reading them every frame would thrash layout
-   * against the transforms written in the same loop, so it happens rarely.
+   * Tag widths, cached. They are measured rather than computed because a
+   * caption's width is a fact about the font and the translation, not about
+   * the model — "Зовнішнє ядро" and "Outer core" do not need the same room.
+   * Reading them every frame would thrash layout against the transforms
+   * written in the same loop, so it happens rarely.
    */
   const tagWidth = new Array<number>(LAYERS.length).fill(0);
+  /* The height of a tag, and the top of the panel's foot. Both are read from
+     the DOM rather than assumed, because both change with the breakpoint —
+     the tags drop their depth line under 760px, and the foot grows a second
+     line the moment the model is open. */
+  let tagHeight = 0;
+  let footTop = Number.POSITIVE_INFINITY;
   let measureIn = 0;
 
   /*
@@ -1057,7 +1135,6 @@ export async function mountGlobe(
     startY = e.clientY;
     yawAtStart = yawTarget;
     mode = 'idle';
-    overpulled = false;
     canvas.setPointerCapture(pointerId);
     host.classList.add('is-grabbed');
     if (!touched) {
@@ -1106,12 +1183,6 @@ export async function mountGlobe(
     // than opening it a second time, which is what an absolute value did
     const pull = Math.max(0, dx) / Math.max(width * 0.34, 1);
     explodeTarget = Math.max(pinned ? 1 : 0, Math.min(1, pull));
-
-    // keep pulling once it is all the way open, and the lesson takes over
-    if (pull > OVERPULL && !overpulled) {
-      overpulled = true;
-      overpullCb?.();
-    }
   }
 
   function release() {
@@ -1173,12 +1244,12 @@ export async function mountGlobe(
     /*
      * Idle life is a slow rock, not a full spin. It is the model's own
      * movement and it has no business fighting the visitor's, so the moment a
-     * hand is on it — or the lesson opens it — the rock damps away instead of
+     * hand is on it — or the button opens it — the rock damps away instead of
      * being added on top of the drag.
      */
     rockGain += ((dragging || explodeTarget > 0.01 ? 0 : 1) - rockGain) * Math.min(1, dt * 4);
     yaw += (yawTarget - yaw) * Math.min(1, dt * 9);
-    const offset = yaw + Math.sin(t * 0.42) * 0.17 * rockGain;
+    const offset = yaw + Math.sin(t * 0.42) * ROCK * rockGain;
     const heading = BASE_YAW + offset;
 
     /*
@@ -1204,13 +1275,11 @@ export async function mountGlobe(
     /** How open the thing actually is — the row's own length, not the gesture. */
     const openness = spread / TOTAL_TRAVEL;
 
-    compact += (compactTarget - compact) * Math.min(1, dt * 5);
-
-    const scale = (1 - OPEN_SHRINK * openness) * (1 - 0.16 * compact);
+    const scale = 1 - OPEN_SHRINK * openness;
     stack.scale.setScalar(scale);
     recentre.copy(AXIS).multiplyScalar(-(spread / 2) * scale);
     recentre.x += OPEN_LIFT_X * openness;
-    recentre.y += OPEN_LIFT_Y * openness + 0.42 * compact;
+    recentre.y += OPEN_LIFT_Y * openness;
     stack.position.copy(recentre);
 
     /*
@@ -1227,13 +1296,11 @@ export async function mountGlobe(
      * first has gone. Both halves run off `openness`, so closing the model
      * plays the whole handover backwards for free.
      */
-    moonPhase = (moonPhase + dt / MOON_PERIOD) % 1;
+    if (!REDUCED) moonPhase = (moonPhase + dt / MOON_PERIOD) % 1;
     moonArm.rotation.y = moonPhase * Math.PI * 2;
     /* Gone by 0.14 of the row: measured, the crust first eats into the orbit
        at openness 0.17 — from there the Moon is inside it, not behind it. */
     const leaving = smoothstep(0.02, 0.14, openness);
-    moonSystem.scale.setScalar(1 - 0.16 * compact);
-    moonSystem.position.set(0, 0.42 * compact, 0);
     orbitMat.opacity = 0.3 * (1 - leaving);
     moonMat.opacity = 1 - leaving;
     moonSystem.visible = leaving < 0.999;
@@ -1253,7 +1320,7 @@ export async function mountGlobe(
     parkMat.opacity = parked;
     parkMoon.visible = parked > 0.002;
     if (parkMoon.visible) {
-      const s = MOON_PARK_SCALE * (1 - 0.16 * compact);
+      const s = MOON_PARK_SCALE;
       const d = scale + MOON_PARK_CLEAR + MOON_R * s;
       parkMoon.position.set(
         recentre.x + MOON_PARK_DIR.x * d,
@@ -1261,12 +1328,14 @@ export async function mountGlobe(
         0
       );
       parkMoon.scale.setScalar(s);
-      parkMoon.rotation.y += MOON_PARK_SPIN * dt;
+      if (!REDUCED) parkMoon.rotation.y += MOON_PARK_SPIN * dt;
     }
 
     if (measureIn <= 0) {
       measureIn = 30;
       for (let i = 0; i < layers.length; i++) tagWidth[i] = layers[i].el.offsetWidth;
+      tagHeight = layers[0].el.offsetHeight || 0;
+      footTop = foot ? foot.offsetTop : Number.POSITIVE_INFINITY;
     }
     measureIn--;
 
@@ -1286,14 +1355,44 @@ export async function mountGlobe(
       layer.anchor.getWorldPosition(worldPos);
       worldPos.project(camera);
 
+      /*
+       * The row a caption lands in is the half of the picture its shell is in,
+       * not its parity — and that one change is what makes the leaders legible.
+       *
+       * Dealt alternately, the rows interleave across the whole width: the
+       * inner core's caption sits in the lower row directly beneath the outer
+       * core's, so its leader has to be drawn straight through a pill naming a
+       * different shell. Grouped by side, the lower row lies wholly to the LEFT
+       * of the upper one — the cascade runs right to left, so indices 0 and 1
+       * are the right-hand pair — and no line ever passes under a caption that
+       * is not its own. The four of them fan out instead of tangling.
+       */
+      const row = i < 2 ? 0 : 1;
+
       const p = place[i];
       p.x = (worldPos.x * 0.5 + 0.5) * width;
-      p.y = (-worldPos.y * 0.5 + 0.5) * height;
+      // the lower row is one tag lower, in pixels — see TAG_ROW_GAP
+      p.y = (-worldPos.y * 0.5 + 0.5) * height + row * (tagHeight + TAG_ROW_GAP);
       p.width = tagWidth[i];
-      rows[i % 2].push(p);
+      rows[row].push(p);
     }
 
-    // spreadRow resolves a row in reading order, and the cascade now runs the
+    /*
+     * Then lift the pair of rows clear of the foot. The captions are hung off
+     * the model and the foot is pinned to the bottom of the panel, so on a
+     * short panel the two meet: measured on a 390px phone, the lower row sat
+     * BELOW the explode button and the caveat line ran between the rows. The
+     * model is what gives way, because it can — it is drawn inside a square
+     * that is mostly air once it is open.
+     */
+    const lowest = Math.max(place[2].y, place[3].y) + tagHeight;
+    const ceiling = footTop - 8;
+    if (lowest > ceiling) {
+      const lift = lowest - ceiling;
+      for (const p of place) p.y -= lift;
+    }
+
+    // spreadRow resolves a row in reading order, and the cascade runs the
     // other way: index 0 (the crust) ends up on the RIGHT, so index order is
     // right-to-left on screen and each row has to be turned round first.
     rows[0].reverse();
@@ -1308,6 +1407,8 @@ export async function mountGlobe(
     spreadRow(rows[0], 6, width - insetRight, TAG_PAD);
     spreadRow(rows[1], 6, width - insetRight, TAG_PAD);
 
+    const leaders = width >= LEAD_MIN_PANEL;
+
     for (let i = 0; i < layers.length; i++) {
       const p = place[i];
       const style = layers[i].el.style;
@@ -1320,14 +1421,52 @@ export async function mountGlobe(
        * writes itself right to left as the model comes apart.
        */
       const arrived = progress[revealStage(i, STAGES.length)];
-      style.opacity = String(Math.min(1, Math.max(0, (arrived - 0.55) / 0.3)));
+      const shown = Math.min(1, Math.max(0, (arrived - 0.55) / 0.3));
+      style.opacity = String(shown);
+
+      /*
+       * And the line that joins the two. It is drawn between two points the
+       * loop already has — the bottom of the shell and the top-centre of the
+       * caption, the latter AFTER the row has been spread, so the line follows
+       * the caption to wherever it was pushed.
+       */
+      const lead = layers[i].lead.style;
+      if (!leaders || shown < 0.01) {
+        lead.opacity = '0';
+        continue;
+      }
+      layers[i].rim.getWorldPosition(worldPos);
+      worldPos.project(camera);
+      const rx = (worldPos.x * 0.5 + 0.5) * width;
+      const ry = (-worldPos.y * 0.5 + 0.5) * height;
+      const dx = p.x - rx;
+      const dy = p.y - ry;
+      const span = Math.hypot(dx, dy);
+      if (span <= LEAD_FROM + LEAD_TO) {
+        lead.opacity = '0';
+        continue;
+      }
+      const angle = Math.atan2(dy, dx);
+      // walked in from both ends, so it touches neither the shell nor the pill
+      lead.transform =
+        'translate3d(' + (rx + (dx / span) * LEAD_FROM).toFixed(1) + 'px, ' +
+        (ry + (dy / span) * LEAD_FROM).toFixed(1) + 'px, 0) rotate(' + angle.toFixed(4) + 'rad)';
+      lead.width = (span - LEAD_FROM - LEAD_TO).toFixed(1) + 'px';
+      // a hairline is support, not an accent: it never reaches full strength
+      lead.opacity = String(shown * 0.55);
     }
 
-    host.classList.toggle('is-open', openness > 0.35);
-
-    if (!announced && openness > 0.9) {
-      announced = true;
-      openCb?.();
+    /*
+     * One threshold, read twice. The caveat about the crust's thickness shows
+     * because the model has stopped being a planet, and the button relabels
+     * itself for exactly the same reason — so both hang off this number rather
+     * than off two that could drift apart.
+     */
+    const open = openness > 0.35;
+    host.classList.toggle('is-open', open);
+    if (open !== wasOpen) {
+      wasOpen = open;
+      openCb?.(open);
     }
 
     renderer.render(scene, camera);
@@ -1342,14 +1481,10 @@ export async function mountGlobe(
   raf = requestAnimationFrame(frame);
 
   return {
-    compact(on: boolean) {
-      compactTarget = on ? 1 : 0;
-    },
-
     open(apart: boolean) {
       pinned = apart;
       explodeTarget = apart ? 1 : 0;
-      // the lesson gets the same deal as a visitor: it may ask for the model
+      // the button gets the same deal as a visitor: it may ask for the model
       // to open, but it opens facing its cut or not at all. A spin still under
       // the hand has to be called off with it, or the next pointermove would
       // put the yaw straight back and hold the gate shut for good.
@@ -1376,46 +1511,11 @@ export async function mountGlobe(
       }, DEMO_MS);
     },
 
-    flash(index: number, ms = 900) {
-      const kind = LAYERS[index]?.kind;
-      if (!kind) return;
-      const mats = [recipes[kind].shell, recipes[kind].cut];
-      mats.forEach(remember);
-
-      const glow = new Color('#1ccf8e');
-      const t0 = performance.now();
-      const step = () => {
-        const k = Math.min(1, (performance.now() - t0) / ms);
-        // in fast, out slow — a confirmation, not a strobe
-        const level = k < 0.25 ? k / 0.25 : 1 - (k - 0.25) / 0.75;
-        for (const m of mats) {
-          m.emissive.copy(glow);
-          m.emissiveIntensity = level * 1.5;
-        }
-        if (k < 1) {
-          requestAnimationFrame(step);
-        } else {
-          for (const m of mats) {
-            const [color, intensity] = restore.get(m)!;
-            m.emissive.copy(color);
-            m.emissiveIntensity = intensity;
-          }
-        }
-      };
-      requestAnimationFrame(step);
-    },
-
-    tag(index: number) {
-      return layers[index]?.el;
-    },
-
-    onOpen(cb: () => void) {
+    onOpenChange(cb: (open: boolean) => void) {
       openCb = cb;
-      if (announced) cb();
-    },
-
-    onOverpull(cb: () => void) {
-      overpullCb = cb;
+      // the caller is labelling a control off this, so it has to be handed the
+      // state it starts from as well as every crossing after it
+      cb(wasOpen);
     },
 
     destroy() {
@@ -1435,7 +1535,7 @@ export async function mountGlobe(
       [maps.map, maps.bumpMap, maps.roughnessMap, maps.cloudAlpha, strata, grain, env]
         .forEach((x) => x.dispose());
       renderer.dispose();
-      layers.forEach((l) => l.el.remove());
+      layers.forEach((l) => { l.el.remove(); l.lead.remove(); });
     }
   };
 }

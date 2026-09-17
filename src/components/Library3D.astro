@@ -2,37 +2,60 @@
 import { t, tArray } from '../utils/i18n';
 import type { Locale } from '../utils/i18n';
 import { withBase } from '../utils/url';
+import ModelViewer from './ModelViewer.astro';
 
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 
-const subjects = tArray<{ id: string; label: string }>(locale, 'classroom_library_subjects');
-const cards = tArray<{ subject: string; label: string; name: string; glyph: string }>(locale, 'classroom_library_cards');
+const rawCards = tArray<{ subject: string; label: string; name: string; glyph: string; real?: boolean }>(
+  locale,
+  'classroom_library_cards'
+);
 
 /*
- * PLACEHOLDER IMAGERY — the real 3D preview thumbnails are still on the
- * client's Drive. Until they land, each cell is a flat colour block from
- * the mock's palette plus one rendered object. One colour per subject, so
- * the colour carries meaning instead of decorating, and one object per
- * MODEL, so a cell named "Молекула ДНК" is not a flame.
+ * Grouped by subject rather than the JSON's arbitrary order, so the strip
+ * reads as one flow left to right: biology leads, then chemistry, physics,
+ * geography follow in a block each. Within biology, the eye goes first —
+ * it is the one card of the nine with a real model behind it, so it is
+ * also the first thing a visitor can actually open, not just admire.
+ */
+const order = [8, 0, 4, 1, 7, 2, 6, 3, 5];
+const cards = order.map((i) => rawCards[i]);
+
+/*
+ * The strip is paged by subject rather than scrolled freely: one page per
+ * subject, so picking "Біологія" shows biology and nothing else instead
+ * of biology bleeding into the chemistry cell sitting right after it in
+ * one long scroller. `order` above already keeps each subject's cards
+ * contiguous, so slicing on where each subject starts is enough to cut
+ * exact, non-overlapping pages — no per-card group tag needed.
+ */
+const SUBJECT_ORDER = ['biology', 'chemistry', 'physics', 'geography'] as const;
+const starts = SUBJECT_ORDER
+  .map((subject) => cards.findIndex((c) => c.subject === subject))
+  .filter((start) => start !== -1);
+const groups = starts.map((start, i) => ({
+  items: cards.slice(start, starts[i + 1] ?? cards.length),
+  label: cards[start].label
+}));
+
+/*
+ * A horizontally scrollable strip of nine sample cards sitting above the
+ * model panel: picking one is what drives the panel, so the picking and
+ * the panel read as one mechanism, and the strip stays a single row that
+ * scrolls rather than a grid competing with the panel for width — the
+ * panel is the thing being sold, and it needs to be full size.
  *
- * The objects in /assets/icons/lib are rendered, not drawn: hand-cut SVG
- * imitating the bought 3D set lost that comparison every time. They are
- * built as signed-distance solids and lit with the measured light of the
- * bought set — one key from the upper left, a bounce off the lower right,
- * saturation peaking in the light rather than in the shadow. Three
- * subjects are substituted, because the bought language has no
- * cross-sections and no diagrams anywhere: the volcano is exterior, the
- * plates are a faulted step, and the DNA is a molecule.
+ * The clay artwork and its hover business (the lava throw, the heart's
+ * pulse trace, the periodic table's travelling highlight, DNA's turn) are
+ * the same ones the old honeycomb carried — narrowing the cell was not a
+ * reason to drop them, so every glyph below is the original markup, just
+ * living in a smaller cell.
  *
- * Swap the <img> src for a real preview when the assets arrive; nothing
- * else in this component has to change.
- *
- * The cells are hexagons in a honeycomb, and there are nine of them. Nine
- * is the point: this band is a sample of a 1200-model library, not an
- * index of it, and a masonry wall of twelve only made the page longer
- * without making the number more believable. The comb also gives the band
- * a shape of its own — the rest of the page is rounded rectangles.
+ * The ninth card is new: "Око людини в розрізі" names the exact model the
+ * panel already shows by default, and its `real: true` flag is read by the
+ * script at the bottom — clicking it restores that live demo instead of
+ * dropping the panel into the "still on its way" state the other eight use.
  */
 const subjectBlock: Record<string, string> = {
   biology: 'is-green',
@@ -44,7 +67,7 @@ const subjectBlock: Record<string, string> = {
 
 <section class="band lib" id="library">
   <div class="wrap">
-    <div class="lib-head">
+    <div class="lib-top">
       <div class="lib-head-l reveal">
         <span class="eyebrow">{t(locale, 'classroom_library_badge')}</span>
         <p class="lib-count">
@@ -54,401 +77,469 @@ const subjectBlock: Record<string, string> = {
         <p class="lib-desc">{t(locale, 'classroom_library_desc')}</p>
       </div>
 
-      <div class="lib-head-r reveal" style="--i:1">
-        <div class="seg" id="lib-tabs" role="tablist">
-          <span class="seg-pill" aria-hidden="true"></span>
-          {subjects.map((s, i) => (
-            <button class={`seg-opt${i === 0 ? ' is-active' : ''}`} id={`lib-tab-${s.id}`} data-subject={s.id}
-                    type="button" role="tab" aria-controls="lib-grid"
-                    aria-selected={i === 0 ? 'true' : 'false'}>{s.label}</button>
+      <nav class="lib-comb reveal" style="--i:1" aria-label={t(locale, 'classroom_library_badge')}>
+      <div class="lib-comb-row">
+        <button class="lib-comb-arrow" type="button" data-comb-prev aria-label={t(locale, 'classroom_library_prev')}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </button>
+
+        <div class="lib-comb-viewport">
+          <div class="lib-comb-track" data-comb-track>
+          {groups.map((g) => (
+            <ul class="lib-comb-page">
+            {g.items.map((c) => (
+              <li>
+              <button class={`hex ${subjectBlock[c.subject] || 'is-blue'}`} type="button"
+                      data-name={c.name} data-label={c.label} data-real={c.real ? 'true' : 'false'}>
+                <span class="hex-shadow">
+                  <span class="hex-face">
+                    <span class="hex-art">
+                  {c.glyph === 'thermo' && (
+                    <img class="hex-rod" src={withBase('/assets/icons/lib/thermo-rod.png')}
+                         width="256" height="256" alt="" loading="lazy" decoding="async" />
+                  )}
+                  {c.glyph === 'eye' ? (
+                    /*
+                     * Єдиний glyph паку, що не PNG. Анімація тут рухає саму
+                     * райдужку всередині яблука, а не накладає щось зверху, як
+                     * у сусідів, — отже об'єкт мусить бути вектором. Мова
+                     * пластики та сама: одне суцільне глянцеве тіло, світло з
+                     * верхнього лівого, темний термінатор праворуч-донизу,
+                     * відбите підсвічування знизу, гарячий блік і супутник.
+                     */
+                    <svg class="hex-obj hex-eye" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                      <defs>
+                        <radialGradient id="eyeball" cx="33%" cy="25%" r="85%">
+                          <stop offset="0" stop-color="#FFFFFF" />
+                          <stop offset=".34" stop-color="#F6F8FF" />
+                          <stop offset=".66" stop-color="#E1E6F8" />
+                          <stop offset=".86" stop-color="#BCC5E7" />
+                          <stop offset="1" stop-color="#8C97C9" />
+                        </radialGradient>
+                        <radialGradient id="eye-bounce" cx="76%" cy="79%" r="31%">
+                          <stop offset="0" stop-color="#F2F6FF" stop-opacity=".9" />
+                          <stop offset="1" stop-color="#F2F6FF" stop-opacity="0" />
+                        </radialGradient>
+                        <radialGradient id="eye-iris" cx="34%" cy="27%" r="80%">
+                          <stop offset="0" stop-color="#9CA8FF" />
+                          <stop offset=".34" stop-color="#5B6BFF" />
+                          <stop offset=".72" stop-color="#2E3ADF" />
+                          <stop offset="1" stop-color="#141A8C" />
+                        </radialGradient>
+                        <radialGradient id="eye-pupil" cx="38%" cy="32%" r="78%">
+                          <stop offset="0" stop-color="#2B3152" />
+                          <stop offset=".5" stop-color="#121627" />
+                          <stop offset="1" stop-color="#04060E" />
+                        </radialGradient>
+                        <linearGradient id="eye-lid" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0" stop-color="#4C5798" stop-opacity=".34" />
+                          <stop offset="1" stop-color="#4C5798" stop-opacity="0" />
+                        </linearGradient>
+                        <filter id="eye-b6" x="-50%" y="-50%" width="200%" height="200%">
+                          <feGaussianBlur stdDeviation="6" />
+                        </filter>
+                        <filter id="eye-b3" x="-50%" y="-50%" width="200%" height="200%">
+                          <feGaussianBlur stdDeviation="3" />
+                        </filter>
+                        <clipPath id="eye-clip"><circle cx="128" cy="130" r="96" /></clipPath>
+                      </defs>
+
+                      <circle cx="128" cy="130" r="96" fill="url(#eyeball)" />
+                      <circle cx="128" cy="130" r="96" fill="url(#eye-bounce)" />
+
+                      <g clip-path="url(#eye-clip)">
+                        {/* тінь від верхньої повіки — саме вона не дає кулі читатись як кулька */}
+                        <rect x="-10" y="18" width="280" height="62" fill="url(#eye-lid)" filter="url(#eye-b6)" />
+
+                        <g class="eye-gaze">
+                          <ellipse cx="104" cy="134" rx="43" ry="49" fill="url(#eye-iris)" />
+                          <ellipse cx="104" cy="134" rx="43" ry="49" fill="none"
+                                   stroke="#0F187A" stroke-opacity=".45" stroke-width="4" />
+                          <ellipse class="eye-pupil" cx="104" cy="134" rx="18" ry="21" fill="url(#eye-pupil)" />
+                        </g>
+
+                        {/* рогівка: ледь помітне підняття + мокрий обідок знизу */}
+                        <ellipse cx="104" cy="132" rx="56" ry="62" fill="#FFFFFF" opacity=".07" />
+                        <path d="M58 158 Q104 206 152 156" fill="none" stroke="#FFFFFF" stroke-opacity=".4"
+                              stroke-width="8" stroke-linecap="round" filter="url(#eye-b3)" />
+                      </g>
+
+                      <ellipse cx="82" cy="98" rx="21" ry="14" fill="#FFFFFF" opacity=".95" transform="rotate(-32 82 98)" />
+                      <ellipse cx="64" cy="122" rx="8" ry="6" fill="#FFFFFF" opacity=".6" transform="rotate(-32 64 122)" />
+                      <ellipse cx="152" cy="180" rx="14" ry="8" fill="#FFFFFF" opacity=".3"
+                               filter="url(#eye-b3)" transform="rotate(-20 152 180)" />
+                    </svg>
+                  ) : (
+                    <img class={`hex-obj ic-${c.glyph}${c.glyph === 'dna' ? ' is-spin' : ''}${c.glyph === 'gear' ? ' is-turn' : ''}`}
+                         src={withBase(`/assets/icons/lib/${c.glyph}.png`)}
+                         width="256" height="256" alt="" loading="lazy" decoding="async" />
+                  )}
+
+                  {c.glyph === 'cell' && (
+                    <svg class="hex-fx fx-cell" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                      <circle class="r1" cx="94.6" cy="114.8" r="34" />
+                      <circle class="r2" cx="94.6" cy="114.8" r="34" />
+                    </svg>
+                  )}
+                  {c.glyph === 'periodic' && (
+                    <svg class="hex-fx fx-grid" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                      <rect class="c1" x="33" y="60" width="47" height="47" rx="13" />
+                      <rect class="c2" x="89" y="114" width="47" height="47" rx="13" />
+                      <rect class="c3" x="146" y="170" width="47" height="47" rx="13" />
+                    </svg>
+                  )}
+                  {c.glyph === 'thermo' && (
+                    <svg class="hex-fx fx-heat" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                      <defs>
+                        <radialGradient id="fx-heat-g" cx=".5" cy=".55" r=".5">
+                          <stop offset="0" stop-color="#FF7A2F" stop-opacity=".95" />
+                          <stop offset=".65" stop-color="#FF5A1F" stop-opacity=".45" />
+                          <stop offset="1" stop-color="#FF5A1F" stop-opacity="0" />
+                        </radialGradient>
+                      </defs>
+                      <ellipse cx="129" cy="142" rx="74" ry="86" fill="url(#fx-heat-g)" />
+                    </svg>
+                  )}
+                  {c.glyph === 'crust' && (
+                    <svg class="hex-fx fx-seam" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                      <path d="M107 118.6 L145.3 76.8" />
+                    </svg>
+                  )}
+                  {c.glyph === 'heart' && (
+                    <svg class="hex-spark" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                      <g transform="translate(-40.39 -44.15) scale(3.5083)">
+                        <path class="s-glow" pathLength="100" d="M20 50h10.5l4.5-9 6.5 18 5.5-11 4 6H76" />
+                        <path class="s-core" pathLength="100" d="M20 50h10.5l4.5-9 6.5 18 5.5-11 4 6H76" />
+                      </g>
+                    </svg>
+                  )}
+                  {c.glyph === 'volcano' && (
+                    <svg class="hex-lava" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                      <g transform="translate(126 58) rotate(-31)"><ellipse class="gob g1" rx="15" ry="18" /></g>
+                      <g transform="translate(126 58) rotate(-14)"><ellipse class="gob g2" rx="19" ry="23" /></g>
+                      <g transform="translate(126 58) rotate(2)"><ellipse class="gob g3" rx="13" ry="16" /></g>
+                      <g transform="translate(126 58) rotate(17)"><ellipse class="gob g4" rx="18" ry="21" /></g>
+                      <g transform="translate(126 58) rotate(33)"><ellipse class="gob g5" rx="12" ry="15" /></g>
+                    </svg>
+                  )}
+                </span>
+                  </span>
+                </span>
+                <span class="nm">{c.name}</span>
+              </button>
+              </li>
+            ))}
+            </ul>
           ))}
+          </div>
         </div>
+
+        <button class="lib-comb-arrow" type="button" data-comb-next aria-label={t(locale, 'classroom_library_next')}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </button>
       </div>
+
+      <div class="lib-comb-dots" role="tablist">
+        {groups.map((g, gi) => (
+          <button class="lib-comb-dot" type="button" data-comb-dot={gi} role="tab" aria-label={g.label}>
+            <span class="dot"></span>
+            <span class="dot-lbl">{g.label}</span>
+          </button>
+        ))}
+      </div>
+      </nav>
     </div>
 
-    <div class="lib-comb" id="lib-grid" role="tabpanel" aria-labelledby={`lib-tab-${subjects[0]?.id ?? 'all'}`}>
-      {cards.map((c) => (
-        <article class={`hex ${subjectBlock[c.subject] || 'is-blue'}`} data-subject={c.subject}>
-          <span class="hex-face">
-            <span class="hex-in">
-              <span class="hex-art">
-                {c.glyph === 'thermo' && (
-                  <img class="hex-rod" src={withBase('/assets/icons/lib/thermo-rod.png')}
-                       width="256" height="256" alt="" loading="lazy" decoding="async" />
-                )}
-                <img class={`hex-obj${c.glyph === 'dna' ? ' is-spin' : ''}${c.glyph === 'gear' ? ' is-turn' : ''}`}
-                     src={withBase(`/assets/icons/lib/${c.glyph}.png`)}
-                     width="256" height="256" alt="" loading="lazy" decoding="async" />
-                {c.glyph === 'cell' && (
-                  <svg class="hex-fx fx-cell" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
-                    <circle class="r1" cx="94.6" cy="114.8" r="34" />
-                    <circle class="r2" cx="94.6" cy="114.8" r="34" />
-                  </svg>
-                )}
-
-                {c.glyph === 'periodic' && (
-                  <svg class="hex-fx fx-grid" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
-                    <rect class="c1" x="33" y="60" width="47" height="47" rx="13" />
-                    <rect class="c2" x="89" y="114" width="47" height="47" rx="13" />
-                    <rect class="c3" x="146" y="170" width="47" height="47" rx="13" />
-                  </svg>
-                )}
-
-                {c.glyph === 'thermo' && (
-                  <svg class="hex-fx fx-heat" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
-                    <defs>
-                      <radialGradient id="fx-heat-g" cx=".5" cy=".55" r=".5">
-                        <stop offset="0" stop-color="#FF7A2F" stop-opacity=".95" />
-                        <stop offset=".65" stop-color="#FF5A1F" stop-opacity=".45" />
-                        <stop offset="1" stop-color="#FF5A1F" stop-opacity="0" />
-                      </radialGradient>
-                    </defs>
-                    <ellipse cx="129" cy="142" rx="74" ry="86" fill="url(#fx-heat-g)" />
-                  </svg>
-                )}
-
-                {c.glyph === 'crust' && (
-                  <svg class="hex-fx fx-seam" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
-                    <path d="M107 118.6 L145.3 76.8" />
-                  </svg>
-                )}
-
-                {c.glyph === 'heart' && (
-                  <svg class="hex-spark" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
-                    <g transform="translate(-40.39 -44.15) scale(3.5083)">
-                      <path class="s-glow" pathLength="100" d="M20 50h10.5l4.5-9 6.5 18 5.5-11 4 6H76" />
-                      <path class="s-core" pathLength="100" d="M20 50h10.5l4.5-9 6.5 18 5.5-11 4 6H76" />
-                    </g>
-                  </svg>
-                )}
-                {c.glyph === 'volcano' && (
-                  /* Five gobbets thrown from the vent. Each sits at the origin
-                     of a <g> already rotated about the crater, so the CSS only
-                     ever has to move it straight up its own axis and the spray
-                     fans out for free. They fade while still climbing: lava
-                     that reached the rim would have to run back down the cone,
-                     and a loop that ends with paint on the model is a loop that
-                     has to clean up after itself. */
-                  <svg class="hex-lava" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
-                    <g transform="translate(126 58) rotate(-31)"><ellipse class="gob g1" rx="15" ry="18" /></g>
-                    <g transform="translate(126 58) rotate(-14)"><ellipse class="gob g2" rx="19" ry="23" /></g>
-                    <g transform="translate(126 58) rotate(2)"><ellipse class="gob g3" rx="13" ry="16" /></g>
-                    <g transform="translate(126 58) rotate(17)"><ellipse class="gob g4" rx="18" ry="21" /></g>
-                    <g transform="translate(126 58) rotate(33)"><ellipse class="gob g5" rx="12" ry="15" /></g>
-                  </svg>
-                )}
-              </span>
-              <span class="nm">{c.name}</span>
-              <span class="sub">{c.label}</span>
-            </span>
-          </span>
-        </article>
-      ))}
-    </div>
-
-    <p class="note lib-note">{t(locale, 'classroom_library_note')}</p>
+    <ModelViewer locale={locale} />
   </div>
 </section>
 
 <style>
-  /* The tiles carry the colour in this band, so the light around them stays
-     soft — but the grid is the tallest run of bare canvas on the page, and
-     leaving its centre unlit read as a hole rather than as restraint. */
+  /* Both centres used to sit out in the box's overhang — the yellow at 10%
+     and the blue at 92%, while the band itself only occupies 20%–80% of the
+     box. A centre in the overhang leaves the fade less room than the fade
+     needs, so both pools ended on a straight line: the yellow one 157px
+     short at the top, which is the edge that showed up over Platform's
+     cards, the blue one 152px short at the bottom. Pulled both inside the
+     band. This is a shorter band than its pools were sized for, so it is
+     the one place on the page where that margin was not already there. */
   .lib::before {
     background:
-      /* Yellow sits behind the head, opposite the giant blue numeral. A blue
-         pool there would sink that numeral; the warm one lifts it. Do not
-         swap this one for blue. */
-      radial-gradient(calc(var(--amb-r-lg) * 1.25) calc(var(--amb-r-lg) * .62) at 10% 10%,
+      radial-gradient(calc(var(--amb-r-lg) * 1.25) calc(var(--amb-r-lg) * .62) at 10% 24%,
         rgba(var(--amb-yellow), var(--amb-3)) 0%,
         rgba(var(--amb-yellow), calc(var(--amb-3) * .4)) 38%,
         rgba(var(--amb-yellow), 0) 72%),
-      /* The centre pool, dead behind the grid. Green because the grid's own
-         loudest tiles are green and blue, and warming the middle would fight
-         them; a wide soft green reads as the room the tiles sit in. */
-      radial-gradient(calc(var(--amb-r-xl) * 1.35) calc(var(--amb-r-xl) * .85) at 50% 52%,
-        rgba(var(--amb-green), var(--amb-3)) 0%,
-        rgba(var(--amb-green), calc(var(--amb-3) * .42)) 38%,
-        rgba(var(--amb-green), 0) var(--amb-fade)),
-      /* The page's blue starts climbing here and does not stop until the
-         footer; this is the first step of that climb. Centre kept inside the
-         box — outside it, all that shows is the straight cut. */
-      radial-gradient(var(--amb-r-xl) calc(var(--amb-r-xl) * .5) at 66% 92%,
+      radial-gradient(var(--amb-r-xl) calc(var(--amb-r-xl) * .5) at 66% 76%,
         rgba(var(--amb-blue), var(--amb-2)) 0%,
         rgba(var(--amb-blue), 0) var(--amb-fade));
   }
 
-  .lib-head {
+  /* ---- the top band: title and strip share a row, to save height ----
+     Stacking "1200+ моделей" above a full-width strip above the panel
+     ran three blocks deep before a visitor even reached the model. Side
+     by side they share one band's worth of height, and the description
+     — the one piece of copy that actually needs full width to read
+     comfortably — drops to its own line below both instead. */
+  .lib-top {
     display: grid;
-    grid-template-columns: 46% 1fr;
-    gap: clamp(24px, 3vw, 48px);
+    /* the strip's own column is auto now, not 1fr: 1fr stretched it to
+       fill whatever room was left beside the numeral, which is what was
+       leaving a page of two or three cells stranded in a wide empty
+       lane with the arrows pinned far off at its edges. Auto lets the
+       strip be exactly as wide as its own compact, fixed-width cluster
+       (see --comb-w below) and nothing more. */
+    grid-template-columns: auto auto;
+    justify-content: space-between;
+    /* "end" lines the strip up with the bottom of the description, the
+       last line in the left column — "center" was splitting the
+       difference with the small badge above it instead. */
     align-items: end;
+    gap: clamp(20px, 3vw, 44px);
+    margin-bottom: clamp(16px, 2.2vw, 28px);
   }
+  .lib-head-l { flex: none; }
 
-  .lib-count { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-top: 20px; }
+  .lib-count { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
   .lib-count .stat-num { font-size: clamp(3.25rem, 2rem + 5.2vw, 6rem); line-height: .9; color: var(--blue); }
   .lib-count-lbl {
     font-family: var(--font-display); font-weight: 800;
     font-size: clamp(1.625rem, 1.1rem + 1.8vw, 2.75rem);
     letter-spacing: -.03em; color: var(--ink);
   }
-  .lib-desc { margin-top: 16px; font-size: 1.0625rem; line-height: 1.55; color: var(--ink-2); max-width: 44ch; }
-
-  .lib-head-r { display: flex; justify-content: flex-end; }
-
-  /* segmented control, restyled to the mock: white capsule, solid black
-     pill sliding under the active option */
-  .seg {
-    position: relative;
-    display: inline-flex;
-    gap: 2px;
-    background: #fff;
-    border-radius: var(--r-pill);
-    padding: 6px;
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none;
-    scroll-snap-type: x mandatory;
-    box-shadow: var(--e1);
+  .lib-desc {
+    margin-top: clamp(16px, 2vw, 24px);
+    font-size: 1.0625rem; line-height: 1.55; color: var(--ink-2); max-width: 60ch;
   }
-  .seg::-webkit-scrollbar { display: none; }
-  .seg-pill {
-    position: absolute;
-    top: 6px; left: 6px;
-    height: calc(100% - 12px);
-    border-radius: var(--r-pill);
-    background: var(--ink);
-    transition: transform var(--t-card) var(--ease-spring), width var(--t-card) var(--ease-spring);
-    pointer-events: none;
+
+  /* ---- the strip: paged by subject, not scrolled freely ----
+     Icon over name, not side by side — beside the title now, the strip
+     buys its room from paging rather than from the title, and a narrow
+     column of stacked cells fits several times more of them in the same
+     width than a row of icon-plus-label pills would.
+
+     Each subject is its own page, full width of the viewport, and the
+     track slides exactly one page per click — so "Біологія" shows
+     biology and nothing else, instead of a free scroll that let the next
+     subject's first card bleed into view at the edge of the strip. */
+  .lib-comb {
+    --hex-w: 64px;
+    --hex-h: calc(var(--hex-w) * 1.1547);
+    --hex-cell: calc(var(--hex-w) + 22px);
+    /* the widest page is three cells (biology) — the viewport below is
+       fixed to fit exactly that many, so the strip has one compact size
+       instead of stretching to whatever room a 1fr column handed it. */
+    --comb-w: calc(3 * var(--hex-cell) + 2 * 8px);
+    min-width: 0;
   }
-  .seg-opt {
-    position: relative;
-    z-index: 2;
+  .lib-comb-row { display: flex; align-items: center; gap: 18px; }
+  .lib-comb-viewport { flex: none; width: var(--comb-w); overflow: hidden; }
+  .lib-comb-track {
+    display: flex;
+    transition: transform 380ms var(--ease-spring, ease);
+  }
+  .lib-comb-page {
+    flex: 0 0 100%;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 0;
+    padding: 4px 2px;
+    list-style: none;
+    min-width: 0;
+  }
+  .lib-comb-page li { flex: none; }
+
+  .lib-comb-arrow {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--surface-sunken);
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: background 160ms linear, color 160ms linear, opacity 160ms linear;
+  }
+  .lib-comb-arrow svg { width: 18px; height: 18px; }
+  .lib-comb-arrow:hover { background: var(--line); color: var(--ink); }
+  .lib-comb-arrow:disabled { opacity: .35; cursor: default; background: var(--surface-sunken); color: var(--ink-2); }
+
+  /* one dot per subject, its name underneath so the dot is a destination
+     rather than an abstract page marker */
+  .lib-comb-dots {
+    display: flex;
+    justify-content: center;
+    gap: clamp(16px, 3vw, 32px);
+    margin-top: 8px;
+  }
+  .lib-comb-dot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
     border: 0;
     background: none;
-    border-radius: var(--r-pill);
-    padding: 10px 20px;
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: .875rem;
-    color: var(--ink-3);
-    white-space: nowrap;
-    scroll-snap-align: center;
+    padding: 4px;
     cursor: pointer;
-    transition: color var(--t-micro) var(--ease-out);
   }
-  .seg-opt:hover { color: var(--ink); }
-  .seg-opt.is-active { color: #fff; }
-
-  /* ---- honeycomb ----
-     Pointy-top cells: width w, height w * 2/√3. Rows nest by pulling each
-     row up a quarter of a cell height, and every other row starts half a
-     cell in — that half-cell start is the only thing the filter script has
-     to reapply (`is-shift`), because which cell begins a row changes when
-     subjects are filtered out. The track is 3.5 cells wide so the offset
-     row still fits without wrapping early.
-
-     The cells do not touch. A tight comb reads as a diagram; this band is
-     a shelf of things you could pick up, so the gap is wide enough to see
-     the ground between them and the corners are rounded off.
-
-     Eight cells, not nine — three, three and two. */
-  .lib-comb {
-    position: relative;   /* offsetParent for the pointer field in app.js */
-    --hex-cols: 3;
-    --hex-gap: clamp(14px, 1.9vw, 30px);
-    /* no-JS fallback only — the script overwrites this with a width solved
-       against the real track (see initLibrary/comb in app.js) */
-    --hex-w: clamp(112px, 13.5vw, 216px);
-    --hex-h: calc(var(--hex-w) * 1.1547);
-    display: flex;
-    flex-wrap: wrap;
-    column-gap: var(--hex-gap);
-    row-gap: 0;
-    /* cols full cells plus one half cell, so an indented row still holds a
-       full `cols` and eight cells run 3 / 3 / 2 (+1px of slack so
-       sub-pixel rounding cannot push a cell onto a line of its own) */
-    width: calc(var(--hex-cols) * (var(--hex-w) + var(--hex-gap))
-                + (var(--hex-w) + var(--hex-gap)) / 2 - var(--hex-gap) + 1px);
-    max-width: 100%;
-    margin: clamp(32px, 3.5vw, 52px) auto 0;
-    /* every cell is pulled up, first row included — give that back here */
-    padding-top: calc(var(--hex-h) * .25 - var(--hex-gap) * .5);
+  .lib-comb-dot .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--line);
+    transition: background 160ms linear, transform 160ms var(--ease-spring);
   }
-  /* a filtered subject is one short row: centre it instead of leaving it
-     hanging off the left edge of a 3.5-cell track */
-  .lib-comb.is-short { justify-content: center; }
+  .lib-comb-dot .dot-lbl {
+    font-family: var(--font-display);
+    font-size: .6875rem;
+    font-weight: 700;
+    color: var(--ink-3);
+    transition: color 160ms linear;
+  }
+  .lib-comb-dot:hover .dot { background: var(--ink-3); }
+  .lib-comb-dot.is-active .dot { background: var(--ink); transform: scale(1.3); }
+  .lib-comb-dot.is-active .dot-lbl { color: var(--ink); font-weight: 800; }
 
-  /* Two elements per cell on purpose: the shape is masked, and a mask
-     clips away anything a filter draws outside it — so the drop-shadow
-     lives on the outer element and the mask on the inner one. `--px/--py`
-     are written by the pointer field in app.js. */
+  /* Two elements per cell: the shape is masked, and a mask clips away
+     anything a filter draws outside it — so the lift/shadow lives on the
+     outer element and the mask on the inner one. */
   .hex {
     position: relative;
-    flex: 0 0 var(--hex-w);
-    height: var(--hex-h);
-    margin-top: calc(var(--hex-h) * -.25 + var(--hex-gap) * .5);
-    /* one clock for every glyph animation in the band (see the hover
-       overlays below): one hover, one beat, no cell livelier than its
-       neighbour */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: var(--hex-cell, calc(var(--hex-w) + 24px));
+    border: 0;
+    border-radius: var(--r-lg);
+    background: none;
+    padding: 6px 4px;
+    cursor: pointer;
     --glyph-t: 880ms;
     --glyph-e: cubic-bezier(.42, 0, .22, 1);
-    cursor: pointer;
-    transform: translate3d(var(--px, 0px), var(--py, 0px), 0);
-    transition: transform 500ms cubic-bezier(.22, .9, .28, 1),
-                filter 260ms var(--ease-out), opacity 200ms var(--ease-out);
+    /* the lift itself, smooth out AND back — transform only, so it moves
+       the shape and its caption as one unit without disturbing the shadow,
+       which lives one level down */
+    transform: translateY(0);
+    transition: transform 260ms var(--ease-spring), background 160ms linear;
   }
-  .hex.is-shift { margin-left: calc((var(--hex-w) + var(--hex-gap)) / 2); }
+  .hex:hover { z-index: 3; background: var(--surface-sunken); transform: translateY(-3px); }
+  /* a picked cell stays lit whether or not the pointer is still on it */
+  .hex.is-active { z-index: 2; background: var(--surface-sunken); transform: translateY(-3px); }
+  .hex.is-active:hover { transform: translateY(-4px); }
 
-  /* ---- the cells fly in and assemble ----
-     Only `transform` moves. The comb's geometry is solved in JS (--hex-w,
-     is-shift); animating anything that affects layout would re-run that
-     maths mid-flight and tear the rows apart.
-
-     `backwards`, never `forwards`: this animation and the cursor field
-     both drive `transform` on .hex, and a forwards fill would freeze the
-     final keyframe in place and kill the field for good. With backwards
-     the element holds the first frame through its delay and then hands
-     `transform` back to the rule above.
-
-     Which side a cell comes from is set at run time (see initLibrary), not
-     here — the layout is 3/3/2 on a desktop and 2/1/2/1/2 on a phone, and
-     filtering reshuffles it again.
-
-     `is-staged` is put on by the script rather than hanging the hidden
-     state off the document's `.js` class: Astro scopes every compound
-     selector it is given, so `.js .lib-comb .hex` compiles to
-     `.js[data-astro-cid-…]`, and <html> carries no such attribute. Both
-     classes here sit on elements of this component, so both get scoped
-     together — and with no script at all nothing is ever hidden. */
-  .lib-comb.is-staged .hex { opacity: 0; }
-  .lib-comb.is-staged .hex.is-in {
-    opacity: 1;
-    animation: hex-assemble 720ms cubic-bezier(.16, .84, .26, 1) var(--fly-d, 0ms) backwards;
+  /* The shadow lives here, one level above the mask — a mask clips away
+     anything a filter draws outside its own box, so a drop-shadow on the
+     masked element itself gets cut off rather than cast. This box is an
+     unmasked rectangle roughly the hex's own footprint, which is all a
+     soft shadow needs to read as belonging to the shape above it. */
+  .hex-shadow {
+    display: block;
+    width: var(--hex-w);
+    height: var(--hex-h);
+    filter: drop-shadow(0 4px 8px rgba(15, 18, 45, .14));
+    transition: filter 220ms var(--ease-out);
   }
-  /* that rule outranks `.hex.is-out`, which is what fades a cell the subject
-     filter is dropping — restate it at the same weight or filtering stops
-     fading and starts blinking */
-  .lib-comb.is-staged .hex.is-in.is-out { opacity: 0; }
-  @keyframes hex-assemble {
-    0% {
-      opacity: 0;
-      transform: translate3d(var(--fly-x, 0), var(--fly-y, 0), 0)
-                 rotate(var(--fly-r, 0deg)) scale(.86);
-    }
-    38% { opacity: 1; }
-    100% {
-      opacity: 1;
-      transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .lib-comb.is-staged .hex { opacity: 1; }
-    .lib-comb.is-staged .hex.is-in { animation: none; }
-  }
+  .hex:hover .hex-shadow { filter: drop-shadow(0 14px 22px rgba(15, 18, 45, .24)); }
+  .hex.is-active .hex-shadow { filter: drop-shadow(0 12px 20px rgba(15, 18, 45, .22)); }
+  .hex.is-active:hover .hex-shadow { filter: drop-shadow(0 16px 24px rgba(15, 18, 45, .28)); }
 
   .hex-face {
     display: grid;
     place-items: center;
     width: 100%;
     height: 100%;
-    /* a hexagon drawn inset and stroked back out with a round join: the
-       stroke width is the corner radius, doubled */
     -webkit-mask-image: var(--hex-mask);
     mask-image: var(--hex-mask);
     -webkit-mask-size: 100% 100%;
     mask-size: 100% 100%;
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
-    transition: transform 420ms cubic-bezier(.22, .9, .28, 1);
   }
-  .lib-comb {
-    --hex-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,12.7 89,35.22 89,80.25 50,102.77 11,80.25 11,35.22' fill='%23000' stroke='%23000' stroke-width='22' stroke-linejoin='round'/%3E%3C/svg%3E");
-  }
-
-  .hex:hover { z-index: 3; filter: drop-shadow(0 14px 22px rgba(15, 18, 45, .18)); }
-  .hex:hover .hex-face { transform: scale(1.025); }
-  .hex.is-out { opacity: 0; }
-  .hex.is-out .hex-face { transform: scale(.94); }
-  .hex.is-hidden { display: none; }
 
   .hex.is-green .hex-face { background: var(--green); }
   .hex.is-blue .hex-face { background: var(--blue); }
   .hex.is-yellow .hex-face { background: var(--yellow); }
   .hex.is-ink .hex-face { background: var(--ink-block); }
 
-  /* the label stack sits in the cell's widest band, dead centre — the
-     corners of a hexagon are unusable, so nothing is anchored to them */
-  .hex-in {
-    width: 100%;
-    padding: 0 15%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    text-align: center;
-  }
+  /* a bright ring for the picked cell — an outline, not a second mask, so
+     it cannot fall into the trap a masked pseudo-ring did elsewhere on this
+     page under software rendering. It sits on the unmasked shadow box, not
+     the masked face, for the same reason the shadow does. */
+  .hex.is-active .hex-shadow { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 4px; }
+
   .hex-art {
     position: relative;
     display: block;
-    /* 20% down from 46% / 78px */
-    width: 37%;
-    max-width: 62px;
-    transition: transform 420ms cubic-bezier(.34, 1.4, .5, 1);
+    width: 32px;
+    perspective: 500px;
   }
-  .hex:hover .hex-art { transform: translateY(-3px) rotate(-5deg) scale(1.07); }
   .hex-obj {
     display: block;
     width: 100%;
     height: auto;
-    filter: drop-shadow(0 9px 12px rgba(0, 0, 0, .3));
   }
 
-  /* The DNA is the one cell whose model reads as a thing you would TURN, so
-     hovering turns it. A rendered PNG has no far side, so the middle of the
-     revolution is a flat edge and the second half is a mirror image — at 78px
-     and 880ms neither survives long enough to register, and the alternative,
-     a timid rock back and forth, does not read as "you can spin this". */
-  .hex-art { perspective: 620px; }
+  /*
+   * Each clay render was shot with its own amount of empty canvas around
+   * it — gear.png fills nearly all of its 256x256 frame while thermo.png
+   * and the eye's SVG circle sit well inside theirs — so at one fixed
+   * width they read as noticeably different sizes (dna and the eye were
+   * the two the client actually flagged). Measured the opaque pixels'
+   * own bounding box per asset and scaled each so its visual diagonal
+   * comes out to roughly the same fraction of the cell; gear and heart
+   * scale down a little rather than everything else scaling up to
+   * match them, so nothing risks crowding the hex mask.
+   */
+  .hex-obj.ic-cell { transform: scale(1.09); }
+  .hex-obj.ic-crust { transform: scale(1.02); }
+  .hex-obj.ic-dna { transform: scale(1.09); }
+  .hex-obj.ic-gear { transform: scale(.86); }
+  .hex-obj.ic-heart { transform: scale(0.94); }
+  .hex-obj.ic-periodic { transform: scale(0.97); }
+  .hex-obj.ic-thermo { transform: scale(1.25); }
+  .hex-obj.ic-volcano { transform: scale(1.02); }
+  .hex-eye { transform: scale(1.13); }
+
   .hex:hover .hex-obj.is-spin { animation: dna-spin var(--glyph-t) var(--glyph-e); }
-  @keyframes dna-spin { to { transform: rotateY(360deg); } }
+  @keyframes dna-spin { to { transform: scale(1.09) rotateY(360deg); } }
+  .hex:hover .hex-obj.is-turn { animation: fx-turn calc(var(--glyph-t) * 4) linear infinite; }
+  @keyframes fx-turn { to { transform: scale(.86) rotate(360deg); } }
 
-  /* ---- the hover overlays ----
-     Every one is an SVG laid over the render, the size of the art, and
-     invisible to the pointer so it cannot steal the cell's own hover. One
-     box for all of them, but three class names on purpose: `.hex-spark`
-     carries the heart's dash defaults on its paths, and those would leak
-     into shapes that are not dashes if the lava or the other four shared
-     its name. Every coordinate in them is a point of the 3D model pushed
-     through the same camera that rendered the icon, so a line lands on the
-     object's own feature instead of near it. */
+  /* The eye is the one glyph that is markup rather than a PNG, so its hover
+     business lives inside the object instead of over it: the iris group looks
+     left, then right, then back to centre, and the pupil dilates and settles
+     on the way. The specular stays put — it belongs to the cornea, not to the
+     iris, and an eye whose highlight travels with the pupil reads as a sticker. */
+  .hex-eye .eye-pupil { transform-box: fill-box; transform-origin: 50% 50%; }
+  .hex:hover .hex-eye .eye-gaze  { animation: eye-gaze calc(var(--glyph-t) * 1.7) cubic-bezier(.5, 0, .15, 1); }
+  .hex:hover .hex-eye .eye-pupil { animation: eye-dilate calc(var(--glyph-t) * 1.7) ease-in-out; }
+  @keyframes eye-gaze {
+    0%, 6%    { transform: translate(0, 0); }
+    24%, 34%  { transform: translate(-15px, 5px); }
+    56%, 66%  { transform: translate(17px, -4px); }
+    88%, 100% { transform: translate(0, 0); }
+  }
+  @keyframes eye-dilate {
+    0%, 100% { transform: scale(1); }
+    28%      { transform: scale(1.45); }
+    64%      { transform: scale(.84); }
+  }
+
+  /* ---- the hover overlays: unchanged from the honeycomb these replaced ---- */
   .hex-lava, .hex-fx, .hex-spark {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    pointer-events: none;
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    overflow: visible; pointer-events: none;
   }
-
-  .hex-lava .gob {
-    fill: #FF8E22;
-    opacity: 0;
-    filter: drop-shadow(0 0 6px rgba(255, 150, 40, .85));
-  }
+  .hex-lava .gob { fill: #FF8E22; opacity: 0; filter: drop-shadow(0 0 6px rgba(255, 150, 40, .85)); }
   .hex:hover .hex-lava .gob { animation: lava-throw var(--glyph-t) cubic-bezier(.25, .6, .35, 1); }
-  /* --h is how high each gobbet gets: the middle of the spray is thrown
-     hardest, the edges barely clear the rim. */
   .hex-lava .g1 { --h: -60px; fill: #FFA83C; animation-delay: 40ms; }
   .hex-lava .g2 { --h: -84px; animation-delay: 0ms; }
   .hex-lava .g3 { --h: -94px; fill: #FFC24E; animation-delay: 70ms; }
   .hex-lava .g4 { --h: -80px; animation-delay: 25ms; }
   .hex-lava .g5 { --h: -56px; fill: #FF7A16; animation-delay: 90ms; }
-  /* The glyph renders at 78px, so the whole throw happens inside about 24
-     real pixels: a gobbet that never reaches full size is a gobbet nobody
-     sees. It leaves the vent small, is at its largest just clear of the rim,
-     and only shrinks on the way out as it cools. */
   @keyframes lava-throw {
     0%   { transform: translateY(8px) scale(.3); opacity: 0; }
     16%  { transform: translateY(-8px) scale(1); opacity: 1; }
@@ -456,14 +547,9 @@ const subjectBlock: Record<string, string> = {
     100% { transform: translateY(var(--h, -70px)) scale(.5); opacity: 0; }
   }
 
-  /* Будова клітини — a ripple leaving the nucleus */
   .fx-cell circle {
-    fill: none;
-    stroke: #FFF3C4;
-    stroke-width: 7;
-    opacity: 0;
-    transform-box: fill-box;
-    transform-origin: 50% 50%;
+    fill: none; stroke: #FFF3C4; stroke-width: 7; opacity: 0;
+    transform-box: fill-box; transform-origin: 50% 50%;
   }
   .hex:hover .fx-cell .r1 { animation: fx-ripple calc(var(--glyph-t) * 1.3) ease-out; }
   .hex:hover .fx-cell .r2 { animation: fx-ripple calc(var(--glyph-t) * 1.3) ease-out 260ms; }
@@ -473,194 +559,177 @@ const subjectBlock: Record<string, string> = {
     100% { transform: scale(2.9); opacity: 0; }
   }
 
-  /* Періодична система — the highlight hops down the table, one cell at a
-     time, on the same diagonal the plaque is turned along */
-  .fx-grid rect {
-    fill: rgba(255, 214, 92, .28);
-    stroke: #FFD75C;
-    stroke-width: 7;
-    opacity: 0;
-  }
+  .fx-grid rect { fill: rgba(255, 214, 92, .28); stroke: #FFD75C; stroke-width: 7; opacity: 0; }
   .hex:hover .fx-grid .c1 { animation: fx-flash 340ms ease-out; }
   .hex:hover .fx-grid .c2 { animation: fx-flash 340ms ease-out 190ms; }
   .hex:hover .fx-grid .c3 { animation: fx-flash 340ms ease-out 380ms; }
-  @keyframes fx-flash {
-    0%, 100% { opacity: 0; }
-    40%      { opacity: 1; }
-  }
+  @keyframes fx-flash { 0%, 100% { opacity: 0; } 40% { opacity: 1; } }
 
-  /* Термодинаміка — a heat engine, so the rod takes a stroke and the
-     barrel flushes warm at the bottom of it. The rod is its own render
-     sitting BEHIND the barrel, which is why the stroke really does
-     swallow it instead of sliding a flat shape over a picture. The travel
-     below is the cylinder axis projected through the render camera:
-     5.6 / 35.6 px of a 256 frame, written as percent of the box. */
   .hex-rod {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: auto;
+    position: absolute; inset: 0; width: 100%; height: auto;
+    /* scaled to match thermo.png's own 1.25x below, so the rod stays in
+       proportion to the flask it dips into instead of reading as a
+       normal-sized rod poking out of a suddenly bigger vessel */
+    transform: scale(1.25);
     filter: drop-shadow(0 6px 9px rgba(0, 0, 0, .26));
   }
   .hex:hover .hex-rod { animation: fx-stroke var(--glyph-t) cubic-bezier(.36, 0, .28, 1); }
   @keyframes fx-stroke {
-    0%   { transform: translate(0, 0); }
-    38%  { transform: translate(2.2%, 13.9%); }
-    100% { transform: translate(0, 0); }
+    0%   { transform: scale(1.25) translate(0, 0); }
+    38%  { transform: scale(1.25) translate(2.2%, 13.9%); }
+    100% { transform: scale(1.25) translate(0, 0); }
   }
   .fx-heat ellipse { opacity: 0; mix-blend-mode: screen; }
   .hex:hover .fx-heat ellipse { animation: fx-flush var(--glyph-t) ease-out; }
-  @keyframes fx-flush {
-    0%, 100% { opacity: 0; }
-    38%      { opacity: .85; }
-    62%      { opacity: .5; }
-  }
+  @keyframes fx-flush { 0%, 100% { opacity: 0; } 38% { opacity: .85; } 62% { opacity: .5; } }
 
-  /* Тектонічні плити — the fault flares twice and the ground shudders */
   .fx-seam path {
-    fill: none;
-    stroke: #FFA53A;
-    stroke-width: 15;
-    stroke-linecap: round;
-    opacity: 0;
+    fill: none; stroke: #FFA53A; stroke-width: 15; stroke-linecap: round; opacity: 0;
     filter: drop-shadow(0 0 7px rgba(255, 140, 40, .95));
   }
   .hex:hover .fx-seam path { animation: fx-flare var(--glyph-t) ease-out; }
-  @keyframes fx-flare {
-    0%, 100% { opacity: 0; }
-    22%      { opacity: .95; }
-    58%      { opacity: .35; }
-    76%      { opacity: .9; }
-  }
+  @keyframes fx-flare { 0%, 100% { opacity: 0; } 22% { opacity: .95; } 58% { opacity: .35; } 76% { opacity: .9; } }
   .hex:hover .fx-seam { animation: fx-shudder 480ms ease-in-out; }
   @keyframes fx-shudder {
     0%, 100% { transform: translate(0, 0); }
-    22%  { transform: translate(1.6px, -1px); }
-    46%  { transform: translate(-1.6px, 1px); }
-    72%  { transform: translate(1px, .6px); }
+    22% { transform: translate(1.6px, -1px); }
+    46% { transform: translate(-1.6px, 1px); }
+    72% { transform: translate(1px, .6px); }
   }
 
-  /* Двигун — it turns, which is the whole of what a gear does. In plane,
-     not in depth: a gear seen edge-on is a disc, and the DNA next door is
-     already using the rotateY read. */
-  .hex:hover .hex-obj.is-turn { animation: fx-turn calc(var(--glyph-t) * 4) linear infinite; }
-  @keyframes fx-turn { to { transform: rotate(360deg); } }
-
-  /* The heart's own pulse, traced. The trace is a separate overlay because
-     the object is a rendered PNG — the path below is the exact pulse from
-     the drawing the render was made of, mapped into the 256 frame by the
-     crop-and-fit that produced heart.png (translate/scale, do not touch
-     one without the other). A short gold dash runs the length of it once
-     per hover, then leaves. */
   .hex-spark path {
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    /* pathLength=100 on the path, so the dash maths is in percent of the
-       trace and does not depend on the geometry */
-    stroke-dasharray: 24 100;
-    stroke-dashoffset: 24;
-    opacity: 0;
+    fill: none; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 24 100; stroke-dashoffset: 24; opacity: 0;
   }
-  /* two passes: a wide amber body and a hot core, so the streak reads as
-     light travelling rather than as a coloured line */
-  .hex-spark .s-glow {
-    stroke: #FFC33A;
-    stroke-width: 8.4;
-    filter: drop-shadow(0 0 5px rgba(255, 186, 40, .95));
-  }
-  .hex-spark .s-core {
-    stroke: #FFF4CE;
-    stroke-width: 3.4;
-    stroke-dasharray: 15 100;
-    stroke-dashoffset: 15;
-  }
+  .hex-spark .s-glow { stroke: #FFC33A; stroke-width: 8.4; filter: drop-shadow(0 0 5px rgba(255, 186, 40, .95)); }
+  /* one pass, not two: the thin inner core used to run the same sweep at
+     a different dash length, and since both shared one duration but
+     covered different distances, they drifted out of step — reading as
+     a second, smaller pass trailing the first instead of one clean beat. */
+  .hex-spark .s-core { display: none; }
   .hex:hover .hex-spark .s-glow { animation: hex-whoosh var(--glyph-t) var(--glyph-e); }
-  .hex:hover .hex-spark .s-core { animation: hex-whoosh-core var(--glyph-t) var(--glyph-e); }
-  @keyframes hex-whoosh {
-    0%   { stroke-dashoffset: 24;   opacity: 0; }
-    9%   { opacity: 1; }
-    76%  { opacity: 1; }
-    100% { stroke-dashoffset: -110; opacity: 0; }
-  }
-  @keyframes hex-whoosh-core {
-    0%   { stroke-dashoffset: 15;   opacity: 0; }
-    9%   { opacity: 1; }
-    76%  { opacity: 1; }
-    100% { stroke-dashoffset: -101; opacity: 0; }
-  }
+  @keyframes hex-whoosh { 0% { stroke-dashoffset: 24; opacity: 0; } 9% { opacity: 1; } 76% { opacity: 1; } 100% { stroke-dashoffset: -110; opacity: 0; } }
+
+  /* beside the shape now, not under it — a nav label reads left to right
+     next to its icon, the way every other menu item on the page does */
   .hex .nm {
+    max-width: calc(var(--hex-w) + 20px);
     font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(.8125rem, .63rem + .38vw, 1rem);
-    line-height: 1.18;
-    color: var(--ink);
+    font-weight: 700;
+    font-size: .6875rem;
+    line-height: 1.25;
+    color: var(--ink-2);
+    text-align: center;
   }
-  .hex .sub {
-    font-size: .625rem;
-    font-weight: 800;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: rgba(0, 0, 0, .45);
-  }
-  .hex.is-blue .nm, .hex.is-ink .nm { color: #fff; }
-  .hex.is-blue .sub, .hex.is-ink .sub { color: rgba(255, 255, 255, .6); }
+  .hex:hover .nm, .hex.is-active .nm { color: var(--ink); }
 
   @media (prefers-reduced-motion: reduce) {
-    .hex, .hex-face, .hex-art { transition: none; }
-    .hex:hover .hex-spark path,
-    .hex:hover .hex-lava .gob,
-    .hex:hover .hex-obj.is-spin,
-    .hex:hover .hex-obj.is-turn,
-    .hex:hover .hex-fx,
-    .hex:hover .hex-fx path,
-    .hex:hover .hex-fx rect,
-    .hex:hover .hex-fx circle,
-    .hex:hover .hex-fx ellipse,
+    .hex { transition: none; }
+    .hex:hover .hex-spark path, .hex:hover .hex-lava .gob,
+    .hex:hover .hex-obj.is-spin, .hex:hover .hex-obj.is-turn,
+    .hex:hover .hex-eye .eye-gaze, .hex:hover .hex-eye .eye-pupil,
+    .hex:hover .hex-fx, .hex:hover .hex-fx path, .hex:hover .hex-fx rect,
+    .hex:hover .hex-fx circle, .hex:hover .hex-fx ellipse,
     .hex:hover .hex-rod { animation: none; }
   }
 
-  /* ---- footer of the band ----
-     The band used to end on a "see the whole library" button next to a
-     screenshot of the catalogue's page numbers, running to 3068. Eight
-     cells are a sample, and a sample does not need a door to the archive
-     behind it — the CTA the page actually wants is the lead form. */
-  .lib-note { text-align: center; margin-top: clamp(26px, 3vw, 40px); opacity: .8; }
-
-  @media (max-width: 1024px) {
-    /* The cells fly in from up to a cell and a half outside the comb. The
-       band cannot clip (its light has to reach the neighbours, see
-       style.css), but the comb can, and on a touch screen nothing is lost
-       to it: the hover shadow that would be cut at the sides never fires.
-       Without this a cell arriving from the right widened the document for
-       the length of its flight — mobile Safari lets a finger pan into that. */
-    .lib-comb { overflow-x: clip; }
-  }
-  @media (max-width: 900px) {
-    .lib-head { grid-template-columns: 1fr; align-items: start; }
-    .lib-head-r { justify-content: flex-start; }
-    .lib-comb { --hex-w: clamp(112px, 18vw, 200px); }
-    /* the tabs scroll sideways here; a tab that is cut at the edge is the
-       cue that they do, and the padding lets the snapped one sit clear of
-       the capsule's own rounding */
-    .seg { scroll-padding-inline: 6px; }
-  }
-  /* two cells per row below this — three would put the labels under 12px */
+  /* the strip scrolls sideways at any width, so phones need no layout
+     switch — just tighter padding, since the edge-to-edge card gutter
+     is narrower there. */
+  /* the title and the strip only share a row where there is a row's
+     worth of width to share; below that they stack, title first */
   @media (max-width: 700px) {
-    .lib-comb { --hex-cols: 2; --hex-gap: 12px; --hex-w: min(34vw, 200px); }
-    /* A 123px cell at 360px: the label stack stayed desktop-sized while
-       the object shrank with the cell, so the object came out at 32px —
-       a smudge under three lines of type. Narrower side padding gives the
-       lines room (the cell's waist is its full width), the gap tightens,
-       and the object takes 48% of what is left: 47px at 360, 52px at 390. */
-    .hex-in { padding: 0 10%; gap: 5px; }
-    .hex-art { width: 48%; }
-    .hex .sub { font-size: 9.5px; letter-spacing: .06em; }
-    /* "Восьмициліндровий" is 127px of bold 13px in a 98px line: it ran
-       out through the mask on both sides. The word carries a soft hyphen
-       in classroom.json (`­`, after «Восьми»), so it breaks there and
-       only there, and only when it has to — from 768px up the line is wide
-       enough and the hyphen never shows. `hyphens: auto` was rejected: it
-       would also split words that fit on the next line perfectly well. */
+    .lib-top { grid-template-columns: 1fr; gap: 16px; }
+    /* stacked full-width here, the number was reading as heavier than the
+       nav and demo below it were given credit for — a notch smaller keeps
+       it the loudest thing on the page without it being the only thing */
+    .lib-count .stat-num { font-size: clamp(2.25rem, 1.4rem + 5vw, 3rem); }
+  }
+
+  @media (max-width: 560px) {
+    .lib-comb-page { gap: 6px; padding: 4px 2px; }
+    .hex { padding: 5px 3px; }
   }
 </style>
+
+<script>
+  /*
+   * The only interaction this band owns: click a sample cell, and the model
+   * panel picks up its name and subject. Eight of the nine have no real
+   * file behind them yet, so they switch the panel into the "soon" state
+   * ModelViewer.astro declares. The ninth — the eye — IS the panel's own
+   * default demo, so picking it instead restores exactly the copy the page
+   * shipped with, captured once below before anything is overwritten.
+   */
+  const cells = document.querySelectorAll<HTMLButtonElement>('.hex');
+  const panel = document.querySelector<HTMLElement>('.mv');
+
+  if (panel && cells.length) {
+    const ttl = panel.querySelector<HTMLElement>('.mv-ttl');
+    const meta = panel.querySelector<HTMLElement>('.mv-meta');
+    const desc = panel.querySelector<HTMLElement>('.mv-desc');
+    const soonIcon = panel.querySelector<HTMLImageElement>('[data-soon-icon]');
+    const copy = JSON.parse(panel.dataset.copy || '{}') as { soonDesc?: string };
+
+    const original = {
+      ttl: ttl?.textContent ?? '',
+      meta: meta?.textContent ?? '',
+      desc: desc?.textContent ?? ''
+    };
+
+    cells.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        cells.forEach((b) => b.classList.toggle('is-active', b === btn));
+
+        if (btn.dataset.real === 'true') {
+          panel.classList.remove('is-soon');
+          if (ttl) ttl.textContent = original.ttl;
+          if (meta) meta.textContent = original.meta;
+          if (desc) desc.textContent = original.desc;
+          return;
+        }
+
+        panel.classList.add('is-soon');
+        if (ttl) ttl.textContent = btn.dataset.name ?? '';
+        if (meta) meta.textContent = (btn.dataset.label ?? '').toUpperCase();
+        if (desc && copy.soonDesc) desc.textContent = copy.soonDesc;
+
+        const objImg = btn.querySelector<HTMLImageElement>('.hex-obj');
+        if (soonIcon && objImg) soonIcon.src = objImg.src;
+      });
+    });
+  }
+
+  /*
+   * The strip's own nav: one subject on screen at a time. Arrows and dots
+   * both just set `page` and slide the track to it — there is no scroll
+   * position to reconcile, so a subject stays exactly what it says it is.
+   */
+  const track = document.querySelector<HTMLElement>('[data-comb-track]');
+  const prevBtn = document.querySelector<HTMLButtonElement>('[data-comb-prev]');
+  const nextBtn = document.querySelector<HTMLButtonElement>('[data-comb-next]');
+  const dots = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-comb-dot]'));
+
+  if (track && dots.length) {
+    const pageCount = track.children.length;
+    let page = 0;
+
+    function render() {
+      track!.style.transform = `translateX(-${page * 100}%)`;
+      dots.forEach((d, i) => d.classList.toggle('is-active', i === page));
+      if (prevBtn) prevBtn.disabled = page === 0;
+      if (nextBtn) nextBtn.disabled = page === pageCount - 1;
+    }
+
+    function goTo(next: number) {
+      page = Math.min(pageCount - 1, Math.max(0, next));
+      render();
+    }
+
+    dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
+    prevBtn?.addEventListener('click', () => goTo(page - 1));
+    nextBtn?.addEventListener('click', () => goTo(page + 1));
+
+    render();
+  }
+</script>

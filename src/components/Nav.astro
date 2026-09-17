@@ -48,7 +48,7 @@ const alt = altPath(locale);
       <span class="gnav-vline" aria-hidden="true"></span>
       <a href="#top" class="gnav-product">
         <img class="gnav-mark" src={withBase('/assets/brand/classroom-mark.png')}
-             alt="Eddy Classroom" width="126" height="24" />
+             alt="Eddy Classroom" width="127" height="26" />
       </a>
     </div>
 
@@ -196,7 +196,10 @@ const alt = altPath(locale);
   /* The group mark is the taller of the two on purpose: it is the constant,
      and the product name reads as its subordinate rather than its twin. */
   .gnav-eddy { height: 26px; width: auto; display: block; }
-  .gnav-mark { height: 24px; width: auto; display: block; }
+  /* The product mark is set a touch taller than the group mark because its
+     canvas carries the three-spark burst above the cap line: at an equal
+     height the word itself would read smaller than "Eddy" beside it. */
+  .gnav-mark { height: 26px; width: auto; display: block; }
   .gnav-vline { width: 1px; height: 24px; background: rgba(31, 44, 46, .22); }
 
   .gnav-links { display: flex; justify-content: center; }
@@ -314,7 +317,7 @@ const alt = altPath(locale);
   @media (max-width: 620px) {
     .gnav-brand { gap: 10px; }
     .gnav-eddy { height: 21px; }
-    .gnav-mark { height: 19px; }
+    .gnav-mark { height: 21px; }
     .gnav-vline { height: 19px; }
   }
   /* The lockup has to fit next to the two pills: at 360px that leaves
@@ -325,7 +328,7 @@ const alt = altPath(locale);
     .gnav-inner { gap: 12px; }
     .gnav-brand { gap: 8px; }
     .gnav-eddy { height: 18px; }
-    .gnav-mark { height: 16px; }
+    .gnav-mark { height: 18px; }
     .gnav-vline { height: 16px; }
   }
   /* below 340px even that pair does not fit: the group mark is the

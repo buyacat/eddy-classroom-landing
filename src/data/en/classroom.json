@@ -18,10 +18,12 @@
     { "text": "Grades 1–12" },
     { "text": "Works offline", "offline": true }
   ],
-  "classroom_hero_panel_title": "Lesson · Geography 6-A",
+  "classroom_hero_panel_title": "Earth's structure · 6-A",
+  "classroom_hero_panel_tag": "3D model",
   "classroom_hero_panel_live": "LIVE",
   "classroom_hero_roster_class": "Class 6-A",
-  "classroom_hero_roster_done": "completed",
+  "classroom_hero_model_source": "From the Eddy library",
+  "classroom_hero_model_count": "1200+ 3D models",
   "classroom_hero_wheel_title": "Wheel of names",
   "classroom_hero_timer_title": "Timer",
   "classroom_hero_space_title": "Space",
@@ -35,17 +37,8 @@
     { "name": "Inner core", "meta": "5150–6371 km · solid" }
   ],
   "classroom_hero_globe_scale_note": "The crust is drawn thicker than life so it can be seen. In reality it is under 1% of Earth's radius.",
-  "classroom_lesson_ask": "Ask the class",
-  "classroom_lesson_rounds": [
-    { "q": "Which layer of the Earth is liquid?", "result": "17 of 22 correct · 77% mastery" },
-    { "q": "Which layer of the Earth is the thinnest?", "result": "19 of 22 correct · 86% mastery" },
-    { "q": "Which layer stays solid at 5,000 °C?", "result": "14 of 22 correct · 64% mastery" }
-  ],
-  "classroom_lesson_answered": "answered",
-  "classroom_lesson_next": "Next question",
-  "classroom_lesson_offline_state": "No connection",
-  "classroom_lesson_offline_chip": "The internet went. The lesson didn’t.",
-  "classroom_lesson_again": "Run it again",
+  "classroom_hero_globe_explode": "Take it apart",
+  "classroom_hero_globe_collapse": "Put it back",
   "classroom_hero_globe_hint": "Tap it, or drag it apart",
   "classroom_hero_globe_alt": "Eddy Classroom — interactive 3D model of the Earth's interior with annotations",
 
@@ -136,14 +129,43 @@
   "classroom_library_badge": "3D objects",
   "classroom_library_count": "1200+",
   "classroom_library_count_label": "models",
-  "classroom_library_desc": "The Eddy Classroom library's catalog of educational 3D content.",
-  "classroom_library_subjects": [
-    { "id": "all", "label": "All" },
-    { "id": "biology", "label": "Biology" },
-    { "id": "physics", "label": "Physics" },
-    { "id": "chemistry", "label": "Chemistry" },
-    { "id": "geography", "label": "Geography" }
+  "classroom_library_desc": "A catalog of educational 3D content for every subject.",
+  "classroom_library_prev": "Previous subject",
+  "classroom_library_next": "Next subject",
+
+  "classroom_library_model_eyebrow": "A model from the catalog",
+  "classroom_library_model_title": "The human eye, in section",
+  "classroom_library_model_meta": "Biology · years 8–9 · 10 structures",
+  "classroom_library_model_desc": "Not a render and not a screenshot: the same file a teacher opens in class. Turn it, pull the structures apart, read what each one does.",
+  "classroom_library_model_cta": "Turn the model",
+  "classroom_library_model_weight": "1.7 MB — fetched only when you ask for it",
+  "classroom_library_model_loading": "Loading the model",
+  "classroom_library_model_error": "The model could not be loaded.",
+  "classroom_library_model_retry": "Try again",
+  "classroom_library_model_nowebgl": "This browser cannot show 3D (no WebGL). Every structure of the model is described below.",
+  "classroom_library_model_hint": "Drag to turn it · the slider pulls the structures apart",
+  "classroom_library_model_explode": "Pull apart",
+  "classroom_library_model_reset": "Reset view",
+  "classroom_library_model_zoom_in": "Zoom in",
+  "classroom_library_model_zoom_out": "Zoom out",
+  "classroom_library_model_parts_title": "Structures",
+  "classroom_library_model_alt": "Interactive 3D model of the human eye in cross-section",
+  "classroom_library_model_parts": [
+    { "node": "Sclera", "label": "Sclera", "desc": "The tough outer fibrous coat — the white of the eye. It holds the globe's shape, protects the structures inside and gives the eye muscles something to pull against; at the front it becomes the transparent cornea." },
+    { "node": "Choroid", "label": "Choroid", "desc": "The middle coat, densely packed with blood vessels. It feeds the outer layers of the retina with oxygen and nutrients, and its dark pigment soaks up stray light so it cannot scatter back inside the eye." },
+    { "node": "Retina", "label": "Retina", "desc": "The innermost light-sensitive coat — the eye's screen. Its photoreceptors turn light into nerve impulses that travel on to the optic nerve." },
+    { "node": "Cornea", "label": "Cornea", "desc": "The transparent domed window at the front of the eye. It contains no blood vessels at all, which is exactly why it stays clear; it bends light more strongly than the lens does, providing about two-thirds of the eye's focusing power." },
+    { "node": "AnteriorChamber", "label": "Anterior chamber (aqueous humour)", "desc": "The space between the cornea and the iris, filled with clear aqueous humour. The fluid is continuously renewed, feeds the vessel-free cornea and lens, and creates the internal pressure that keeps the eye firm." },
+    { "node": "Iris", "label": "Iris", "desc": "The coloured muscular diaphragm with an opening at its centre — the pupil. By changing the pupil's diameter the iris meters how much light reaches the retina: the opening narrows in bright light and widens in the dark." },
+    { "node": "CiliaryBody", "label": "Ciliary body", "desc": "A muscular ring that suspends the lens on fine fibres and changes its curvature — this is how the eye focuses. It also produces the aqueous humour that fills the anterior chamber." },
+    { "node": "Lens", "label": "Lens", "desc": "The transparent biconvex body behind the pupil. Unlike the cornea it can change shape: the ciliary body makes it rounder for near objects and flatter for distant ones." },
+    { "node": "VitreousBody", "label": "Vitreous body", "desc": "The clear gel filling almost the whole volume of the eye behind the lens. It lets light through to the retina and at the same time presses the retina against the choroid from inside, holding the globe's shape." },
+    { "node": "OpticNerve", "label": "Optic nerve", "desc": "A bundle of about a million nerve fibres leaving the back wall of the eye and carrying the image to the brain. There is not a single photoreceptor where it exits — this is the blind spot, and we never notice it." }
   ],
+
+  "classroom_library_soon_badge": "Coming soon",
+  "classroom_library_soon_desc": "The real 3D model for this example is still on its way — it will appear here once it lands in the library.",
+
   "classroom_library_cards": [
     { "subject": "biology", "label": "Biology", "name": "Cell structure", "glyph": "cell" },
     { "subject": "chemistry", "label": "Chemistry", "name": "Periodic table of elements", "glyph": "periodic" },
@@ -152,10 +174,9 @@
     { "subject": "biology", "label": "Biology", "name": "Circulatory system", "glyph": "heart" },
     { "subject": "geography", "label": "Geography", "name": "Tectonic plates", "glyph": "crust" },
     { "subject": "physics", "label": "Physics", "name": "V8 engine", "glyph": "gear" },
-    { "subject": "chemistry", "label": "Chemistry", "name": "DNA molecule", "glyph": "dna" }
+    { "subject": "chemistry", "label": "Chemistry", "name": "DNA molecule", "glyph": "dna" },
+    { "subject": "biology", "label": "Biology", "name": "The human eye, in section", "glyph": "eye", "real": true }
   ],
-  "classroom_library_note": "Model previews are placeholders; real thumbnails will be added soon.",
-
   "classroom_form_headline": "Try Eddy Classroom",
   "classroom_form_lede": "Leave a request — our manager will help connect your school, choose a plan, and run a platform demo for your staff.",
   "classroom_form_title": "Request for Eddy Classroom",

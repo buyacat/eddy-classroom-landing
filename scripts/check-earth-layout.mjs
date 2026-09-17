@@ -118,12 +118,13 @@ test('open row unchanged', (fail) => {
 /*
  * 4. Captions never sit on top of each other.
  *
- * Mirrors what the frame loop actually does: four captions dealt into two
- * staggered rows by index, the same right-hand inset the loop reserves for the
- * floating tool badges, and widths that include the vote count and the bar the
- * lesson appends after mount. The last width in each list is deliberately too
- * wide for the panel — the row must then run off the left edge, visibly, and
- * still never overlap, which is the documented failure mode.
+ * Mirrors what the frame loop actually does: four captions in two staggered
+ * rows, grouped by the half of the picture their shell is in rather than by
+ * parity (which is what keeps the leader lines from crossing — see the loop in
+ * earth.ts), and the same right-hand inset the loop reserves for the floating
+ * tool badges. The last width in each list is deliberately too wide for the
+ * panel — the row must then run off the left edge, visibly, and still never
+ * overlap, which is the documented failure mode.
  */
 test('captions never overlap', (fail) => {
   const insetRight = (w) => (w < 500 ? 8 : Math.max(48, w * 0.11));
@@ -136,7 +137,7 @@ test('captions never overlap', (fail) => {
       // same spot hard against one edge
       for (const want of [(i) => (i / 3) * width, () => width, () => 0]) {
         const all = [0, 1, 2, 3].map((i) => ({ x: want(i), width: tag }));
-        for (const row of [[all[0], all[2]], [all[1], all[3]]]) {
+        for (const row of [[all[0], all[1]], [all[2], all[3]]]) {
           spreadRow(row, 6, width - insetRight(width), PAD);
           for (let i = 1; i < row.length; i++) {
             const clear = row[i].x - row[i - 1].x - (row[i].width + row[i - 1].width) / 2;

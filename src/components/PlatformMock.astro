@@ -1,0 +1,201 @@
+---
+/*
+ * A drawn stand-in for a product screen, not a screenshot. The five shots in
+ * Platform.astro used real captures of the shipping app, and those had gone
+ * stale — they showed an old version of the product. Rather than re-shoot,
+ * each card gets an abstract, on-brand sketch of what that screen is FOR
+ * (a library grid, a quiz with picked answers, a live roster, a model with
+ * annotations, a results chart), built only from the site's own palette and
+ * shapes. It reads as "here is the shape of this feature", not as a claim
+ * about a specific pixel — which is honest about being a placeholder and
+ * needs no upkeep when the real app's UI changes.
+ */
+export interface Props {
+  variant: 'web' | 'session' | 'student' | 'panel' | 'analytics';
+}
+const { variant } = Astro.props;
+---
+
+<div class="mock" aria-hidden="true">
+  {variant === 'web' && (
+    <span class="lib">
+      <span class="lib-nav">
+        <i class="nav-dot"></i>
+        <i class="nav-ln"></i>
+        <i class="nav-ln w-60"></i>
+        <i class="nav-ln w-40"></i>
+      </span>
+      <span class="lib-grid">
+        <i class="tile is-blue"></i>
+        <i class="tile is-yellow"></i>
+        <i class="tile is-green"></i>
+        <i class="tile is-yellow"></i>
+        <i class="tile is-blue"></i>
+        <i class="tile is-ink"></i>
+      </span>
+    </span>
+  )}
+
+  {variant === 'session' && (
+    <span class="ses">
+      <span class="ses-q">
+        <i class="q-ln"></i>
+        <i class="q-opt is-pick"></i>
+        <i class="q-opt"></i>
+        <i class="q-opt"></i>
+      </span>
+      <span class="ses-roster">
+        <span class="r-row"><i class="r-av is-blue"></i><i class="r-bar"></i><i class="r-ok"></i></span>
+        <span class="r-row"><i class="r-av is-yellow"></i><i class="r-bar"></i><i class="r-ok"></i></span>
+        <span class="r-row"><i class="r-av is-green"></i><i class="r-bar w-60"></i></span>
+        <span class="r-row"><i class="r-av is-ink"></i><i class="r-bar w-40"></i></span>
+      </span>
+    </span>
+  )}
+
+  {variant === 'student' && (
+    <span class="stu">
+      <i class="q-ln"></i>
+      <i class="q-opt"></i>
+      <i class="q-opt is-pick"></i>
+      <i class="q-opt"></i>
+    </span>
+  )}
+
+  {variant === 'panel' && (
+    <span class="pan">
+      <span class="pan-obj"></span>
+      <i class="pan-mark m1"></i>
+      <i class="pan-mark m2"></i>
+      <span class="pan-tools">
+        <i class="is-blue"></i><i class="is-yellow"></i><i class="is-green"></i>
+      </span>
+    </span>
+  )}
+
+  {variant === 'analytics' && (
+    <span class="an">
+      <span class="an-bars">
+        <i style="--h:34%"></i><i style="--h:58%"></i><i style="--h:46%"></i>
+        <i style="--h:74%" class="is-peak"></i><i style="--h:52%"></i>
+      </span>
+      <span class="an-rows">
+        <span class="an-row"><i class="dot is-blue"></i><i class="bar"></i></span>
+        <span class="an-row"><i class="dot is-yellow"></i><i class="bar w-70"></i></span>
+        <span class="an-row"><i class="dot is-green"></i><i class="bar w-50"></i></span>
+      </span>
+    </span>
+  )}
+</div>
+
+<style>
+  .mock {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 16px 18px;
+    display: flex;
+  }
+  .mock i, .mock b { display: block; }
+  .w-60 { flex-basis: 60% !important; width: 60%; }
+  .w-40 { flex-basis: 40% !important; width: 40%; }
+  .w-70 { flex-basis: 70% !important; width: 70%; }
+  .w-50 { flex-basis: 50% !important; width: 50%; }
+
+  /* ---- web / library ---- */
+  .lib { display: flex; gap: 14px; width: 100%; }
+  .lib-nav { flex: 0 0 44px; display: flex; flex-direction: column; gap: 9px; padding-top: 3px; }
+  .nav-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--blue); flex: none; }
+  .nav-ln { height: 6px; border-radius: 4px; background: #eceef4; }
+  .lib-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .tile { border-radius: 10px; }
+  .tile.is-blue { background: var(--blue-soft); }
+  .tile.is-yellow { background: var(--yellow-soft); }
+  .tile.is-green { background: var(--green-soft); }
+  .tile.is-ink { background: #eceef4; }
+
+  /* ---- session / student: a picked-answer quiz, shared markup ---- */
+  .ses { display: flex; align-items: center; gap: 16px; width: 100%; }
+  .ses-q, .stu { display: flex; flex-direction: column; gap: 8px; justify-content: center; }
+  .ses-q { flex: 1.15; }
+  .stu { width: 100%; }
+  .q-ln { height: 10px; width: 78%; border-radius: 5px; background: #dfe1ea; margin-bottom: 4px; }
+  .q-opt { height: 20px; border-radius: var(--r-pill); background: #eceef4; }
+  .q-opt.is-pick { background: var(--green-soft); box-shadow: inset 0 0 0 1.5px var(--green-deep); }
+
+  .ses-roster {
+    flex: .85;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    justify-content: center;
+    border-left: 1px solid #eceef4;
+    padding-left: 14px;
+  }
+  .r-row { display: flex; align-items: center; gap: 7px; }
+  .r-av { width: 16px; height: 16px; border-radius: 50%; flex: none; }
+  .r-av.is-blue { background: var(--blue); }
+  .r-av.is-yellow { background: var(--yellow-deep); }
+  .r-av.is-green { background: var(--green-deep); }
+  .r-av.is-ink { background: var(--ink-4); }
+  .r-bar { flex: 1; height: 5px; border-radius: 3px; background: #eceef4; }
+  .r-ok { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--green); }
+
+  /* ---- panel: a model on screen with two marker strokes over it ---- */
+  .pan { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .pan-obj {
+    width: 62px; height: 62px; border-radius: 50%;
+    background: radial-gradient(circle at 32% 28%, #a7b1ff 0%, var(--blue) 55%, var(--blue-deep) 100%);
+  }
+  .pan-mark { position: absolute; border-radius: var(--r-pill); }
+  .pan-mark.m1 { width: 46px; height: 8px; background: var(--yellow); top: 32%; left: 54%; rotate: -18deg; }
+  .pan-mark.m2 { width: 30px; height: 8px; background: var(--green); bottom: 30%; left: 24%; rotate: 12deg; }
+  .pan-tools { position: absolute; left: 0; bottom: 0; display: flex; gap: 6px; }
+  .pan-tools i { width: 11px; height: 11px; border-radius: 50%; }
+  .pan-tools i.is-blue { background: var(--blue); }
+  .pan-tools i.is-yellow { background: var(--yellow); }
+  .pan-tools i.is-green { background: var(--green); }
+
+  /* ---- analytics: a bar chart next to a few result rows ---- */
+  .an { display: flex; align-items: center; gap: 16px; width: 100%; }
+  .an-bars { flex: 1; display: flex; align-items: flex-end; gap: 8px; height: 58px; }
+  .an-bars i { flex: 1; height: var(--h); border-radius: 5px 5px 0 0; background: var(--blue-soft); }
+  .an-bars i.is-peak { background: var(--blue); }
+  .an-rows { flex: 1; display: flex; flex-direction: column; gap: 9px; }
+  .an-row { display: flex; align-items: center; gap: 8px; }
+  .an-row .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .an-row .dot.is-blue { background: var(--blue); }
+  .an-row .dot.is-yellow { background: var(--yellow-deep); }
+  .an-row .dot.is-green { background: var(--green-deep); }
+  .an-row .bar { flex: 1; height: 6px; border-radius: 3px; background: #eceef4; }
+
+  /* ---- every coloured dot INSIDE a window is a hexagon ----
+     Not the three in the title bar: those are window controls, they belong to
+     the browser we are drawing, and turning them into our shape would claim
+     the chrome as ours too. Everything below is content — a nav item, a
+     pupil, a tool, a chart key — so it wears the site's mark.
+
+     A mask, not a clip-path, so the corners stay as round as the library's
+     hexagons; each dot is re-heighted because the shape is 2/√3 taller than
+     it is wide and a square box would squash it. */
+  .nav-dot, .r-av, .r-ok, .pan-tools i, .an-row .dot {
+    border-radius: 0;
+    -webkit-mask-image: var(--hex-mask);
+    mask-image: var(--hex-mask);
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+  .nav-dot { height: calc(14px * var(--hex-ratio)); }
+  .r-av { height: calc(16px * var(--hex-ratio)); }
+  .r-ok { height: calc(10px * var(--hex-ratio)); }
+  .pan-tools i { height: calc(11px * var(--hex-ratio)); }
+  .an-row .dot { height: calc(8px * var(--hex-ratio)); }
+</style>

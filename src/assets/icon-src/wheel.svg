@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!--
+    Колесо фортуни. The coin it replaces was illustrating the prize; the
+    client wants the mechanism — "акцент саме на колесі, як інтерактиві".
+    So: segments (it can land anywhere) plus a pointer biting into the rim
+    (something is about to be decided). Nothing about winning.
+
+    Eight segments rather than twelve: this renders at 52px inside the tools
+    row, and twelve wedges turn into a grey disc at that size. The first
+    segment is centred on the pointer, so the wheel reads as stopped on a
+    result instead of mid-blur.
+
+    Colours are the brand's own three plus cream, cycling so no two
+    neighbours match — the cream wedges are what keep blue and green apart
+    at thumbnail size.
+  -->
+  <defs>
+    <linearGradient id="whRim" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="55%" stop-color="#F0F2F8"/>
+      <stop offset="100%" stop-color="#BFC6D8"/>
+    </linearGradient>
+    <linearGradient id="whHub" x1="0.25" y1="0" x2="0.75" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#F4F6FB"/>
+      <stop offset="100%" stop-color="#C9D0E0"/>
+    </linearGradient>
+    <linearGradient id="whPin" x1="0.2" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#4A5270"/>
+      <stop offset="45%" stop-color="#2B3148"/>
+      <stop offset="100%" stop-color="#141827"/>
+    </linearGradient>
+    <filter id="whb4" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="4"/></filter>
+    <filter id="whb10" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="10"/></filter>
+    <filter id="whb16" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="16"/></filter>
+    <clipPath id="whDisc"><circle cx="128" cy="140" r="92"/></clipPath>
+  </defs>
+  <!-- Scaled to fill the 256 box the way the bought objects do: they run
+       246px corner to corner, and an icon drawn to 160 sits visibly
+       smaller than its neighbours on the same row. -->
+  <g transform="translate(128 128) scale(1.14) translate(-127.5 -126.5)">
+
+  <!-- rim first, wedges inset 10px into it -->
+  <circle cx="128" cy="140" r="92" fill="url(#whRim)"/>
+
+  <g>
+    <path d="M128 140 L96.62 64.24 A82 82 0 0 1 159.38 64.24 Z" fill="#4050FF"/>
+    <path d="M128 140 L159.38 64.24 A82 82 0 0 1 203.76 108.62 Z" fill="#FFF7E2"/>
+    <path d="M128 140 L203.76 108.62 A82 82 0 0 1 203.76 171.38 Z" fill="#5AE3A8"/>
+    <path d="M128 140 L203.76 171.38 A82 82 0 0 1 159.38 215.76 Z" fill="#F7DE52"/>
+    <path d="M128 140 L159.38 215.76 A82 82 0 0 1 96.62 215.76 Z" fill="#4050FF"/>
+    <path d="M128 140 L96.62 215.76 A82 82 0 0 1 52.24 171.38 Z" fill="#FFF7E2"/>
+    <path d="M128 140 L52.24 171.38 A82 82 0 0 1 52.24 108.62 Z" fill="#5AE3A8"/>
+    <path d="M128 140 L52.24 108.62 A82 82 0 0 1 96.62 64.24 Z" fill="#F7DE52"/>
+  </g>
+
+  <!-- one light source over the whole disc, rim included: shading each wedge
+       separately would have made eight little domes instead of one object -->
+  <g clip-path="url(#whDisc)">
+    <ellipse cx="84" cy="90" rx="60" ry="42" transform="rotate(-28 84 90)" fill="#FFFFFF" opacity=".4" filter="url(#whb16)"/>
+    <!-- the hot spot: a short bright crescent riding the upper-left rim,
+         the way the bought objects put one sharp highlight on a dome. It
+         rides r=87, between the segment edge and the outer rim: any further
+         in and it bleaches the wedges it is supposed to be lighting. -->
+    <path d="M56.7 90.1 A87 87 0 0 1 105.5 55.9" fill="none" stroke="#FFFFFF" stroke-opacity=".9" stroke-width="9" stroke-linecap="round" filter="url(#whb4)"/>
+    <ellipse cx="184" cy="204" rx="76" ry="58" transform="rotate(-28 184 204)" fill="#0E1330" opacity=".38" filter="url(#whb16)"/>
+    <!-- inner edge of the rim -->
+    <circle cx="128" cy="140" r="82" fill="none" stroke="#0E1330" stroke-opacity=".22" stroke-width="5" filter="url(#whb4)"/>
+    <circle cx="128" cy="140" r="88" fill="none" stroke="#FFFFFF" stroke-opacity=".7" stroke-width="5" filter="url(#whb4)"/>
+  </g>
+
+  <!-- hub: it hides the eight wedge tips, which always converge into mush -->
+  <circle cx="128" cy="140" r="19" fill="url(#whHub)"/>
+  <circle cx="128" cy="140" r="8.5" fill="#4050FF"/>
+  <ellipse cx="121" cy="132" rx="6.5" ry="4" transform="rotate(-32 121 132)" fill="#FFFFFF" opacity=".95"/>
+
+  <!-- pointer, overlapping the rim so it reads as touching the wheel rather
+       than floating above it -->
+  <path d="M128 68 L107 34 Q128 17 149 34 Z" fill="#0B0E1A" opacity=".3" filter="url(#whb10)"/>
+  <path d="M128 66 L107 32 Q128 15 149 32 Z" fill="url(#whPin)"/>
+  <path d="M124 56 L114 38 Q121 31 128 30 Z" fill="#FFFFFF" opacity=".45" filter="url(#whb4)"/>
+  </g>
+</svg>

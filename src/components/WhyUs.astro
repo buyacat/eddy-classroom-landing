@@ -9,19 +9,39 @@ const { locale } = Astro.props;
 const items = tArray<{ icon: string; title: string; text: string }>(locale, 'classroom_why_items');
 
 /*
- * One 3D object per card, from the client's own icon set, plus a colour
- * rhythm lifted from the mock: mostly white cards with a green, a yellow
- * and a blue block breaking the grid up. The object hangs off the card's
- * top-left corner rather than sitting in a tinted plate — that overhang is
- * the whole personality of this style.
+ * One 3D object per card, plus a colour rhythm lifted from the mock: mostly
+ * white cards with a green, a yellow and a blue block breaking the grid up.
+ * The object hangs off the card's top-left corner rather than sitting in a
+ * tinted plate — that overhang is the whole personality of this style.
+ *
+ * The rule for what goes in this map: the object has to illustrate the
+ * card's own SENTENCE, not a neighbouring idea. Three of the six used to
+ * fail that test — a padlock for offline (that is security), a handset for
+ * multi-device (that is a phone call), an open book for 3D content (that is
+ * a library of text) — so those three are drawn for this site instead, in
+ * the pack's clay language. Sources in src/assets/icon-src/, rendered to
+ * 256px PNGs next to the bought objects.
+ *
+ *   allInOne  folder   — a container holding many things is literally
+ *                        "все в одному місці"
+ *   journal   check    — the green tick of an answer landing while the
+ *                        lesson is still running
+ *   library   cube3d   — a cube is the thing the library is full of; a book
+ *                        only says "library" and loses the 3D entirely
+ *   ai        lightbulb— the assistant's output is an idea for the lesson
+ *   offline   offline  — struck-through wifi, matching the headline, which
+ *                        is itself written as a negation
+ *   devices   devices  — laptop, tablet and phone carrying the SAME app
+ *                        mark: the card's claim is "one app", not "many
+ *                        gadgets"
  */
 const objects: Record<string, string> = {
   allInOne: 'document',
   journal: 'check',
-  library: 'book',
+  library: 'cube3d',
   ai: 'lightbulb',
-  offline: 'lock',
-  devices: 'phone'
+  offline: 'offline',
+  devices: 'devices'
 };
 
 const blocks = ['', 'is-green', '', 'is-yellow', '', 'is-blue'];
@@ -37,7 +57,7 @@ const blocks = ['', 'is-green', '', 'is-yellow', '', 'is-blue'];
     <div class="why-grid">
       {items.map((it, i) => (
         <article class={`card reveal ${blocks[i] || ''}`.trim()} style={`--i:${i}`}>
-          <img class="obj" src={withBase(`/assets/icons/${objects[it.icon] || 'book'}.png`)}
+          <img class="obj" src={withBase(`/assets/icons/${objects[it.icon] || 'document'}.png`)}
                width="256" height="256" alt="" loading="lazy" decoding="async" />
           <h3>{it.title}</h3>
           <p>{it.text}</p>
@@ -63,10 +83,13 @@ const blocks = ['', 'is-green', '', 'is-yellow', '', 'is-blue'];
         rgba(var(--amb-green), var(--amb-2)) 0%,
         rgba(var(--amb-green), 0) var(--amb-fade)),
       /* Blue low and right, so the eye is already in Platform's colour before
-         it arrives there. The centre stays inside the box — at 104% it was an
-         ellipse hanging below the box, and the only part of it you could see
-         was the straight line where the box stopped. */
-      radial-gradient(var(--amb-r-lg) calc(var(--amb-r-lg) * .58) at 94% 84%,
+         it arrives there. The centre stays inside the BAND, not merely inside
+         the box — at 104% it was an ellipse hanging below the box and all you
+         saw was the straight line where the box stopped; at 84% it was still
+         out in the overhang, which left the fade 13px less room than it needs
+         and put that line back, fainter. The band occupies 20%–80% of its own
+         box, and that is the range a centre may use. */
+      radial-gradient(var(--amb-r-lg) calc(var(--amb-r-lg) * .58) at 94% 78%,
         rgba(var(--amb-blue), var(--amb-2)) 0%,
         rgba(var(--amb-blue), 0) var(--amb-fade));
   }

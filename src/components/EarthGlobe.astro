@@ -9,6 +9,13 @@ const { locale } = Astro.props;
  * The hero used to be a screenshot of a 3D lesson. Now it is one: a real,
  * draggable cut-away Earth, the same thing a teacher opens from the library.
  *
+ * It used to be a quiz as well — pull the model apart and the panel handed you
+ * a question, twenty-two pupils answered it, and the hero spent its last beat
+ * on a percentage. The client asked for that half back out: the point of the
+ * panel is the MODEL — turn it, take it apart, read what the pieces are called
+ * — and a running test on top of it argued for attention with the one thing
+ * the visitor came to see. What is left is the object and its captions.
+ *
  * There is deliberately no poster image behind it. A still that gets swapped
  * for the live model just makes the panel jump on load, and the only still we
  * had was a different model entirely. Until the first rendered frame exists,
@@ -19,28 +26,27 @@ const { locale } = Astro.props;
 const layers = tArray<{ name: string; meta?: string }>(locale, 'classroom_hero_globe_layers');
 
 /*
- * The second beat. Pulling the model apart used to be the end of the hero;
- * now it is the invitation — it hands over "Ask the class", and the product's
- * whole loop plays out inside this one panel. Copy is passed to the module as
- * one payload so the sequence has no strings of its own.
+ * The one control on the panel, and the reason it exists at all: a drag is
+ * the nicer way to take the model apart, and it is a gesture nobody can
+ * discover with a keyboard and nobody can guess from a still screenshot. The
+ * button says out loud what the model does, and it is the only route into the
+ * exploded view for someone tabbing through the page.
+ *
+ * Both labels are handed over at once because the button is a toggle and the
+ * model can be opened behind its back — a drag does it too — so the label has
+ * to be able to change without a round trip for copy.
  */
-const lesson = {
-  ask: t(locale, 'classroom_lesson_ask'),
-  rounds: tArray<{ q: string; result: string }>(locale, 'classroom_lesson_rounds'),
-  answered: t(locale, 'classroom_lesson_answered'),
-  next: t(locale, 'classroom_lesson_next'),
-  offlineState: t(locale, 'classroom_lesson_offline_state'),
-  offlineChip: t(locale, 'classroom_lesson_offline_chip'),
-  again: t(locale, 'classroom_lesson_again')
+const toggle = {
+  open: t(locale, 'classroom_hero_globe_explode'),
+  close: t(locale, 'classroom_hero_globe_collapse')
 };
 ---
 
 <!-- The picture is the canvas, so that is what carries the image role and
      the alt. It used to sit on the whole panel, which made everything inside
-     it presentational for a screen reader — including the "ask the class"
-     button and the live result line the lesson writes into. -->
+     it presentational for a screen reader — including the button below. -->
 <div class="globe" data-globe data-layers={JSON.stringify(layers)}
-     data-lesson={JSON.stringify(lesson)}>
+     data-toggle-copy={JSON.stringify(toggle)}>
   <canvas class="globe-canvas" role="img" aria-label={t(locale, 'classroom_hero_globe_alt')}></canvas>
   <div class="globe-tags" aria-hidden="true"></div>
   <span class="globe-hint">{t(locale, 'classroom_hero_globe_hint')}</span>
@@ -48,17 +54,12 @@ const lesson = {
   <div class="globe-foot">
     <p class="globe-note">{t(locale, 'classroom_hero_globe_scale_note')}</p>
 
-    <div class="lesson-bar" data-lesson-bar>
-      <p class="lesson-q" data-q></p>
-      <p class="lesson-class">
-        <span class="lesson-dots" data-dots aria-hidden="true"></span>
-        <span class="lesson-count"><b data-answered>0</b>/22 {lesson.answered}</span>
-      </p>
-      <p class="lesson-result" data-result aria-live="polite"></p>
-    </div>
-
-    <button class="lesson-ask" type="button" data-ask></button>
-    <span class="lesson-chip" data-chip></span>
+    <!-- hidden until the model is actually running: a control for a scene
+         that never mounted is a promise the panel cannot keep -->
+    <button class="globe-toggle" type="button" data-explode hidden>
+      <span class="globe-toggle-ico" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span data-explode-label>{toggle.open}</span>
+    </button>
   </div>
 </div>
 
@@ -76,8 +77,8 @@ const lesson = {
         rgba(var(--amb-blue), var(--amb-1)) 0%,
         rgba(var(--amb-blue), 0) 58%),
       /* The yellow used to sit at 68%/70% — dead under the lesson strip, so
-         the ask button and the caveat line looked like they were bleeding
-         into a stain. It backs the model now, not the controls. */
+         the controls looked like they were bleeding into a stain. It backs
+         the model now, not the foot. */
       radial-gradient(circle at 74% 28%,
         rgba(var(--amb-yellow), var(--amb-1)) 0%,
         rgba(var(--amb-yellow), 0) 58%);
@@ -102,6 +103,20 @@ const lesson = {
   /* ---- layer tags ---- */
   .globe-tags { position: absolute; inset: 0; pointer-events: none; }
 
+  /* The leader from a shell down to the caption that names it — the same
+     hairline the library's eye viewer uses, so the two models on this page
+     annotate themselves the same way. 1px, --ink-4, and held well under full
+     opacity by the module: its job is to connect, not to be seen. */
+  .globe-tags :global(.globe-lead) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 1px;
+    transform-origin: 0 50%;
+    background: var(--ink-4);
+    opacity: 0;
+  }
+
   .globe-tags :global(.globe-tag) {
     position: absolute;
     top: 0;
@@ -109,8 +124,7 @@ const lesson = {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 11px 7px 4px;
-    overflow: hidden;
+    padding: 4px 11px 5px 4px;
     background: #fff;
     border-radius: var(--r-pill);
     box-shadow: var(--e3);
@@ -138,46 +152,7 @@ const lesson = {
     font-variant-numeric: tabular-nums;
   }
   .globe-tags :global(.globe-tag em:empty) { display: none; }
-
-  /* --- the tag doubles as the answer option and its own histogram bar --- */
-  .globe.is-quiz .globe-tags { pointer-events: auto; }
-  .globe.is-quiz .globe-tags :global(.globe-tag) {
-    pointer-events: auto;
-    cursor: pointer;
-    transition: opacity 160ms linear, transform 160ms var(--ease-out);
-  }
-  .globe.is-quiz .globe-tags :global(.globe-tag:hover) { filter: brightness(1.04); }
-
-  .globe-tags :global(.globe-tag-count) {
-    margin-left: 2px;
-    min-width: 13px;
-    text-align: right;
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 11.5px;
-    color: var(--ink-3);
-    font-variant-numeric: tabular-nums;
-  }
-  .globe-tags :global(.globe-tag-bar) {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    height: 3px;
-    background: var(--surface-sunken);
-    border-radius: 0 0 var(--r-pill) var(--r-pill);
-    overflow: hidden;
-  }
-  .globe-tags :global(.globe-tag-bar i) {
-    display: block;
-    height: 100%;
-    width: 0;
-    background: var(--blue);
-    transition: width 220ms var(--ease-out), background 260ms var(--ease-out);
-  }
-  .globe-tags :global(.globe-tag.is-correct) {
-    box-shadow: 0 0 0 2px var(--green-deep), var(--e3);
-  }
-  .globe-tags :global(.globe-tag.is-correct .globe-tag-bar i) { background: var(--green-deep); }
-  .globe-tags :global(.globe-tag.is-correct .globe-tag-count) { color: var(--green-deep); }
+  /* the layer's place in the stack, counted from the surface down */
   .globe-tags :global(.globe-tag-dot) {
     width: 19px; height: 19px;
     border-radius: 50%;
@@ -241,148 +216,87 @@ const lesson = {
     transition: opacity 300ms var(--ease-out);
   }
   .globe.is-open .globe-note { display: block; opacity: 1; }
-  /* the lesson owns the foot once it starts */
-  .globe.is-polling .globe-note { display: none; }
 
-  /* ---- ask / run again ---- */
-  .lesson-ask {
-    display: none;
+  /* ---- take apart / put back ----
+     White, not blue. The hero already spends its one blue button on the lead
+     form a column to the left; a second one inside the panel would read as
+     the more important of the two, and this is a control on an object, not a
+     call to action. */
+  .globe-toggle {
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
+    gap: 9px;
+    padding: 9px 18px 9px 14px;
     border: 0;
     border-radius: var(--r-pill);
-    background: var(--blue);
-    color: #fff;
-    font-family: var(--font-display);
-    font-size: 13.5px;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow: var(--e-blue);
-    pointer-events: auto;
-    transition: transform var(--t-hover) var(--ease-out), background var(--t-hover) linear;
-  }
-  .lesson-ask:hover { background: var(--blue-deep); transform: translateY(-1px); }
-  .lesson-ask:focus-visible { outline: none; box-shadow: var(--focus-ring), var(--e-blue); }
-  .globe.is-invited .lesson-ask,
-  .globe.is-again .lesson-ask { display: inline-flex; animation: ask-in 420ms var(--ease-spring) both; }
-
-  @keyframes ask-in {
-    from { opacity: 0; transform: translateY(10px) scale(.92); }
-    to { opacity: 1; transform: none; }
-  }
-
-  /* ---- the class answering ---- */
-  .lesson-bar {
-    display: none;
-    width: 100%;
-    padding: 12px 16px 13px;
-    border-radius: var(--r-lg);
-    background: rgba(255, 255, 255, .92);
-    box-shadow: var(--e3);
-    backdrop-filter: blur(6px);
-    text-align: center;
-  }
-  .globe.is-polling .lesson-bar { display: block; animation: ask-in 380ms var(--ease-out) both; }
-
-  .lesson-q {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: 14px;
-    font-weight: 800;
+    background: #fff;
     color: var(--ink);
-  }
-  .lesson-class {
-    margin: 9px 0 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .lesson-dots { display: flex; gap: 3px; }
-  /* one dot per pupil — the roster stops being three decorative initials */
-  .lesson-dots :global(i) {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--line);
-    transition: background 200ms var(--ease-out), transform 200ms var(--ease-spring);
-  }
-  .lesson-dots :global(i.is-in) { background: var(--blue); transform: scale(1.2); }
-
-  .lesson-count {
-    font-size: 11.5px;
-    font-weight: 700;
-    color: var(--ink-3);
-    font-variant-numeric: tabular-nums;
-  }
-  .lesson-count b { color: var(--ink); }
-
-  .lesson-result {
-    display: none;
-    margin: 10px 0 0;
-    padding-top: 9px;
-    border-top: 1px solid var(--line);
     font-family: var(--font-display);
     font-size: 13px;
     font-weight: 800;
-    color: var(--ink);
+    cursor: pointer;
+    box-shadow: var(--e3);
+    pointer-events: auto;
+    transition: transform var(--t-hover) var(--ease-out), box-shadow var(--t-hover) var(--ease-out);
   }
-  .globe.is-result .lesson-result { display: block; animation: ask-in 360ms var(--ease-out) both; }
+  /* `hidden` alone loses to the display above, and a button that ships
+     visible over a scene that never mounted is the exact failure this
+     attribute exists to prevent */
+  .globe-toggle[hidden] { display: none; }
+  .globe-toggle:hover { transform: translateY(-1px); box-shadow: var(--e4); }
+  .globe-toggle:focus-visible { outline: none; box-shadow: var(--focus-ring), var(--e3); }
 
-  /* ---- the beat that sells it here: the line drops, the lesson doesn't ---- */
-  .lesson-chip {
-    display: none;
-    padding: 8px 16px;
-    border-radius: var(--r-pill);
-    background: var(--green);
-    color: #000;
-    font-family: var(--font-display);
-    font-size: 12.5px;
-    font-weight: 800;
+  /* Three bars that move apart when the model does — the button's own small
+     copy of what pressing it will do, drawn rather than fetched. The middle
+     bar is the one that stays, the way the crust stays and the contents come
+     out of it. */
+  .globe-toggle-ico {
+    position: relative;
+    width: 17px;
+    height: 13px;
+    flex: none;
   }
-  .globe.is-offline .lesson-chip { display: inline-flex; animation: ask-in 380ms var(--ease-spring) both; }
+  .globe-toggle-ico i {
+    position: absolute;
+    left: 50%;
+    width: 13px;
+    height: 3px;
+    margin-left: -6.5px;
+    border-radius: 2px;
+    background: var(--ink);
+    transition: transform 320ms var(--ease-spring);
+  }
+  .globe-toggle-ico i:nth-child(1) { top: 1px; }
+  .globe-toggle-ico i:nth-child(2) { top: 5px; background: var(--blue); }
+  .globe-toggle-ico i:nth-child(3) { top: 9px; }
+  .globe.is-open .globe-toggle-ico i:nth-child(1) { transform: translateY(-2px) scaleX(.72); }
+  .globe.is-open .globe-toggle-ico i:nth-child(3) { transform: translateY(2px) scaleX(.72); }
 
   /* On a narrow panel the model shrinks with the camera but the tags do not,
      so four full captions would pile up. The depth line is the first thing to
      go: the name and the order still carry the lesson. */
   @media (max-width: 760px) {
-    .globe-tags :global(.globe-tag) { gap: 4px; padding: 3px 9px 6px 3px; }
+    .globe-tags :global(.globe-tag) { gap: 4px; padding: 3px 9px 4px 3px; }
     .globe-tags :global(.globe-tag b) { font-size: 10.5px; }
     .globe-tags :global(.globe-tag em) { display: none; }
     .globe-tags :global(.globe-tag-dot) { width: 16px; height: 16px; font-size: 9.5px; }
-    .globe-tags :global(.globe-tag-count) { font-size: 10px; min-width: 11px; }
 
-    .lesson-q { font-size: 12.5px; }
-    .lesson-bar { padding: 10px 12px 11px; }
-    .lesson-dots :global(i) { width: 5px; height: 5px; }
-    .lesson-result { font-size: 12px; }
-    .lesson-ask { padding: 9px 16px; font-size: 12.5px; }
     .globe-note { font-size: 9.5px; }
-    /* the roster badge sits over the panel's top-left corner on a phone
+    .globe-toggle { padding: 8px 15px 8px 12px; font-size: 12px; }
+    /* the model badge sits over the panel's top-left corner on a phone
        (Hero.astro, `top: 4%`), and at 5% the hint ran into it — drop the
        hint below the badge; the sphere itself starts lower still */
     .globe-hint { top: 13%; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .globe.is-invited .lesson-ask,
-    .globe.is-again .lesson-ask,
-    .globe.is-polling .lesson-bar,
-    .globe.is-result .lesson-result,
-    .globe.is-offline .lesson-chip { animation: none; }
-    .lesson-dots :global(i) { transition: none; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
     .globe.is-live .globe-hint { animation: none; }
+    .globe-toggle-ico i { transition: none; }
   }
 </style>
 
 <script>
   import type { LayerSpec } from '../scripts/earth';
-  import type { LessonCopy } from '../scripts/lesson';
 
   function hasWebGL(): boolean {
     try {
@@ -394,34 +308,49 @@ const lesson = {
   }
 
   const host = document.querySelector<HTMLElement>('[data-globe]');
+
+  /*
+   * Reduced motion no longer keeps the model off the page — it only silences
+   * the parts of it that move unbidden (see REDUCED in scripts/earth.ts) and
+   * cancels the one-time demo below. The panel IS the hero now; refusing to
+   * mount it left a white rectangle where the product was supposed to be.
+   */
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  if (host && !reduced && hasWebGL()) {
+  if (host && hasWebGL()) {
     const canvas = host.querySelector<HTMLCanvasElement>('.globe-canvas')!;
     const tags = host.querySelector<HTMLElement>('.globe-tags')!;
+    const button = host.querySelector<HTMLButtonElement>('[data-explode]')!;
+    const label = host.querySelector<HTMLElement>('[data-explode-label]')!;
     const specs = JSON.parse(host.dataset.layers || '[]') as LayerSpec[];
+    const copy = JSON.parse(host.dataset.toggleCopy || '{}') as { open: string; close: string };
 
-    const copy = JSON.parse(host.dataset.lesson || '{}') as LessonCopy;
-
-    // three.js and the lesson only leave the network once the hero is in view
+    // three.js only leaves the network once the hero is in view
     const io = new IntersectionObserver((entries) => {
       if (!entries.some((e) => e.isIntersecting)) return;
       io.disconnect();
 
-      Promise.all([import('../scripts/earth'), import('../scripts/lesson')])
-        .then(async ([earth, lesson]) => {
+      import('../scripts/earth')
+        .then(async (earth) => {
           const globe = await earth.mountGlobe(host, canvas, tags, specs);
+
+          /* The button's own idea of the state is whatever the model last
+             said, never what it last asked for: a drag opens the model behind
+             the button's back, and an `open(true)` that arrives while the
+             planet is turned away is refused until it has turned round. */
+          let open = false;
+          globe.onOpenChange((next) => {
+            open = next;
+            label.textContent = next ? copy.close : copy.open;
+          });
+          button.addEventListener('click', () => globe.open(!open));
+          button.hidden = false;
 
           /* The hint says the model comes apart; this shows it. It waits out
              the canvas fade first (620ms in the CSS above) so the demo is not
              played to a panel that is still arriving, and it bows out the
              moment a hand arrives — see demo() in the module. */
-          window.setTimeout(() => globe.demo(), 900);
-
-          lesson.startLesson(host, globe, copy, {
-            liveText: document.querySelector<HTMLElement>('[data-live-text]'),
-            roster: document.getElementById('roster-count')
-          });
+          if (!reduced) window.setTimeout(() => globe.demo(), 900);
         })
         .catch((err) => {
           // the panel keeps its own light and the page carries on; log it,

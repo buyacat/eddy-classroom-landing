@@ -1,9 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="9" fill="#4050FF"/>
-  <g fill="#fff" transform="skewX(-8) translate(2 0)">
-    <rect x="9" y="8" width="4.4" height="16" rx="1.4"/>
-    <rect x="9" y="8" width="12" height="4.2" rx="1.4"/>
-    <rect x="9" y="13.9" width="9.6" height="4.2" rx="1.4"/>
-    <rect x="9" y="19.8" width="12" height="4.2" rx="1.4"/>
-  </g>
+  <!-- The site's own mark: a pointy-top hexagon, built to the same geometry as
+       the hex mask token in style.css. The polygon is 78% of the full width;
+       the other 22% is a round-joined stroke, which is what rounds the
+       corners. (No double hyphen anywhere in here: XML forbids it inside a
+       comment, and a browser drops the whole file over it.) -->
+  <polygon points="16,3.52 26.81,9.76 26.81,22.24 16,28.48 5.19,22.24 5.19,9.76"
+           fill="#4050FF" stroke="#4050FF" stroke-width="6.1" stroke-linejoin="round"/>
+  <!-- C for Classroom, drawn as an arc rather than set in type: no webfont is
+       loaded for a favicon, so a 16px glyph left to a fallback font would be a
+       different letter on every machine. Upright on purpose, because the
+       wordmark's skew reads as a rendering fault at tab size. -->
+  <path d="M20.11 11.3 A6.4 6.4 0 1 0 20.11 21.1"
+        fill="none" stroke="#fff" stroke-width="4.4" stroke-linecap="round"/>
 </svg>

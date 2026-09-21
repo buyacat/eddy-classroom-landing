@@ -620,18 +620,51 @@ const subjectBlock: Record<string, string> = {
       --hex-w: clamp(40px, calc(25vw - 39px), 64px);
       --comb-w: 100%;
       width: 100%;
+      /* The arrows come down off the strip and into the pager row instead.
+         Flanking the strip they cost 104px of a 358px phone, which is what
+         forced physics' four models to wrap in the first place — and the
+         width has to go to the strip, because four cells are the whole point.
+         In the pager they cost nothing: that row was a line of four short
+         subject names with air either side of it.
+
+         `display: contents` on the row is what lets one DOM order serve both
+         layouts — the two buttons and the viewport become items of this grid
+         directly, so the arrows can sit beside the dots here and beside the
+         strip on a desktop without being written into the markup twice. */
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-areas:
+        "strip strip strip"
+        "prev  dots  next";
+      align-items: center;
+      column-gap: 6px;
     }
-    .lib-comb-row { gap: 0; }
-    .lib-comb-arrow { display: none; }
-    .lib-comb-viewport { flex: 1 1 auto; width: auto; min-width: 0; }
+    .lib-comb-row { display: contents; }
+    .lib-comb-viewport { grid-area: strip; flex: none; width: 100%; min-width: 0; }
+    .lib-comb-arrow[data-comb-prev] { grid-area: prev; }
+    .lib-comb-arrow[data-comb-next] { grid-area: next; }
+    .lib-comb-arrow { width: 32px; height: 32px; }
+    .lib-comb-arrow svg { width: 17px; height: 17px; }
     .lib-comb-page { flex-wrap: nowrap; gap: 6px; padding: 4px 2px; }
     .hex { padding: 5px 3px; }
     .hex .nm { font-size: .625rem; }
-    /* the dots are the nav now, so they get a real tap target and sit far
-       enough from the strip to read as a separate control */
-    .lib-comb-dots { gap: clamp(10px, 4vw, 26px); margin-top: 14px; }
-    .lib-comb-dot { padding: 6px 4px; }
-    .lib-comb-dot .dot-lbl { font-size: .75rem; }
+    /* The dots keep the middle. They are still the fast control — one tap to
+       any subject, by name — and the arrows either side are the slow one, for
+       a reader who is walking through the four rather than picking one. */
+    .lib-comb-dots {
+      grid-area: dots;
+      gap: clamp(2px, 2.4vw, 26px);
+      margin-top: 12px;
+      min-width: 0;
+    }
+    .lib-comb-dot { padding: 6px 2px; min-width: 0; }
+    .lib-comb-dot .dot-lbl {
+      font-size: clamp(.625rem, 2.9vw, .75rem);
+      white-space: nowrap;
+    }
+    /* the arrows share the dots' baseline, not the row's centre — the dot
+       row is a dot over a word, so its optical middle sits high */
+    .lib-comb-arrow { align-self: center; margin-top: 12px; }
   }
 </style>
 

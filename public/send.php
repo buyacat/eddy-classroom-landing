@@ -2,72 +2,76 @@
 declare(strict_types=1);
 
 /**
- * Обробник заявки з лендінгу Dr.STEM.
- * Відправка через Mandrill HTTP API (curl/HTTPS) — без системного MTA.
- * Безпека: тільки POST, ліміт розміру, honeypot, валідація, rate-limit по IP,
- * захист від header-injection. API-ключ читається ПОЗА webroot (не в git).
+ * Lead form endpoint for the Eddy Classroom landing.
+ *
+ * Delivers through the Mandrill HTTP API over curl, so the host needs no MTA.
+ * Guards: POST only, body size cap, honeypot, per-IP rate limit, field
+ * validation and header-injection stripping. The API key is read from the
+ * environment or from a file kept outside the webroot — never from git.
+ *
+ * Responds with {"ok":true} or {"ok":false,"error":"<code>"}.
  */
 
 header('Content-Type: application/json; charset=UTF-8');
 header('X-Content-Type-Options: nosniff');
 
-// --- Налаштування ---
-$TO_EMAIL   = 'office@llcise.com';                    // отримувач заявок (прод)
-$FROM_EMAIL = 'no-reply@eddy.org.ua';                 // має бути верифікованим доменом у Mandrill
-$FROM_NAME  = 'Dr.STEM';
-// Ключ: спочатку env, потім файл поза webroot (../mandrill.key поряд із теками dist/)
-$API_KEY    = getenv('MANDRILL_KEY')
-            ?: trim((string) @file_get_contents(__DIR__ . '/../mandrill.key'));
+const TO_EMAIL    = 'office@llcise.com';
+const FROM_EMAIL  = 'no-reply@eddy.org.ua';   // must be a domain verified in Mandrill
+const FROM_NAME   = 'Eddy Classroom';
+const SUBJECT     = 'Нова заявка — Eddy Classroom';
+const MAX_BODY    = 20000;                    // bytes
+const THROTTLE_S  = 10;                       // min seconds between requests from one IP
+
+// Key file sits next to the deployed dist/, one level above the webroot.
+$apiKey = getenv('MANDRILL_KEY')
+    ?: trim((string) @file_get_contents(__DIR__ . '/../mandrill.key'));
 
 function fail(int $code, string $error): never {
     http_response_code($code);
     echo json_encode(['ok' => false, 'error' => $error], JSON_UNESCAPED_UNICODE);
     exit;
 }
+
 function ok(): never {
     echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-// --- 1. Лише POST ---
+/** Strips line breaks and truncates — the result may end up in a mail header. */
+function clean(string $value, int $max): string {
+    $value = str_replace(["\r", "\n", "\0"], ' ', $value);
+    return mb_substr(trim(strip_tags($value)), 0, $max);
+}
+
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     fail(405, 'method_not_allowed');
 }
 
-// --- 2. Ліміт розміру тіла ---
-if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 20000) {
+if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > MAX_BODY) {
     fail(413, 'payload_too_large');
 }
 
-// --- 3. Rate-limit: не частіше ніж раз на 10с з однієї IP ---
 $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-$throttleFile = sys_get_temp_dir() . '/drstem_rl_' . md5($ip);
+$throttleFile = sys_get_temp_dir() . '/eddy_classroom_rl_' . md5($ip);
 $now = time();
-if (is_file($throttleFile) && ($now - (int) @file_get_contents($throttleFile)) < 10) {
+if (is_file($throttleFile) && ($now - (int) @file_get_contents($throttleFile)) < THROTTLE_S) {
     fail(429, 'too_many_requests');
 }
 @file_put_contents($throttleFile, (string) $now);
 
-/** Прибирає переноси рядків і обрізає до ліміту — захист від header-injection. */
-function clean(string $v, int $max): string {
-    $v = str_replace(["\r", "\n", "\0"], ' ', $v);
-    return mb_substr(trim(strip_tags($v)), 0, $max);
-}
-
-// --- 4. Honeypot ---
+// Honeypot: report success so a bot learns nothing from the response.
 if (trim((string) ($_POST['website'] ?? '')) !== '') {
-    ok(); // вдаємо успіх, щоб не підказувати боту
+    ok();
 }
 
-// --- 5. Валідація ---
-$name    = clean((string) ($_POST['name'] ?? ''), 120);
-$org     = clean((string) ($_POST['org'] ?? ''), 200);
-$phone   = clean((string) ($_POST['phone'] ?? ''), 40);
-$email   = clean((string) ($_POST['email'] ?? ''), 200);
-$comment = mb_substr(trim(strip_tags((string) ($_POST['comment'] ?? ''))), 0, 2000);
-$product = clean((string) ($_POST['product'] ?? 'sensors'), 20);
+$name     = clean((string) ($_POST['name'] ?? ''), 120);
+$org      = clean((string) ($_POST['org'] ?? ''), 200);
 $role     = clean((string) ($_POST['role'] ?? ''), 40);
 $students = clean((string) ($_POST['students'] ?? ''), 80);
+$phone    = clean((string) ($_POST['phone'] ?? ''), 40);
+$email    = clean((string) ($_POST['email'] ?? ''), 200);
+// Kept multi-line on purpose: it goes in the body, never in a header.
+$comment  = mb_substr(trim(strip_tags((string) ($_POST['comment'] ?? ''))), 0, 2000);
 
 if ($name === '') {
     fail(422, 'name_required');
@@ -75,39 +79,32 @@ if ($name === '') {
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     fail(422, 'invalid_email');
 }
-if ($API_KEY === '') {
+if ($apiKey === '') {
     fail(500, 'mail_not_configured');
 }
 
-// --- 6. Лист ---
-$subject = match ($product) {
-    'robotics'  => 'Нова заявка на Робототехніку Dr.STEM',
-    'classroom' => 'Нова заявка на Eddy Classroom',
-    default     => 'Нова заявка на ЦВКК Dr.STEM',
-};
-$body  = "Ім'я: {$name}\n";
-$body .= "Організація: {$org}\n";
-if ($product === 'classroom') {
-    $body .= "Посада: {$role}\n";
-    $body .= "Учнів/класів: {$students}\n";
-}
-$body .= "Телефон: {$phone}\n";
-$body .= "Email: {$email}\n";
-$body .= "Коментар: {$comment}\n";
+$body = implode("\n", [
+    "Ім'я: {$name}",
+    "Організація: {$org}",
+    "Посада: {$role}",
+    "Учнів/класів: {$students}",
+    "Телефон: {$phone}",
+    "Email: {$email}",
+    "Коментар: {$comment}",
+]);
 
 $payload = [
-    'key'     => $API_KEY,
+    'key'     => $apiKey,
     'message' => [
-        'from_email' => $FROM_EMAIL,
-        'from_name'  => $FROM_NAME,
-        'subject'    => $subject,
+        'from_email' => FROM_EMAIL,
+        'from_name'  => FROM_NAME,
+        'subject'    => SUBJECT,
         'text'       => $body,
-        'to'         => [['email' => $TO_EMAIL, 'type' => 'to']],
+        'to'         => [['email' => TO_EMAIL, 'type' => 'to']],
         'headers'    => ['Reply-To' => $email],
     ],
 ];
 
-// --- 7. Відправка через Mandrill HTTP API ---
 $ch = curl_init('https://mandrillapp.com/api/1.0/messages/send.json');
 curl_setopt_array($ch, [
     CURLOPT_POST           => true,
@@ -116,24 +113,23 @@ curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_TIMEOUT        => 15,
 ]);
-$resp     = curl_exec($ch);
+$response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
-if ($resp === false) {
+if ($response === false) {
     fail(502, 'mail_transport_error');
 }
 
-$data = json_decode((string) $resp, true);
+$data = json_decode((string) $response, true);
 
-// Помилка рівня API (невірний ключ, не верифікований домен тощо)
+// API-level rejection: bad key, unverified sending domain, and so on.
 if ($httpCode !== 200 || (isset($data['status']) && $data['status'] === 'error')) {
     fail(502, 'mail_rejected');
 }
 
-// Успіх: Mandrill повертає масив отримувачів зі статусом
-$status = $data[0]['status'] ?? '';
-if (in_array($status, ['sent', 'queued', 'scheduled'], true)) {
+// On success Mandrill returns one entry per recipient, each with its status.
+if (in_array($data[0]['status'] ?? '', ['sent', 'queued', 'scheduled'], true)) {
     ok();
 }
 

@@ -1,24 +1,8 @@
 ---
 /*
- * Колесо фортуни — the same drawing as src/assets/icon-src/wheel.svg, but
- * inline and taken apart, because the PNG could only ever spin as one lump.
- * A wheel is two things that move differently:
- *
- *   .wh-seg   the eight wedges — the only part that turns
- *   .wh-pin   the flapper — it does not turn, it gets knocked aside by every
- *             ridge that passes under it and drops back into the next gap
- *
- * Everything else (the rim, the lighting, the hub) stays put: the light in
- * the room does not travel with the wheel, and a rim whose gradient spins
- * reads as a rolling coin instead of a spinning disc.
- *
- * The two animations are one table. A ridge crosses the flapper every 45deg,
- * so `wh-spin` is keyed at 22.5 + 45k degrees with the timings of an
- * ease-out spin, and `wh-flick` fires at exactly those same percentages.
- * That is what makes the knock look caused by the wedge rather than merely
- * near it — and why the ticks crowd together at the start and stretch out as
- * the wheel runs down. Two full turns, so it comes to rest in the position
- * it started from and nothing jumps when the pointer leaves.
+ * .wh-seg (the eight wedges) rotates; .wh-pin (the flapper) does not — it only flicks via wh-flick.
+ * wh-spin and wh-flick share keyframe percentages (22.5 + 45k degrees, one per wedge edge) so the
+ * flick reads as caused by the passing wedge. Two full turns so it rests where it started.
  */
 ---
 
@@ -86,13 +70,8 @@
 </svg>
 
 <style>
-  /* the global `.obj{width:var(--obj,88px)}` rule in style.css is scoped to
-     elements Platform.astro renders itself, so — like the hover rules below —
-     it never reaches this component's own <svg>. Without this, the wheel was
-     falling through to that rule's 88px fallback instead of the 52px every
-     other tool icon gets, rendering it nearly twice the size of its tile and
-     spilling into the label under it no matter how its innards were
-     positioned. State the real box size here, where it actually applies. */
+  /* the global .obj{width:var(--obj,88px)} rule (style.css) doesn't reach this inline <svg>;
+     state the real size here to match the 52px every other tool icon gets */
   .wh { display: block; width: 52px; height: 52px; }
   .wh-seg { transform-origin: 128px 140px; }
   /* hinge at the wide end of the flapper, not at its tip */
@@ -106,15 +85,8 @@
     animation: wh-flick 2s linear both;
   }
 
-  /* the shared `.card:hover .obj` rule in style.css (translateY + rotate +
-     scale) is scoped to elements Platform.astro renders itself, so it never
-     actually reaches this component's own <svg> — the wheel was falling
-     through to the *global*, unscoped copy of that rule instead, which is
-     why it alone tilted and grew on hover while the clock/megaphone (plain
-     <img> tags written straight into Platform.astro) got the plain
-     straight-up lift. Give the wheel that same straight lift explicitly, at
-     higher specificity than the global rule, so it just rises like the
-     other two. */
+  /* the shared .card:hover .obj rule (style.css) doesn't reach this inline <svg> either;
+     give it the same straight-up hover lift explicitly, at higher specificity */
   :global(.plat-card:hover .plat-tool) .wh {
     transform: translateY(-3px);
   }

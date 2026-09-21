@@ -1,18 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
   <!--
-    Колесо фортуни. The coin it replaces was illustrating the prize; the
-    client wants the mechanism — "акцент саме на колесі, як інтерактиві".
-    So: segments (it can land anywhere) plus a pointer biting into the rim
-    (something is about to be decided). Nothing about winning.
+    Wheel of fortune: segments (it can land anywhere) plus a pointer biting
+    into the rim (something is about to be decided) — the mechanism, not the
+    prize.
 
     Eight segments rather than twelve: this renders at 52px inside the tools
-    row, and twelve wedges turn into a grey disc at that size. The first
-    segment is centred on the pointer, so the wheel reads as stopped on a
-    result instead of mid-blur.
-
-    Colours are the brand's own three plus cream, cycling so no two
-    neighbours match — the cream wedges are what keep blue and green apart
-    at thumbnail size.
+    row, where twelve wedges turn into a grey disc. The first segment is
+    centred on the pointer, so the wheel reads as stopped on a result instead
+    of mid-blur. Colours cycle through the brand's three plus cream, so no
+    two neighbours match at thumbnail size.
   -->
   <defs>
     <linearGradient id="whRim" x1="0.2" y1="0" x2="0.8" y2="1">

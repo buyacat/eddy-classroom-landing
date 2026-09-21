@@ -10,30 +10,7 @@ const { locale } = Astro.props;
 
 const stats = tArray<{ text: string; offline?: boolean }>(locale, 'classroom_stats');
 
-/*
- * The hero shows the product, not an illustration of it: a live, draggable
- * 3D model from the library, re-framed in our own chrome (blue/yellow/green
- * dots instead of macOS traffic lights). The panel is left uncovered on
- * purpose — the model is the demo, and a second card cropping its corner only
- * competed with it.
- *
- * What the panel is NOT any more is a lesson in progress. It used to wear a
- * LIVE pill and a "18/22 completed" badge because a quiz ran inside it; the
- * client asked for the quiz out, and both of those were labels on the quiz
- * rather than on the model. The pill now names the thing on screen and the
- * badge says where it came from — which is the claim the band further down
- * the page then backs with 1200 more of them.
- *
- * The three floating objects next to the globe are subjects, not controls:
- * beside a live planet, a coin and an alarm clock read as a shop and a
- * deadline. Rocket and dinosaur are drawn for this site (sources in
- * src/assets/icon-src/) in the pack's own clay language — one saturated
- * body colour, cream detail, soft key light from the upper left — so they
- * sit next to the bought objects without looking imported. The in-lesson
- * tools keep the coin/clock/music trio down in the platform band, where
- * they carry their labels. The third object is the one that had to be drawn
- * in the page instead of exported, because it turns — see Galaxy.astro.
- */
+// Rocket/dino icons are custom-drawn (src/assets/icon-src/); galaxy is a live component (see Galaxy.astro).
 const tools = [
   { key: 'rocket', title: t(locale, 'classroom_hero_space_title'), cls: 'tool-a' },
   { key: 'dino', title: t(locale, 'classroom_hero_dino_title'), cls: 'tool-b' },
@@ -70,28 +47,14 @@ const tools = [
           <i></i><i></i><i></i>
           <span class="shot-meta">
             <span class="shot-ttl">{t(locale, 'classroom_hero_panel_title')}</span>
-            {/* Not the shared `.shot-live` pill: that one is green with a
-                pulsing dot because it means a session is running right now,
-                which is exactly the claim this panel stopped making. The
-                platform band still uses it, on a panel where it is true. */}
+            {/* Not the shared .shot-live pill (green pulsing dot = live session) */}
             <span class="shot-kind">{t(locale, 'classroom_hero_panel_tag')}</span>
           </span>
         </figcaption>
         <EarthGlobe locale={locale} />
       </figure>
 
-      {/* Where the model comes from, not how a class is doing with it. The
-          mark is a cut-away in four bands — the badge draws the same idea the
-          panel behind it is demonstrating, at 34px.
-
-          The bands are hexagons rather than circles because this badge and
-          the library's pickers are the same claim — "a 3D model out of the
-          Eddy catalogue" — and that claim is the one thing on this site
-          allowed to be a hexagon. Same geometry as --hex-mask: a pointy-top
-          hexagon whose corners are rounded by a fat round-joined stroke, so
-          every ring keeps the polygon at 78% of its width and spends the
-          other 22% on the stroke. The removed wedge is one sixth exactly —
-          the 60° sector between the top vertex and the next one round. */}
+      {/* Same geometry as --hex-mask: polygon at 78% width, stroke 22%; removed wedge is a 60° sector */}
       <div class="badge badge-model enter" style="--d:420ms">
         <span class="badge-mark" aria-hidden="true">
           <svg viewBox="0 0 32 36.95" width="29.4" height="34" focusable="false">
@@ -99,11 +62,7 @@ const tools = [
             <polygon class="m2" points="16,8.39 24.74,13.43 24.74,23.52 16,28.56 7.26,23.52 7.26,13.43" stroke-width="4.93" />
             <polygon class="m3" points="16,11.99 21.62,15.23 21.62,21.72 16,24.96 10.38,21.72 10.38,15.23" stroke-width="3.17" />
             <polygon class="m4" points="16,15.59 18.5,17.03 18.5,19.92 16,21.36 13.5,19.92 13.5,17.03" stroke-width="1.41" />
-            {/* the wedge the model is cut on, painted in the badge's own
-                white so it reads as removed rather than as a fifth colour.
-                It overshoots the outer ring so the cut runs clean through the
-                rounded corner as well — the overshoot lands on the badge's
-                own white, so it is invisible. */}
+            {/* wedge overshoots the outer ring so the cut clears the rounded corner too */}
             <path class="m0" d="M16 18.475 L16 1.18 L30.98 9.83 Z" />
           </svg>
         </span>
@@ -113,12 +72,8 @@ const tools = [
         </span>
       </div>
 
-      {/* No loading="lazy" on these two: they are in the first viewport at
-          every width, and a lazy image above the fold is fetched only after
-          layout — it used to arrive after its own 500ms entrance cue. */}
-      {/* Two elements per badge, for the reason Library3D.astro spells out:
-          a mask clips away anything a filter draws outside it, so the shape
-          lives on the inner element and the shadow on the outer one. */}
+      {/* No loading="lazy": these are always in the first viewport */}
+      {/* Two elements per badge: mask clips the shape (inner), shadow lives on the outer element */}
       {tools.map((tool, i) => (
         <div class={`badge badge-tool ${tool.cls} enter`} style={`--d:${500 + i * 80}ms`} title={tool.title}>
           <span class="tool-face">
@@ -135,53 +90,22 @@ const tools = [
 <style>
   .hero {
     position: relative;
-    /* Half a band at the bottom, not a full one. The scroll cue used to sit
-       in that gap and carry it; with the cue gone, a full --pad-band here
-       plus a full one on top of "why us" left the hero floating in a hole. */
     padding: calc(var(--nav-h) + clamp(32px, 5vw, 72px)) 0 clamp(28px, 3.4vw, 56px);
-    /* Clip X, never Y. The old `overflow: hidden` guillotined the green and
-       blue pools in a straight line across the full viewport width at the
-       hero's bottom edge — the one visible seam on the page. But the yellow
-       pool does hang 173px past the right edge, and body's `overflow-x`
-       suppresses the scrollbar without stopping the document from measuring
-       wider. `overflow-x: clip` is the one value that cuts a single axis:
-       `hidden` would force the other axis to `auto` and re-cut the bleed. */
+    /* overflow-x: clip (not hidden) — clips only the X axis so the Y-bleeding blobs aren't affected */
     overflow-x: clip;
   }
 
-  /* Three soft blocks of brand colour instead of an atmospheric gradient —
-     the mock builds depth out of flat shapes, so the page does too.
-
-     They are the same three colours as the sheets in the header, and they
-     are driven by the same two moments: they bloom in with the stack when
-     the page loads, and green + blue drain away on the exact beat their
-     sheets are pulled out of the header (`html.nav-stuck`, set in app.js).
-     Yellow is the one that stays in both places. */
+  /* Same 3 brand colors as the header sheets; green/blue fade out in sync with html.nav-stuck (app.js) */
   .blob {
     position: absolute;
-    /* Load-bearing: this drops the three pools into the same page-wide
-       ambient plane as every other band (see style.css), so the hero's light
-       and the next band's light are literally one layer and cannot show a
-       join. */
-    z-index: -1;
+    z-index: -1; /* shares the page-wide ambient plane with other bands (style.css) */
     border-radius: 50%;
     pointer-events: none;
-    /* No filter: blur(). A radial falloff is already smooth; the blur was a
-       second full-size GPU pass replayed on every nav-stuck toggle, for an
-       effect the third colour stop below gives away for free. */
     transition:
       opacity 620ms var(--ease-out),
       transform 760ms var(--ease-out);
   }
-  /* Offsets are calc'd off each pool's own size, not off the hero's height —
-     a percentage offset would resolve against the section and drift with the
-     copy length between UK and EN. The middle colour stop is what keeps a
-     wash this wide from banding on an 8-bit panel. */
-  /* The yellow is the widest thing on the page on purpose: it is where light
-     enters the site, and a tight pool made it read as a corner highlight
-     rather than as the room being lit. Wider ellipse, a longer plateau before
-     the falloff starts, and its own fade past the shared 62% so the wash
-     reaches the middle of the hero instead of dying at the shoulder. */
+  /* Offsets are calc'd off each pool's own size (not hero height) so they don't drift between UK/EN copy lengths */
   .blob-y {
     --h: min(68vw, 1020px);
     width: var(--h); height: calc(var(--h) * .82);
@@ -194,9 +118,6 @@ const tools = [
       rgba(var(--amb-yellow), 0) 76%);
   }
 
-  /* Green and blue are centred all but exactly ON the hero's bottom edge, so
-     half of each pool lands in the top padding of "why us" — precisely where
-     the old clip used to cut them off. */
   .blob-g {
     --h: min(46vw, 620px);
     width: var(--h); height: var(--h);
@@ -248,13 +169,7 @@ const tools = [
   .hero-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
   .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
 
-  /* The window chrome is a fixed 42px strip (style.css), so anything in it
-     that wraps spills straight over the model. On a 390px phone the title and
-     the pill together are wider than the bar, and the shared rules have no
-     opinion about which of them should give — so the scoped rules here say
-     it: the pill is short and keeps its full width, and the title, which is
-     scene-setting rather than information, gives ground and then ellipses.
-     A `min-width: 0` on the flex row is what lets it shrink at all. */
+  /* min-width: 0 lets the title shrink/ellipsis instead of overflowing the 42px chrome strip; pill keeps full width */
   .shot-bar .shot-meta { min-width: 0; }
   .shot-bar .shot-ttl {
     min-width: 0;
@@ -263,10 +178,7 @@ const tools = [
     text-overflow: ellipsis;
   }
 
-  /* What kind of thing is open in the window. Same pill geometry as the
-     shared `.shot-live`, deliberately not the same colour: green with a
-     heartbeat means "happening now", and this is a model sitting still until
-     somebody touches it. */
+  /* Same pill geometry as .shot-live, deliberately not the same color (green pulse = live) */
   .shot-kind {
     flex: none;
     white-space: nowrap;
@@ -311,11 +223,7 @@ const tools = [
   .badge-model .t1 { font-family: var(--font-display); font-weight: 800; font-size: 13.5px; color: var(--ink); }
   .badge-model .t2 { font-size: 11.5px; font-weight: 600; color: var(--ink-3); font-variant-numeric: tabular-nums; }
 
-  /* The three subjects are hexagons for the same reason the source badge is:
-     each one is an object out of the library. They give up the shared
-     `.badge` plate to get there — white surface and rounded corners come
-     from the mask now, and the shadow is a drop-shadow on this outer box
-     because a box-shadow would be drawn on a plate that is no longer there. */
+  /* No shared .badge plate: white surface/rounding come from the mask, so shadow must be drop-shadow, not box-shadow */
   .badge-tool {
     width: 74px;
     height: calc(74px * var(--hex-ratio));
@@ -339,11 +247,9 @@ const tools = [
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
   }
-  /* a shade smaller than the old 54px: a hexagon narrows towards its point,
-     so an object sized to the full width would clip its own top corners */
+  /* sized under the hexagon's full width so it doesn't clip the top corners */
   .badge-tool .obj { width: 50px; height: 50px; }
-  /* the galaxy is drawn by its own component, so it carries its own size —
-     :global is the only way to bring it down to the same 50px */
+  /* :global needed to size the Galaxy component's own root element */
   .badge-tool :global(.gx) { width: 50px; height: 50px; }
   .tool-a { top: 70px; }
   .tool-b { top: 250px; }
@@ -369,19 +275,7 @@ const tools = [
     transition: opacity 520ms var(--ease-out) var(--d), transform 520ms var(--ease-spring) var(--d);
   }
 
-  /* ---- stacked: the chips move under the demo ----
-     On one column the two chips sat between the lede and the buttons, i.e.
-     directly on the path from the sentence that explains the product to the
-     button that asks for the sale — two yellow-and-green pills interrupting
-     the one moment the page has to close. Under the demo panel they do the
-     job they were written for instead: the reader has just turned the model,
-     and "1–12 класи / працює офлайн" is the caption to what they touched.
-
-     The reorder is done by making .hero-copy `display: contents`, so its
-     children become items of the hero's own flex column and can be ordered
-     freely — rather than by rendering the chips twice and hiding one, which
-     is two sources of truth for one sentence. Each child then carries its own
-     top margin, which is why the column's gap is zero. */
+  /* .hero-copy: display: contents lets children be reordered as flex items directly (no duplicate markup) */
   @media (max-width: 1080px) {
     .hero-grid {
       display: flex;

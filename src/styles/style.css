@@ -1,11 +1,9 @@
 /* ==========================================================================
-   Eddy Classroom — standalone landing design system
-   Built to the client's own Frame 3 product mock: pure-black type on a
-   #F5F5F5 canvas, white cards with very large radii, and three saturated
-   blocks of colour — electric blue #4050FF, yellow #F7DE52, green #5AE3A8.
-   Every colour value here was sampled straight out of that mock.
+   Eddy Classroom — landing design system
+   Pure-black type on a #F5F5F5 canvas, white cards with large radii, and three
+   saturated blocks of colour — electric blue #4050FF, yellow #F7DE52, green #5AE3A8.
 
-   Two rules the mock enforces and this file keeps:
+   Two rules this file keeps:
    1. Depth comes from COLOUR BLOCKING, not shadows. Elevation is almost
       flat; a card is a shape, not a floating pane.
    2. The 3D icons are objects, not decorations — they break out of their
@@ -55,41 +53,33 @@
 
   --focus-ring: 0 0 0 3px rgba(64, 80, 255, .35);
 
-  /* ---------- ambient light ----------------------------------------
-     One plane of coloured light lies behind the whole document; every
-     band drops one or two pools into it. Stored as raw channel triplets
-     rather than colours, so a pool picks its own alpha without needing a
-     second colour token per strength. Nothing here is a new hue: these
-     are the same three sheets that fan out under the header, plus the
-     violet the palette has been holding in reserve since day one. */
+  /* ---------- ambient light ----------
+     One plane of light behind the whole document; every band drops one or two
+     pools into it. Stored as raw channel triplets, not colours, so a pool picks
+     its own alpha via rgba() without needing a second colour token per strength. */
   --amb-yellow: 247, 222, 82;
   --amb-green: 90, 227, 168;
   --amb-blue: 64, 80, 255;
   --amb-violet: 87, 0, 255;
 
-  /* Four strengths, each with a budget. Anything between them is a value
-     somebody eyeballed once and nobody can defend later.
-       --amb-4  hero only — this is where light enters the page
+  /* four opacity tiers, each with a defined role:
+       --amb-4  hero only — where light enters the page
        --amb-3  at most one per band: the band's own colour event
        --amb-2  the working pool
        --amb-1  a trace; you only notice it when it is missing
-     .08 is the floor at which #f5f5f5 still visibly shifts hue on an
-     uncalibrated laptop panel; .42 is the ceiling before the wash starts
-     competing with the flat colour blocks it is supposed to sit behind. */
+     .08 is the floor where #f5f5f5 still visibly shifts hue; .42 is the ceiling
+     before the wash competes with the flat colour blocks behind it. */
   --amb-4: .5;
   --amb-3: .34;
   --amb-2: .22;
   --amb-1: .12;
 
-  /* Every pool dies at 62% of its own radius, so better than a third of
-     it is transparent margin. That margin is the entire seam fix: pools
-     reach into their neighbours and cross-fade there instead of ending
-     at a band edge. */
+  /* pools fade out at 62% of their radius; the margin beyond that is where
+     neighbouring pools cross-fade instead of ending at a hard band edge */
   --amb-fade: 62%;
 
-  /* Pool radii. vw-based so a pool keeps the same apparent size on a
-     laptop and on a 27"; clamped so it neither vanishes on a phone nor
-     swallows a 2560px canvas. */
+  /* vw-based so a pool keeps the same apparent size on a laptop and a 27";
+     clamped so it neither vanishes on a phone nor swallows a 2560px canvas */
   --amb-r-xl: clamp(560px, 66vw, 1180px);
   --amb-r-lg: clamp(440px, 52vw, 900px);
   --amb-r-md: clamp(340px, 40vw, 680px);
@@ -102,24 +92,12 @@
   --r-2xl: 40px;
   --r-pill: 999px;
 
-  /* The one shape on this site that is NOT a rounded rectangle, and it has a
-     job: a pointy-top hexagon means "3D-модель із бібліотеки Eddy", nothing
-     else. It lives here rather than in the component that first needed it
-     because two places now draw it — the library's pickers and the hero's
-     source badge — and they have to stay the same hexagon.
-
-     The rounding is a fat round-joined stroke rather than a path with arcs,
-     so one polygon serves every size. Proportions the badge's own SVG
-     mirrors: the polygon is 78% of the full width, the stroke the other 22%. */
+  /* shared hexagon mask (library pickers + hero source badge, so both stay identical).
+     Rounded via a fat round-joined stroke rather than arcs — one polygon serves every
+     size; the polygon is 78% of the full width, the stroke the other 22%. */
   --hex-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,12.7 89,35.22 89,80.25 50,102.77 11,80.25 11,35.22' fill='%23000' stroke='%23000' stroke-width='22' stroke-linejoin='round'/%3E%3C/svg%3E");
   /* height / width of that hexagon — 2 / √3 */
   --hex-ratio: 1.1547;
-
-  /* Labels are NOT hexagons and no long-hexagon token lives here any more.
-     The shape stayed a half-measure at label sizes however it was cut, and the
-     mock's pill is what a filled label is on this site. The hexagon keeps the
-     three places where it means something: the library's pickers, the hero's
-     objects and source badge, and the coloured dots inside the window mocks. */
 
   /* ---------- elevation — deliberately almost flat ---------- */
   --e1: 0 1px 2px rgba(0, 0, 0, .04);
@@ -146,12 +124,8 @@
   --ease-out: cubic-bezier(.22, .61, .36, 1);
   --ease-in-out: cubic-bezier(.65, 0, .35, 1);
   --ease-spring: cubic-bezier(.34, 1.42, .5, 1);
-  /* Long settle with no overshoot — for moves the eye follows all the way,
-     where a spring reads as a twitch. The second control point governs how
-     much of the distance is spent early: at x=.12 the motion was over inside
-     the first sixth of its duration and then crawled, which reads as a click
-     rather than a move. Pulled back to a genuine ease-in-out so the sheets
-     leave slowly, do most of their travel in the middle, and land soft. */
+  /* slow-start ease-in-out, no overshoot — for moves the eye tracks all the way
+     (a spring reads as a twitch here) */
   --ease-glide: cubic-bezier(.45, .03, .25, 1);
 }
 
@@ -273,14 +247,9 @@ html[lang="uk"] p { hyphens: auto; }
   padding-inline: var(--gutter);
 }
 
-/* Grid and flex items default to `min-width: auto`, so a deliberately
-   oversized screenshot inside a card would widen its own track and push
-   the whole page past the viewport on narrow screens. `.lib-head` is on
-   the list for the subject tabs: the five nowrap labels are 452px of
-   min-content (491px in English), and without this the tab column
-   reported that as its width, the head grid laid out to it, and a phone
-   set its layout viewport to 468px — every section on the page shrank to
-   fit and the language pill fell off the right edge. */
+/* grid/flex items default to min-width:auto — without this, oversized content (e.g.
+   .lib-head's 452px of nowrap tab labels) widens its track and pushes the page past
+   the viewport on narrow screens */
 .hero-grid > *, .why-grid > *, .plat-grid > *, .lib-grid > *, .lib-head > *,
 .cta-grid > *, .footer-top > *, .plat-card > * { min-width: 0; }
 
@@ -290,39 +259,20 @@ html[lang="uk"] p { hyphens: auto; }
    ambient light — one plane behind the entire document
    ========================================================================== */
 
-/* Every pool below is `z-index: -1` inside a section that is deliberately
-   NOT a stacking context, so all of them float up to this one and paint
-   together, in tree order, before a single pixel of content. That is what
-   makes the system seamless: there is no per-band layer with an edge to
-   hide, only pools sharing one plane and overlapping wherever two bands
-   meet. Keep `main` unpositioned and untransformed, and keep `overflow`
-   off the bands, or the pools stop there and the seams come back. */
+/* pools use z-index:-1 inside sections that are deliberately not stacking contexts, so
+   they all paint on this one shared plane (body) instead of per-band layers. Keep `main`
+   unpositioned/untransformed and `overflow` off the bands, or pools get clipped to their
+   band and the seams come back. */
 body {
   position: relative;
   isolation: isolate;
 }
 
-/* The pool box. It overhangs its band top and bottom on purpose — the
-   overhang is where two bands' light mixes. It must never overhang the
-   BOTTOM of the last two sections: absolutely positioned boxes count
-   toward the viewport's scrollable area, and a tail below the footer
-   would grow a strip of dead scroll.
-
-   TWO RULES, and breaking either one puts a straight edge back on the page:
-   1. this overhang has to be deep enough for a pool's fade to finish inside
-      the box — a gradient that is still coloured when it reaches the box is
-      cut off square;
-   2. a pool centre belongs inside the BAND, not merely inside the box. With
-      a 34% overhang each way the band is the middle 20%–80% of its own box,
-      and the 20% above and below it is the fade's room, not somewhere to put
-      a centre. A centre at 104% is an ellipse hanging below the box and all
-      you see is the line where the box ends; a centre at 92% is the same
-      failure, fainter and further in, and that is the one that kept coming
-      back. The arithmetic either rule reduces to is
-        centre_y × box_height  ≥  last_stop% × vertical_radius
-      top and bottom both, and `scripts/check-ambient.mjs` measures it in a real
-      browser rather than trusting the eye — the pools are vw-sized while the
-      bands are content-sized, so a band that gets shorter breaks it silently. */
+/* pool box overhangs its band top/bottom on purpose (where neighbouring bands' light mixes)
+   but must never overhang the BOTTOM of the last section — absolutely positioned boxes count
+   toward the scrollable area. Constraint: centre_y × box_height >= last_stop% × vertical_radius,
+   top and bottom both; verified by scripts/check-ambient.mjs since pools are vw-sized while
+   bands are content-sized. */
 .band::before,
 .cta-band::before {
   content: "";
@@ -501,18 +451,13 @@ body.menu-open {
 .card.is-green { background: var(--green); }
 .card.is-green p { color: rgba(0, 0, 0, .68); }
 
-/*
- * `.obj` IS the icon system now: a 3D render hanging off the top edge of
- * its card instead of sitting inside a tinted plate. No SVG grammar, no
- * substrate — the objects carry the personality on their own, exactly as
- * they do in the client's mock.
- */
+/* .obj — a 3D icon hanging off the card's top edge, not sitting inside a tinted plate */
 .obj {
   display: block;
   width: var(--obj, 88px);
   height: var(--obj, 88px);
-  /* nearly half the object sits above the card edge — at a third it read as
-     a badly placed icon rather than a thing hanging off the card */
+  /* -.46 makes ~half the object hang above the card edge; -.33 read as a misplaced icon
+     rather than an object hanging off it */
   margin: calc(var(--obj, 88px) * -.46) 0 12px calc(var(--obj, 88px) * -.14);
   filter: drop-shadow(0 12px 16px rgba(0, 0, 0, .18));
   transition: transform var(--t-card) var(--ease-spring);
@@ -526,16 +471,14 @@ body.menu-open {
    scroll reveal
    ========================================================================== */
 
-/* Progressive enhancement: content is visible by default and only hidden
-   for the reveal animation once we know JS is running. A broken observer
-   must never leave a section blank. */
+/* A slide, never a fade: content stays fully opaque, so a stalled observer
+   cannot leave a section blank. Only applied once JS is known to run. */
 .js .reveal {
-  opacity: 1;
   transform: translateY(20px);
-  transition: opacity var(--t-reveal) var(--ease-out), transform var(--t-reveal) var(--ease-out);
+  transition: transform var(--t-reveal) var(--ease-out);
   transition-delay: calc(min(var(--i, 0), 7) * 60ms);
 }
-.js .reveal.is-visible { opacity: 1; transform: none; }
+.js .reveal.is-visible { transform: none; }
 
 /* ==========================================================================
    form
@@ -614,18 +557,15 @@ body.menu-open {
   .field input,
   .field select,
   .field textarea { font-size: 16px; }
-  /* Phone + Email (and Role + Students) used to stay side by side down to
-     560px, so on most phones they were squeezed two-per-row instead of
-     stacking like every other field. Stack them at the same width the
-     touch sizing above already kicks in at. */
+  /* stack at the same breakpoint the touch sizing above kicks in, instead of staying
+     two-per-row down to 560px */
   .field.row { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
-  /* "Назва навчального закладу / Організації" is 218px at 11px; in a
-     232px field at 360px it wrapped, and a floating label two lines tall
-     hangs down over the value. Cut it with an ellipsis instead — the
-     placeholder underneath still says what goes in the box. */
+  /* long floating labels (e.g. Ukrainian "Назва навчального закладу...") wrap to 2 lines
+     and overlap the input value at narrow widths — ellipsis instead; the placeholder
+     underneath still explains the field */
   .field > label,
   .field.row > div > label {
     max-width: calc(100% - 28px);
@@ -646,7 +586,7 @@ body.menu-open {
     transition-duration: .01ms !important;
     scroll-behavior: auto !important;
   }
-  .js .reveal { opacity: 1 !important; transform: none !important; }
+  .js .reveal { transform: none !important; }
 }
 
 /* ==========================================================================
@@ -654,9 +594,8 @@ body.menu-open {
    ========================================================================== */
 
 @media print {
-  /* Ambient light is a screen effect. On paper a 16%-alpha wash prints as a
-     grey blotch and eats toner for no gain — the flat colour blocks carry the
-     layout on their own. */
+  /* ambient light is a screen effect — on paper it prints as a grey blotch and
+     wastes toner; the flat colour blocks carry the layout on their own */
   .blob,
   .band::before,
   .cta-band::before { display: none !important; }

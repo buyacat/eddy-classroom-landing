@@ -1,20 +1,19 @@
-/*
- * Контракт калюж навколишнього світла (див. коментар над .band::before у
- * style.css), перевірений замість того, щоб бути обіцяним у коментарі — так
- * само, як check-earth-layout.mjs робить із глобусом.
+/**
+ * Ambient light pools must fade out inside their own box (see the comment above
+ * .band::before in style.css), checked rather than promised in a comment — the
+ * same idea as check-earth-layout.mjs for the globe.
  *
- * Калюжі задані у vw, а висота смуги залежить від контенту, тож смуга, яка
- * стала нижчою, ламає контракт мовчки: градієнт не встигає згаснути і
- * обрізається прямою лінією. Саме так з'явився жовтий обріз над картками
- * Platform.
+ * Pools are sized in vw while band height follows content, so a band that gets
+ * shorter breaks the contract silently: the gradient runs out of room and is
+ * clipped along a straight line.
  *
- * Горизонтальні обрізи за помилку не рахуються: бокс завжди на всю ширину
- * вікна, тож те, що виїхало вбік, за кадром.
+ * Horizontal clipping is not counted: the box always spans the viewport, so
+ * whatever leaves sideways is off-screen anyway.
  *
- * Потрібні dev-сервер і headless Chrome:
+ * Needs the dev server and a headless Chrome:
  *   npm run dev
  *   chrome --headless=new --remote-debugging-port=9333 --user-data-dir=<temp> about:blank
- *   node scripts/check-ambient.mjs
+ *   npm run check:ambient
  */
 const PORT = 9333;
 const PAGE = process.env.AMB_URL || 'http://localhost:5178/';
@@ -76,13 +75,13 @@ for (const w of WIDTHS) {
       const down = (1 - cy / 100) * b.boxH;
       const hue = (p.match(/rgba?\((\d+), (\d+), (\d+)/) || []).slice(1, 4).join(',');
       const errs = [];
-      if (reach > up) errs.push(`ВЕРХ −${Math.round(reach - up)}px`);
-      if (reach > down) errs.push(`НИЗ −${Math.round(reach - down)}px`);
+      if (reach > up) errs.push(`TOP −${Math.round(reach - up)}px`);
+      if (reach > down) errs.push(`BOTTOM −${Math.round(reach - down)}px`);
       if (errs.length) { bad++; console.log(`  ✗ ${name}  ${hue}  at y=${cy}%  ${errs.join(', ')}`); }
     }
   }
-  if (!bad) console.log('  всі калюжі гаснуть усередині своїх боксів');
+  if (!bad) console.log('  every pool fades out inside its own box');
 }
 
-console.log(bad ? `\n${bad} обрізів` : '\nчисто на всіх ширинах');
+console.log(bad ? `\n${bad} clipped` : '\nclean at every width');
 ws.close();

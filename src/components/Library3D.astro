@@ -8,15 +8,7 @@ import LibGlyph from './LibGlyph.astro';
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 
-/*
- * Written subject by subject, so the strip reads as one flow left to right:
- * biology leads, then chemistry, physics, geography follow in a block each.
- * Within biology the eye goes first — it is the model the panel opens on.
- *
- * `model` is the id of a file in src/data/models.json; a card without one is
- * a subject the library has not shipped a model for yet, and picking it puts
- * the panel into the state that says exactly that.
- */
+// `model` is a src/data/models.json id; a card without one has no model yet.
 const cards = tArray<{
   subject: string;
   label: string;
@@ -25,14 +17,7 @@ const cards = tArray<{
   model?: string;
 }>(locale, 'classroom_library_cards');
 
-/*
- * The strip is paged by subject rather than scrolled freely: one page per
- * subject, so picking "Біологія" shows biology and nothing else instead
- * of biology bleeding into the chemistry cell sitting right after it in
- * one long scroller. The data keeps each subject's cards contiguous, so
- * slicing on where each subject starts is enough to cut exact,
- * non-overlapping pages — no per-card group tag needed.
- */
+// Subjects are contiguous in `cards`, so slicing at each subject's start index yields exact, non-overlapping pages.
 const SUBJECT_ORDER = ['biology', 'chemistry', 'physics', 'geography'] as const;
 const starts = SUBJECT_ORDER
   .map((subject) => cards.findIndex((c) => c.subject === subject))
@@ -42,27 +27,9 @@ const groups = starts.map((start, i) => ({
   label: cards[start].label
 }));
 
-/* The strip is cut to the busiest subject rather than to a number written
-   into the CSS: physics carries four models and biology three, and a
-   viewport sized for three let the fourth cell bleed onto the next page. */
+// Viewport width is sized to the busiest subject (physics=4) so no cell bleeds onto the next page.
 const widest = Math.max(...groups.map((g) => g.items.length), 1);
 
-/*
- * A horizontally scrollable strip of sample cards sitting above the
- * model panel: picking one is what drives the panel, so the picking and
- * the panel read as one mechanism, and the strip stays a single row that
- * scrolls rather than a grid competing with the panel for width — the
- * panel is the thing being sold, and it needs to be full size.
- *
- * Every cell wears a drawn object, the way the pack has always worked:
- * one solid body, two or three forms, broad soft light, and a movement on
- * hover that says what the thing DOES. The objects for the nine models
- * live in LibGlyph.astro; the two cells still waiting for a file keep the
- * clay PNGs the old honeycomb carried.
- *
- * `data-model` is what the panel is handed on a click; a cell without one
- * drops it into the "still on its way" state instead.
- */
 const subjectBlock: Record<string, string> = {
   biology: 'is-green',
   physics: 'is-blue',
@@ -102,20 +69,7 @@ const subjectBlock: Record<string, string> = {
                   <span class="hex-face">
                     <span class="hex-art">
                   {c.glyph === 'eye' ? (
-                    /*
-                     * Єдиний glyph паку, що не PNG. Анімація тут рухає саму
-                     * райдужку всередині яблука, а не накладає щось зверху, як
-                     * у сусідів, — отже об'єкт мусить бути вектором. Мова
-                     * пластики та сама: одне суцільне глянцеве тіло, світло з
-                     * верхнього лівого, темний термінатор праворуч-донизу,
-                     * відбите підсвічування знизу, гарячий блік і супутник.
-                     *
-                     * Блік на рогівці — тверде біле без розмиття, і так і має
-                     * бути: рогівка мокра, це відблиск на склі, а не полірована
-                     * глина. Бюджет матеріалу паку його не пропускає, тому файл
-                     * заявляє виняток сам, щоб він лишався видимим у звіті:
-                     * check-icons: glass-ok — вологий блиск рогівки, не полірування глини
-                     */
+                    /* check-icons: glass-ok — wet corneal gloss, not polished clay */
                     <svg class="hex-obj hex-eye" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
                       <defs>
                         <radialGradient id="eyeball" cx="33%" cy="25%" r="85%">
@@ -157,7 +111,7 @@ const subjectBlock: Record<string, string> = {
                       <circle cx="128" cy="130" r="96" fill="url(#eye-bounce)" />
 
                       <g clip-path="url(#eye-clip)">
-                        {/* тінь від верхньої повіки — саме вона не дає кулі читатись як кулька */}
+                        {/* upper-lid shadow: what stops the ball reading as a flat disc */}
                         <rect x="-10" y="18" width="280" height="62" fill="url(#eye-lid)" filter="url(#eye-b6)" />
 
                         <g class="eye-gaze">
@@ -167,7 +121,7 @@ const subjectBlock: Record<string, string> = {
                           <ellipse class="eye-pupil" cx="104" cy="134" rx="18" ry="21" fill="url(#eye-pupil)" />
                         </g>
 
-                        {/* рогівка: ледь помітне підняття + мокрий обідок знизу */}
+                        {/* cornea: a faint rise plus the wet rim below it */}
                         <ellipse cx="104" cy="132" rx="56" ry="62" fill="#FFFFFF" opacity=".07" />
                         <path d="M58 158 Q104 206 152 156" fill="none" stroke="#FFFFFF" stroke-opacity=".4"
                               stroke-width="8" stroke-linecap="round" filter="url(#eye-b3)" />
@@ -233,14 +187,6 @@ const subjectBlock: Record<string, string> = {
 </section>
 
 <style>
-  /* Both centres used to sit out in the box's overhang — the yellow at 10%
-     and the blue at 92%, while the band itself only occupies 20%–80% of the
-     box. A centre in the overhang leaves the fade less room than the fade
-     needs, so both pools ended on a straight line: the yellow one 157px
-     short at the top, which is the edge that showed up over Platform's
-     cards, the blue one 152px short at the bottom. Pulled both inside the
-     band. This is a shorter band than its pools were sized for, so it is
-     the one place on the page where that margin was not already there. */
   .lib::before {
     background:
       radial-gradient(calc(var(--amb-r-lg) * 1.25) calc(var(--amb-r-lg) * .62) at 10% 24%,
@@ -252,26 +198,13 @@ const subjectBlock: Record<string, string> = {
         rgba(var(--amb-blue), 0) var(--amb-fade));
   }
 
-  /* ---- the top band: title and strip share a row, to save height ----
-     Stacking "1200+ моделей" above a full-width strip above the panel
-     ran three blocks deep before a visitor even reached the model. Side
-     by side they share one band's worth of height, and the description
-     — the one piece of copy that actually needs full width to read
-     comfortably — drops to its own line below both instead. */
+  /* title and strip share a row; description gets its own full-width line below */
   .lib-top {
     display: grid;
-    /* the strip's own column is auto now, not 1fr: 1fr stretched it to
-       fill whatever room was left beside the numeral, which is what was
-       leaving a page of two or three cells stranded in a wide empty
-       lane with the arrows pinned far off at its edges. Auto lets the
-       strip be exactly as wide as its own compact, fixed-width cluster
-       (see --comb-w below) and nothing more. */
+    /* auto (not 1fr) keeps the strip its own compact width instead of stretching to fill the row */
     grid-template-columns: auto auto;
     justify-content: space-between;
-    /* "end" lines the strip up with the bottom of the description, the
-       last line in the left column — "center" was splitting the
-       difference with the small badge above it instead. */
-    align-items: end;
+    align-items: end; /* aligns strip bottom with the description's last line */
     gap: clamp(20px, 3vw, 44px);
     margin-bottom: clamp(16px, 2.2vw, 28px);
   }
@@ -289,24 +222,12 @@ const subjectBlock: Record<string, string> = {
     font-size: 1.0625rem; line-height: 1.55; color: var(--ink-2); max-width: 60ch;
   }
 
-  /* ---- the strip: paged by subject, not scrolled freely ----
-     Icon over name, not side by side — beside the title now, the strip
-     buys its room from paging rather than from the title, and a narrow
-     column of stacked cells fits several times more of them in the same
-     width than a row of icon-plus-label pills would.
-
-     Each subject is its own page, full width of the viewport, and the
-     track slides exactly one page per click — so "Біологія" shows
-     biology and nothing else, instead of a free scroll that let the next
-     subject's first card bleed into view at the edge of the strip. */
+  /* strip is paged by subject: each subject is a full-viewport-width page, track slides one page per click */
   .lib-comb {
     --hex-w: 64px;
     --hex-h: calc(var(--hex-w) * 1.1547);
     --hex-cell: calc(var(--hex-w) + 22px);
-    /* the viewport fits the busiest subject exactly — `--comb-count` is
-       counted off the data in the frontmatter — so the strip has one
-       compact size instead of stretching to whatever room a 1fr column
-       handed it, and no page can spill onto the one beside it. */
+    /* --comb-count is set from the frontmatter data (busiest subject) so no page can spill onto the next */
     --comb-count: 3;
     /* + 4px for the page's own side padding, which is inside this width */
     --comb-w: calc(var(--comb-count) * var(--hex-cell) + (var(--comb-count) - 1) * 8px + 4px);
@@ -383,9 +304,6 @@ const subjectBlock: Record<string, string> = {
   .lib-comb-dot.is-active .dot { background: var(--ink); transform: scale(1.3); }
   .lib-comb-dot.is-active .dot-lbl { color: var(--ink); font-weight: 800; }
 
-  /* Two elements per cell: the shape is masked, and a mask clips away
-     anything a filter draws outside it — so the lift/shadow lives on the
-     outer element and the mask on the inner one. */
   .hex {
     position: relative;
     display: flex;
@@ -400,9 +318,6 @@ const subjectBlock: Record<string, string> = {
     cursor: pointer;
     --glyph-t: 880ms;
     --glyph-e: cubic-bezier(.42, 0, .22, 1);
-    /* the lift itself, smooth out AND back — transform only, so it moves
-       the shape and its caption as one unit without disturbing the shadow,
-       which lives one level down */
     transform: translateY(0);
     transition: transform 260ms var(--ease-spring), background 160ms linear;
   }
@@ -411,11 +326,7 @@ const subjectBlock: Record<string, string> = {
   .hex.is-active { z-index: 2; background: var(--surface-sunken); transform: translateY(-3px); }
   .hex.is-active:hover { transform: translateY(-4px); }
 
-  /* The shadow lives here, one level above the mask — a mask clips away
-     anything a filter draws outside its own box, so a drop-shadow on the
-     masked element itself gets cut off rather than cast. This box is an
-     unmasked rectangle roughly the hex's own footprint, which is all a
-     soft shadow needs to read as belonging to the shape above it. */
+  /* unmasked, so its drop-shadow filter isn't clipped by .hex-face's mask */
   .hex-shadow {
     display: block;
     width: var(--hex-w);
@@ -445,12 +356,6 @@ const subjectBlock: Record<string, string> = {
   .hex.is-yellow .hex-face { background: var(--yellow); }
   .hex.is-ink .hex-face { background: var(--ink-block); }
 
-  /* Обрану комірку показують підняття, притемнене тло під нею, глибша
-     тінь і чорна підпис — цього досить. Прямокутної рамки тут більше
-     немає: обрис лягав на неспотворену коробку, тобто квадратом навколо
-     шестикутника, і читався не як вибір, а як системна рамка фокуса, що
-     її забули прибрати. */
-
   .hex-art {
     position: relative;
     display: block;
@@ -463,26 +368,12 @@ const subjectBlock: Record<string, string> = {
     height: auto;
   }
 
-  /*
-   * Each clay render was shot with its own amount of empty canvas around
-   * it, so at one fixed width they read as noticeably different sizes.
-   * Measured the opaque pixels' own bounding box per asset and scaled
-   * each so its visual diagonal comes out to roughly the same fraction
-   * of the cell.
-   *
-   * The model stills need no entry here: they are trimmed to their own
-   * silhouette and scaled to one height when they are rendered, so they
-   * arrive at the same visual size as each other already.
-   */
+  /* per-asset scale correction: each clay render had different empty canvas around it at source */
   .hex-obj.ic-crust { transform: scale(1.02); }
   .hex-obj.ic-volcano { transform: scale(1.02); }
   .hex-eye { transform: scale(1.13); }
 
-  /* The eye is the one glyph that is markup rather than a PNG, so its hover
-     business lives inside the object instead of over it: the iris group looks
-     left, then right, then back to centre, and the pupil dilates and settles
-     on the way. The specular stays put — it belongs to the cornea, not to the
-     iris, and an eye whose highlight travels with the pupil reads as a sticker. */
+  /* specular highlight stays fixed (on the cornea, not the iris) — if it moved with the pupil it'd read as a sticker */
   .hex-eye .eye-pupil { transform-box: fill-box; transform-origin: 50% 50%; }
   .hex:hover .hex-eye .eye-gaze  { animation: eye-gaze calc(var(--glyph-t) * 1.7) cubic-bezier(.5, 0, .15, 1); }
   .hex:hover .hex-eye .eye-pupil { animation: eye-dilate calc(var(--glyph-t) * 1.7) ease-in-out; }
@@ -498,7 +389,6 @@ const subjectBlock: Record<string, string> = {
     64%      { transform: scale(.84); }
   }
 
-  /* ---- the hover overlays: unchanged from the honeycomb these replaced ---- */
   .hex-lava, .hex-fx {
     position: absolute; inset: 0; width: 100%; height: 100%;
     overflow: visible; pointer-events: none;
@@ -531,8 +421,6 @@ const subjectBlock: Record<string, string> = {
     72% { transform: translate(1px, .6px); }
   }
 
-  /* beside the shape now, not under it — a nav label reads left to right
-     next to its icon, the way every other menu item on the page does */
   .hex .nm {
     max-width: calc(var(--hex-w) + 20px);
     font-family: var(--font-display);
@@ -544,15 +432,7 @@ const subjectBlock: Record<string, string> = {
   }
   .hex:hover .nm, .hex.is-active .nm { color: var(--ink); }
 
-  /*
-   * Фокус лишається видимим для клавіатури й зникає з-під миші.
-   *
-   * Браузери розходяться в тому, чи вважати клік «видимим фокусом»: у
-   * частині з них кожне натискання по комірці лишало по собі прямокутну
-   * рамку системного кольору — на соті вона читалась як помилка верстки.
-   * Тож рамку знімаємо на :focus і малюємо свою на :focus-visible, який
-   * лишається тільки для Tab.
-   */
+  /* browsers differ on whether a click counts as "visible focus"; drop the outline on :focus and draw our own on :focus-visible (keyboard only) */
   .hex:focus, .lib-comb-arrow:focus, .lib-comb-dot:focus { outline: none; }
   .hex:focus-visible, .lib-comb-arrow:focus-visible, .lib-comb-dot:focus-visible {
     outline: none;
@@ -567,70 +447,23 @@ const subjectBlock: Record<string, string> = {
     .hex:hover .hex-fx, .hex:hover .hex-fx path { animation: none; }
   }
 
-  /* the strip scrolls sideways at any width, so phones need no layout
-     switch — just tighter padding, since the edge-to-edge card gutter
-     is narrower there. */
-  /* The title and the strip only share a row where there is a row's worth of
-     width to share — and 700px was not where that stops being true. The
-     strip's own width is fixed by the busiest subject: four cells at 86px
-     plus their gaps is 372px, and beside a headline column and a 44px gutter
-     that needs ~900px of page. Between 700 and 900 it did not have it, so the
-     strip ran off the right edge of the tablet and took its subject dots with
-     it — two hexagons visible out of four, and no way to reach the rest.
-     Below 900 they stack, title first, and the strip centres in the full
-     width it then has. */
+  /* 900px breakpoint: strip's fixed width (4 cells ~86px + gaps ≈ 372px) plus headline column + gutter needs ~900px; below that it wraps */
   @media (max-width: 900px) {
     .lib-top { grid-template-columns: 1fr; gap: 16px; justify-items: center; }
     .lib-head-l { justify-self: stretch; }
     .lib-comb-row { justify-content: center; }
-    /* stacked full-width here, the number was reading as heavier than the
-       nav and demo below it were given credit for — a notch smaller keeps
-       it the loudest thing on the page without it being the only thing */
-    .lib-count .stat-num { font-size: clamp(2.25rem, 1.4rem + 5vw, 3rem); }
+    .lib-count .stat-num { font-size: clamp(2.25rem, 1.4rem + 5vw, 3rem); } /* smaller stacked so it doesn't overpower the nav below */
   }
 
-  /* ---- phones: one subject, one row ----
-     The strip used to wrap to two columns here, which is how biology's three
-     models came out as 2 + 1 with the odd one hanging under a gap. The
-     arithmetic says why: the row is arrows + viewport + arrows, and two 34px
-     arrows with their 18px gaps take 104px off a 358px phone. What is left
-     cannot hold four 86px cells however the cells are sized — at four across
-     each one would have to come down to 58px, and the hexagon inside it to
-     36px, which is smaller than the label under it.
-
-     So the arrows go, and the width they were using goes to the strip. The
-     dots below already carry the subject NAMES — "Біологія · Хімія · Фізика
-     · Географія" — which on a phone is a better control than two anonymous
-     chevrons: it is one tap to any subject instead of up to three, and it
-     says where each tap leads. The strip swipes as well (see the script), so
-     the gesture a carousel invites is answered too.
-
-     The cell is then sized off the viewport so the busiest subject — physics,
-     four models — fits one row at every width down to 320px: 14vw per hexagon
-     plus 22px of label gutter, times four, plus three 6px gaps, stays inside
-     the page's own column. */
+  /* Below 560px arrows move into the pager row (dots carry subject names and read better on a phone; strip also swipes, see script).
+     Hex width: page holds 4 cells + 3×6px gaps inside a 16px gutter; cell = hexagon + 22px label gutter -> hexagon = 25vw - 39px
+     (extra slack vs. the derived 34.5px accounts for a narrowed desktop window, where 100vw includes an unused scrollbar). */
   @media (max-width: 560px) {
     .lib-comb {
-      /* Sized off the page's own arithmetic rather than by eye: the gutter
-         is 16px a side below 400px, the page holds four cells and three 6px
-         gaps, and a cell is the hexagon plus 22px of label gutter. Solve that
-         for the hexagon and you get 25vw - 34.5px; the extra 4.5px of slack
-         is for a desktop window narrowed under 560px, where 100vw counts the
-         scrollbar the strip does not get to use. */
       --hex-w: clamp(40px, calc(25vw - 39px), 64px);
       --comb-w: 100%;
       width: 100%;
-      /* The arrows come down off the strip and into the pager row instead.
-         Flanking the strip they cost 104px of a 358px phone, which is what
-         forced physics' four models to wrap in the first place — and the
-         width has to go to the strip, because four cells are the whole point.
-         In the pager they cost nothing: that row was a line of four short
-         subject names with air either side of it.
-
-         `display: contents` on the row is what lets one DOM order serve both
-         layouts — the two buttons and the viewport become items of this grid
-         directly, so the arrows can sit beside the dots here and beside the
-         strip on a desktop without being written into the markup twice. */
+      /* display:contents lets one DOM order serve both layouts — arrows sit beside dots here, beside the strip on desktop */
       display: grid;
       grid-template-columns: auto minmax(0, 1fr) auto;
       grid-template-areas:
@@ -648,9 +481,6 @@ const subjectBlock: Record<string, string> = {
     .lib-comb-page { flex-wrap: nowrap; gap: 6px; padding: 4px 2px; }
     .hex { padding: 5px 3px; }
     .hex .nm { font-size: .625rem; }
-    /* The dots keep the middle. They are still the fast control — one tap to
-       any subject, by name — and the arrows either side are the slow one, for
-       a reader who is walking through the four rather than picking one. */
     .lib-comb-dots {
       grid-area: dots;
       gap: clamp(2px, 2.4vw, 26px);
@@ -662,20 +492,13 @@ const subjectBlock: Record<string, string> = {
       font-size: clamp(.625rem, 2.9vw, .75rem);
       white-space: nowrap;
     }
-    /* the arrows share the dots' baseline, not the row's centre — the dot
-       row is a dot over a word, so its optical middle sits high */
+    /* arrows align to the dots' optical baseline (dot-over-word sits higher than row center), not the row's own center */
     .lib-comb-arrow { align-self: center; margin-top: 12px; }
   }
 </style>
 
 <script>
-  /*
-   * The only interaction this band owns: click a sample cell, and the model
-   * panel becomes that model — nine of the eleven have a .glb behind them,
-   * and the other two say so instead. Which of the two happens is the
-   * panel's business, not the strip's: this hands over the cell's id, its
-   * name and its artwork in one event and stops there.
-   */
+  // click a cell -> dispatch mv:select with model/name/label/icon; the panel decides what to render (incl. "no model yet")
   const cells = document.querySelectorAll<HTMLButtonElement>('.hex');
   const panel = document.querySelector<HTMLElement>('.mv');
 
@@ -696,11 +519,6 @@ const subjectBlock: Record<string, string> = {
     });
   }
 
-  /*
-   * The strip's own nav: one subject on screen at a time. Arrows and dots
-   * both just set `page` and slide the track to it — there is no scroll
-   * position to reconcile, so a subject stays exactly what it says it is.
-   */
   const track = document.querySelector<HTMLElement>('[data-comb-track]');
   const prevBtn = document.querySelector<HTMLButtonElement>('[data-comb-prev]');
   const nextBtn = document.querySelector<HTMLButtonElement>('[data-comb-next]');
@@ -726,16 +544,7 @@ const subjectBlock: Record<string, string> = {
     prevBtn?.addEventListener('click', () => goTo(page - 1));
     nextBtn?.addEventListener('click', () => goTo(page + 1));
 
-    /*
-     * Swipe. Below 560px the arrows are gone (the dots carry their subject
-     * names there and are the better control), so the strip has to answer
-     * the gesture a row of cards invites.
-     *
-     * The track is transform-driven rather than a scroller, so there is no
-     * native swipe to inherit: a horizontal drag past 42px pages, and a drag
-     * that is mostly vertical is left alone — releasing the touch to the page
-     * is what keeps a horizontal widget from eating the page's own scroll.
-     */
+    // track is transform-driven (not a native scroller), so swipe is manual: 42px horizontal drag pages; a mostly-vertical drag is left alone so page scroll isn't eaten
     let x0 = 0;
     let y0 = 0;
     let axis: '' | 'x' | 'y' = '';

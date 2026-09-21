@@ -1,54 +1,36 @@
-/*
- * Контракт об'єктів (.obj), перевірений замість того, щоб бути обіцяним у
- * коментарі — так само, як check-ambient.mjs робить із калюжами світла.
+/**
+ * Style budget for the 3D objects (`.obj`), checked rather than promised in a
+ * comment — the same idea as check-ambient.mjs for the light pools.
  *
- * Куплені об'єкти — це м'яка глина: широке світло згори зліва, без твердого
- * відблиску. Мальовані для сайту лежать із ними в одному рядку картки й
- * мають не вирізнятися. Три найновіші вирізнилися, і причина лишилася
- * записаною в коментарі offline.svg: «the bought objects put one hot streak
- * on the lit face». Це неправда, і саме з цього припущення виросли скляний
- * куб і скло на екранах ноутбука та планшета.
+ * The licensed pack objects are soft clay: broad light from the upper left, no
+ * hard specular. Icons drawn for this site sit in the same card row and must
+ * not stand out. Two things are measured:
  *
- * ЧОМУ НЕ МІРЯЄТЬСЯ ГОТОВИЙ PNG. Перша версія рахувала на растрі частку
- * майже білих ненасичених пікселів поряд із помітно темнішими. На скляних
- * об'єктах вона спрацьовувала (3.8% і 8.4% проти 1.7% у паку), але разом із
- * ними ловила кремовий напис «3D» на грані куба й межу «світлий екран —
- * темна рамка», тобто рівно ту кремову деталь, якою користується сам пак.
- * Відрізнити на растрі блік від кремової деталі без здогадок не вийшло, а
- * перевірка, що червонить правильно намальоване, навчає її обходити.
+ * GLARE, from the SVG source. A hotspot is a white layer ON TOP of the body:
+ * an element with white paint and an explicit opacity (bodies carry none, so a
+ * cream bezel is not suspected). Neither opacity nor area alone separates the
+ * set — undiffused light does:
  *
- * ЩО МІРЯЄТЬСЯ НАТОМІСТЬ. У SVG блік — це білий шар ПОВЕРХ тіла: елемент з
- * білою фарбою і явною непрозорістю (у тіла непрозорості немає, тож кремова
- * рамка планшета під підозру не потрапляє). Важить не сама непрозорість і не
- * сама площа — їх по черзі пробували, і кожна окремо ставила схвалені
- * об'єкти по той самий бік межі, що й скляні. Важить нерозсіяне світло:
+ *     glare = opacity × area / (1 + blur)²
  *
- *     glare = непрозорість × площа / (1 + розмиття)²
+ * Blur spreads the same paint over an area growing with the square of the
+ * radius, hence the denominator. On this measure the set splits cleanly: glass
+ * strips on the laptop and tablet score 2237, 1159 and 731, the wifi edge
+ * highlights 569, 556 and 517, while the brightest approved object (the
+ * rocket's porthole) scores 198. The threshold sits in that gap.
  *
- * Розмиття розганяє ту саму фарбу по площі, що росте як квадрат радіуса,
- * тому воно в знаменнику. За цією міркою набір ділиться чисто: скляні смуги
- * ноутбука й планшета дають 2237, 1159 і 731, відблиски на ребрах wifi —
- * 569, 556 і 517, а найяскравіше з того, що клієнт прийняв (ілюмінатор
- * ракети), — 198. Поріг 250 стоїть у цьому проміжку.
+ * Stroke area is perimeter × width, not the shape's area: the wheel's thin
+ * white rim otherwise counts as a solid 37%-of-frame blot.
  *
- * Площа обведення — це периметр × товщина, а не площа фігури: білий обідок
- * колеса інакше рахувався суцільною плямою на 37% кадру і сам ламав поріг.
+ * Small, very bright spots are NOT caught by this threshold, deliberately.
+ * Whether a sharp white spot is legitimate depends on what it sits on — on the
+ * rocket's glass porthole it is right, on the cube's matte face it is not. The
+ * script does not fake that judgement; it lists tight bright layers in a
+ * separate table for a human to look at.
  *
- * ЧОГО ЦЕЙ ПОРІГ НЕ ЛОВИТЬ, І ЧОМУ ТАК ЛИШЕНО. Куб до правок ставив пляму
- * 0.95 при 3px на 0.49% площі — glare 19, добряче під порогом, хоч на
- * растрі він і давав 3.84% проти 1.66% у найгіршого купленого. Це інший
- * дефект: не велика тверда площина, а мала й дуже яскрава. Автоматично
- * відрізнити її від законної не вийшло, бо вирішує не геометрія, а те, на
- * чому вона лежить: у ракети біла пляма 0.7 взагалі без розмиття — і це
- * правильно, бо вона на склі ілюмінатора, який склом і мусить бути. Та
- * сама різкість на матовій грані куба — уже скло там, де його не просили.
- * Скрипт такого судження не винесе, тому він його й не вдає: яскраві тугі
- * шари він просто виписує в таблицю, щоб їх було видно оком.
- *
- * ВИСОТА міряється на PNG, бо там вона однозначна. `.obj` — квадратний бокс
- * 88px, тож об'єкт заввишки 183 з 256 малюється 63px проти 85px у сусіда й
- * читається дрібним, навіть якщо він на всю ширину. Саме на це показав
- * клієнт, і саме це число куплені тримають у межах 212–248.
+ * HEIGHT, from the rendered PNG, where it is unambiguous. `.obj` is a square
+ * 88px box, so an object 183px tall out of 256 draws 63px against a neighbour's
+ * 85px and reads as small. The pack stays within 212–248.
  *
  *   npm run check:icons
  */
@@ -57,212 +39,283 @@ import { readdir, readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
 const RASTER = 'public/assets/icons';
-const SOURCE = 'src/assets/icon-src';
+const SOURCE = 'src/components';
+const ICON_SOURCE = 'src/assets/icon-src';
 
-/* Куплені об'єкти — еталон, а не піддослідні: вони задають бюджет. */
+/** Licensed pack objects: the reference, not the subject — they set the budget. */
 const PACK = ['document', 'check', 'lightbulb', 'megaphone', 'clock', 'trophy'];
 
-const MIN_OPACITY = 0.40;   /* слабший шар не блік, хай яка площа */
-const MAX_GLARE = 250;      /* між ракетою (198) і ребрами wifi (517) */
-const MIN_H = 205;          /* найнижчий куплений — тека, 212 */
+const MIN_OPACITY = 0.40;   // a fainter layer is not a hotspot, whatever its area
+const MAX_GLARE = 250;      // between the rocket (198) and the wifi edges (517)
+const MIN_H = 205;          // shortest pack object is the folder, at 212
 
-const at=(t,n)=>{for(const a of t.matchAll(/([a-zA-Z-]+)="([^"]*)"/g))if(a[1]===n)return a[2];return null;};
-/* Площа фарби. Обведення — це периметр×товщина, а не диск: тонкий білий
-   обідок колеса рахувався як суцільна пляма на 37% кадру. */
-function paintArea(body,name){
-  const sw=+(at(body,'stroke-width')||0);
-  const stroked = at(body,'fill')==='none' && sw>0;
-  const n=s=>[...String(s).matchAll(/-?\d+(?:\.\d+)?/g)].map(Number);
-  if(name==='circle'){const r=+at(body,'r'); return stroked?2*Math.PI*r*sw:Math.PI*r*r;}
-  if(name==='ellipse'){const a=+at(body,'rx'),b=+at(body,'ry');
-    return stroked?Math.PI*(3*(a+b)-Math.sqrt((3*a+b)*(a+3*b)))*sw:Math.PI*a*b;}
-  if(name==='rect'){const w=+at(body,'width'),h=+at(body,'height');
-    return stroked?2*(w+h)*sw:w*h;}
-  const d=at(body,'d'); if(!d)return 0;
-  const v=n(d), xs=v.filter((_,i)=>i%2===0), ys=v.filter((_,i)=>i%2===1);
-  if(!xs.length)return 0;
-  const w=Math.max(...xs)-Math.min(...xs), h=Math.max(...ys)-Math.min(...ys);
-  return stroked ? Math.hypot(w,h)*sw*1.15 : w*h*0.5;
-}
-const isWhite=v=>{if(!v)return false;const m=/^#([0-9a-f]{6}|[0-9a-f]{3})$/i.exec(v.trim());
-  if(!m)return v.trim().toLowerCase()==='white';
-  const h=m[1].length===3?[...m[1]].map(c=>c+c).join(''):m[1];
-  return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16)).every(c=>c>=240);};
-function scan(svg){
-  const blur=new Map();
-  for(const f of svg.matchAll(/<filter\b[^>]*\bid="([^"]+)"[\s\S]*?<\/filter>/g)){
-    const sd=/stdDeviation="([\d.]+)"/.exec(f[0]); blur.set(f[1],sd?parseFloat(sd[1]):0);}
-  const defs=[...svg.matchAll(/<defs\b[\s\S]*?<\/defs>/g)].map(d=>[d.index,d.index+d[0].length]);
-  const stack=[],out=[];
-  for(const el of svg.matchAll(/<(\/?)([a-zA-Z]+)\b([^>]*?)(\/?)>/g)){
-    const [,close,name,body,self]=el;
-    if(defs.some(([a,b])=>el.index>=a&&el.index<b))continue;
-    if(close){if(name==='g')stack.pop();continue;}
-    const own={fill:at(body,'fill'),stroke:at(body,'stroke'),filter:at(body,'filter')};
-    const up=k=>own[k]??stack.findLast(s=>s[k]!=null)?.[k]??null;
-    if(name==='g'){if(!self)stack.push(own);continue;}
-    if(!/^(path|rect|ellipse|circle|polygon)$/.test(name))continue;
-    const paint=isWhite(up('fill'))?'fill':isWhite(up('stroke'))?'stroke':null;
-    if(!paint)continue;
-    const raw=at(body,'opacity')??at(body,`${paint}-opacity`); if(raw===null)continue;
-    const op=parseFloat(raw); if(!(op<1))continue;
-    const fid=/url\(#([^)]+)\)/.exec(up('filter')||'');
-    const sd=fid?(blur.get(fid[1])??0):0;
-    const a=paintArea(body,name);
-    out.push({op,sd,a,glare:op*a/Math.pow(1+sd,2),line:svg.slice(0,el.index).split('\n').length});
+/**
+ * Reads one attribute off an element's opening tag. Parsed from a list rather
+ * than with a `\b` pattern: in a template string `\b` is a backspace character,
+ * not a word boundary.
+ */
+function attr(tag, name) {
+  for (const match of tag.matchAll(/([a-zA-Z-]+)="([^"]*)"/g)) {
+    if (match[1] === name) return match[2];
   }
-  return out;
+  return null;
 }
 
-/* Фарба і фільтр успадковуються, а непрозорість — ні: в offline.svg білий
-   штрих стоїть на <g>, а stroke-opacity на кожному <path> усередині, тож
-   scan() веде стек відкритих груп. Атрибути розбираються списком, бо `\b`
-   у шаблонному рядку — це символ забою, а не межа слова: на цьому перша
-   версія мовчки не знаходила жодного шару в жодному файлі. */
+/** Area covered by paint. A stroke is perimeter × width, not a filled disc. */
+function paintArea(tag, name) {
+  const strokeWidth = +(attr(tag, 'stroke-width') || 0);
+  const stroked = attr(tag, 'fill') === 'none' && strokeWidth > 0;
+
+  if (name === 'circle') {
+    const r = +attr(tag, 'r');
+    return stroked ? 2 * Math.PI * r * strokeWidth : Math.PI * r * r;
+  }
+  if (name === 'ellipse') {
+    const a = +attr(tag, 'rx');
+    const b = +attr(tag, 'ry');
+    const perimeter = Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+    return stroked ? perimeter * strokeWidth : Math.PI * a * b;
+  }
+  if (name === 'rect') {
+    const w = +attr(tag, 'width');
+    const h = +attr(tag, 'height');
+    return stroked ? 2 * (w + h) * strokeWidth : w * h;
+  }
+
+  // paths and polygons: approximated from the bounding box of their coordinates
+  const d = attr(tag, 'd') ?? attr(tag, 'points');
+  if (!d) return 0;
+  const nums = [...String(d).matchAll(/-?\d+(?:\.\d+)?/g)].map(Number);
+  const xs = nums.filter((_, i) => i % 2 === 0);
+  const ys = nums.filter((_, i) => i % 2 === 1);
+  if (!xs.length) return 0;
+  const w = Math.max(...xs) - Math.min(...xs);
+  const h = Math.max(...ys) - Math.min(...ys);
+  return stroked ? Math.hypot(w, h) * strokeWidth * 1.15 : w * h * 0.5;
+}
+
+function isWhite(value) {
+  if (!value) return false;
+  const hex = /^#([0-9a-f]{6}|[0-9a-f]{3})$/i.exec(value.trim());
+  if (!hex) return value.trim().toLowerCase() === 'white';
+  const full = hex[1].length === 3 ? [...hex[1]].map((c) => c + c).join('') : hex[1];
+  return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16)).every((c) => c >= 240);
+}
+
+/**
+ * Every semi-transparent white layer in an SVG, with its glare score.
+ *
+ * Paint and filter inherit but opacity does not — in offline.svg the white
+ * stroke sits on a <g> while each <path> inside carries its own
+ * stroke-opacity — so a stack of open groups is carried along.
+ */
+function scan(svg) {
+  const blur = new Map();
+  for (const filter of svg.matchAll(/<filter\b[^>]*\bid="([^"]+)"[\s\S]*?<\/filter>/g)) {
+    const sd = /stdDeviation="([\d.]+)"/.exec(filter[0]);
+    blur.set(filter[1], sd ? parseFloat(sd[1]) : 0);
+  }
+
+  const defs = [...svg.matchAll(/<defs\b[\s\S]*?<\/defs>/g)]
+    .map((d) => [d.index, d.index + d[0].length]);
+
+  const groups = [];
+  const found = [];
+
+  for (const el of svg.matchAll(/<(\/?)([a-zA-Z]+)\b([^>]*?)(\/?)>/g)) {
+    const [, closing, name, tag, selfClosing] = el;
+    if (defs.some(([from, to]) => el.index >= from && el.index < to)) continue;
+    if (closing) {
+      if (name === 'g') groups.pop();
+      continue;
+    }
+
+    const own = { fill: attr(tag, 'fill'), stroke: attr(tag, 'stroke'), filter: attr(tag, 'filter') };
+    const inherited = (key) => own[key] ?? groups.findLast((g) => g[key] != null)?.[key] ?? null;
+
+    if (name === 'g') {
+      if (!selfClosing) groups.push(own);
+      continue;
+    }
+    if (!/^(path|rect|ellipse|circle|polygon)$/.test(name)) continue;
+
+    const paint = isWhite(inherited('fill')) ? 'fill' : isWhite(inherited('stroke')) ? 'stroke' : null;
+    if (!paint) continue;
+
+    const rawOpacity = attr(tag, 'opacity') ?? attr(tag, `${paint}-opacity`);
+    if (rawOpacity === null) continue;
+    const opacity = parseFloat(rawOpacity);
+    if (!(opacity < 1)) continue;
+
+    const filterId = /url\(#([^)]+)\)/.exec(inherited('filter') || '');
+    const blurRadius = filterId ? (blur.get(filterId[1]) ?? 0) : 0;
+    const area = paintArea(tag, name);
+
+    found.push({
+      opacity,
+      blur: blurRadius,
+      area,
+      glare: (opacity * area) / Math.pow(1 + blurRadius, 2),
+      line: svg.slice(0, el.index).split('\n').length
+    });
+  }
+
+  return found;
+}
+
+/** Layers over the glare budget. */
 export function glass(svg) {
-  return scan(svg).filter((o) => o.op > MIN_OPACITY && o.glare > MAX_GLARE);
+  return scan(svg).filter((o) => o.opacity > MIN_OPACITY && o.glare > MAX_GLARE);
 }
 
-/* Порогом не можна вирішити, чи поверхня МУСИТЬ бути склом. Ілюмінатор
-   ракети пройшов на 198 радше випадково, ніж за судженням, а око з
-   вологою рогівкою дає 877 і за тією ж логікою правильне. Тому файл може
-   заявити намір сам — рядком `check-icons: glass-ok — причина`. Виняток
-   видно у файлі, він іменований і його друкує звіт, тобто це не тиха
-   дірка в бюджеті. */
+/**
+ * A threshold cannot decide whether a surface is MEANT to be glass — the eye's
+ * wet cornea scores 877 and is right to. A file may therefore declare intent
+ * with a `check-icons: glass-ok — reason` line: the exception is visible in the
+ * file, named, and printed by the report rather than being a silent allowance.
+ */
 const INTENT = /check-icons:\s*glass-ok\s*[—-]\s*(.+)/;
-export const glassOk = (svg) => (INTENT.exec(svg) || [])[1]?.trim() ?? null;
+export const glassOk = (svg) =>
+  (INTENT.exec(svg) || [])[1]?.replace(/\s*(\*\/|-->)\s*$/, '').trim() ?? null;
 
-/* Інлайнові <svg> у компонентах — сліпа пляма, якої тут спершу не було, і
-   саме в ній жила найглянцевіша річ на сайті: око в Library3D.astro
-   малюється розміткою, а не PNG, тож жодна перевірка файлів icon-src його
-   не бачила. Колесо так само живе у WheelIcon.astro, бо воно крутиться. */
+/** Inline <svg> markup in components — drawn objects that never pass through icon-src. */
 export function inlineSvgs(src) {
   return [...src.matchAll(/<svg\b[\s\S]*?<\/svg>/g)].map((m) => m[0]);
 }
 
+/** Bounding box of the opaque pixels in a rendered PNG. */
 async function drawnBox(file) {
   const { data, info } = await sharp(`${RASTER}/${file}`).ensureAlpha().raw()
     .toBuffer({ resolveWithObject: true });
-  const { width: W, height: H, channels: ch } = info;
+  const { width: W, height: H, channels } = info;
+
   let minY = H, maxY = -1, minX = W, maxX = -1;
-  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    if (data[(y * W + x) * ch + 3] <= 24) continue;
-    if (y < minY) minY = y; if (y > maxY) maxY = y;
-    if (x < minX) minX = x; if (x > maxX) maxX = x;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (data[(y * W + x) * channels + 3] <= 24) continue;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+    }
   }
   return { w: maxX - minX + 1, h: maxY - minY + 1 };
 }
 
-/* Які top-level PNG сторінка справді просить. wheel.png не просить ніхто:
-   колесо крутиться, тож Platform малює <WheelIcon/> розміткою. Перевірка
-   міряла мертвий рендер і мовчала про живу розмітку — звідси обидва
-   доповнення нижче. Без dist/ ця колонка просто не показується. */
+/**
+ * Which PNGs the built pages actually request. A rendered file nothing asks for
+ * (wheel.png — the wheel spins, so Platform draws <WheelIcon/> as markup) has
+ * no height to judge. Skipped when there is no dist/ to read.
+ */
 async function requestedPngs() {
   const { existsSync } = await import('node:fs');
   if (!existsSync('dist')) return null;
-  const html = [];
+
+  const pages = [];
   for (const dir of ['dist', 'dist/en']) {
     if (!existsSync(dir)) continue;
-    for (const f of await readdir(dir)) {
-      if (f.endsWith('.html')) html.push(await readFile(`${dir}/${f}`, 'utf8'));
+    for (const file of await readdir(dir)) {
+      if (file.endsWith('.html')) pages.push(await readFile(`${dir}/${file}`, 'utf8'));
     }
   }
-  const out = new Set();
-  for (const h of html) {
-    for (const m of h.matchAll(/assets\/icons\/([a-z0-9-]+)\.png/g)) out.add(m[1]);
+
+  const requested = new Set();
+  for (const html of pages) {
+    for (const m of html.matchAll(/assets\/icons\/([a-z0-9-]+)\.png/g)) requested.add(m[1]);
   }
-  return out;
+  return requested;
+}
+
+const layerLine = (o) =>
+  `${o.opacity} at ${o.blur}px over ${((100 * o.area) / 65536).toFixed(2)}%, line ${o.line}`;
+
+/** Bright, barely-blurred layers: not failures, but worth a look. */
+function tightLayers(svg, name) {
+  const overBudget = glass(svg);
+  return scan(svg)
+    .filter((o) => o.opacity > 0.55 && o.blur < 4 && !overBudget.some((g) => g.line === o.line))
+    .map((o) => ({ name, line: layerLine(o) }));
 }
 
 async function report() {
   const pngs = (await readdir(RASTER)).filter((f) => f.endsWith('.png'));
-  const drawn = (await readdir(SOURCE)).filter((f) => f.endsWith('.svg')).map((f) => f.slice(0, -4));
-  const live = await requestedPngs();
+  const drawn = (await readdir(ICON_SOURCE)).filter((f) => f.endsWith('.svg')).map((f) => f.slice(0, -4));
+  const onPage = await requestedPngs();
 
-  console.log('── куплені (еталон висоти) ──');
+  console.log('── licensed pack (height reference) ──');
   let shortest = 256;
-  for (const n of PACK) {
-    if (!pngs.includes(`${n}.png`)) continue;
-    const { w, h } = await drawnBox(`${n}.png`);
+  for (const name of PACK) {
+    if (!pngs.includes(`${name}.png`)) continue;
+    const { w, h } = await drawnBox(`${name}.png`);
     shortest = Math.min(shortest, h);
-    console.log(`  · ${`${n}.png`.padEnd(15)}${String(w).padStart(3)}×${String(h).padStart(3)}`);
+    console.log(`  · ${`${name}.png`.padEnd(15)}${String(w).padStart(3)}×${String(h).padStart(3)}`);
   }
-  console.log(`  найнижчий куплений об'єкт ${shortest}`);
+  console.log(`  shortest pack object ${shortest}`);
 
-  console.log(`\n── мальовані (glare ≤ ${MAX_GLARE}; висота ≥ ${MIN_H}) ──`);
+  console.log(`\n── drawn here (glare ≤ ${MAX_GLARE}; height ≥ ${MIN_H}) ──`);
   let bad = 0;
   const tight = [];
 
-  for (const n of drawn) {
-    const svg = await readFile(`${SOURCE}/${n}.svg`, 'utf8');
-    const errs = [];
+  for (const name of drawn) {
+    const svg = await readFile(`${ICON_SOURCE}/${name}.svg`, 'utf8');
+    const errors = [];
     const notes = [];
-    const rendered = pngs.includes(`${n}.png`);
-    const onPage = live ? live.has(n) : rendered;
-    const { w, h } = rendered ? await drawnBox(`${n}.png`) : { w: 0, h: 0 };
+    const rendered = pngs.includes(`${name}.png`);
+    const used = onPage ? onPage.has(name) : rendered;
+    const { w, h } = rendered ? await drawnBox(`${name}.png`) : { w: 0, h: 0 };
 
-    /* Висоту має сенс міряти тільки там, де PNG справді вантажиться. */
-    if (onPage && h < MIN_H) errs.push(`нижчий на ${MIN_H - h}px`);
-    if (!onPage) notes.push(rendered ? 'PNG є, але сторінка його не просить' : 'немає PNG');
+    // height is only worth measuring where the PNG is actually loaded
+    if (used && h < MIN_H) errors.push(`${MIN_H - h}px too short`);
+    if (!used) notes.push(rendered ? 'rendered but no page asks for it' : 'not rendered');
 
     const intent = glassOk(svg);
-    for (const g of glass(svg)) {
-      const line = `${g.op} при ${g.sd}px на ${(100 * g.a / 65536).toFixed(1)}%, рядок ${g.line}`;
-      if (intent) tight.push({ n: `${n}.svg`, line, why: intent });
-      else errs.push(`скло ${Math.round(g.glare)}: ${line}`);
+    for (const layer of glass(svg)) {
+      if (intent) tight.push({ name: `${name}.svg`, line: layerLine(layer), why: intent });
+      else errors.push(`glare ${Math.round(layer.glare)}: ${layerLine(layer)}`);
     }
-    tight.push(...scan(svg)
-      .filter((o) => o.op > 0.55 && o.sd < 4 && !glass(svg).some((g) => g.line === o.line))
-      .map((o) => ({ n: `${n}.svg`, line: `${o.op} при ${o.sd}px на ${(100 * o.a / 65536).toFixed(2)}%, рядок ${o.line}` })));
+    tight.push(...tightLayers(svg, `${name}.svg`));
 
-    if (errs.length) bad++;
-    console.log(`  ${errs.length ? '✗' : '·'} ${`${n}.svg`.padEnd(15)}` +
+    if (errors.length) bad++;
+    console.log(`  ${errors.length ? '✗' : '·'} ${`${name}.svg`.padEnd(15)}` +
       (rendered ? `${String(w).padStart(3)}×${String(h).padStart(3)}` : '       ') +
       (notes.length ? `  ${notes.join(', ')}` : '') +
-      (errs.length ? `   ← ${errs.join('; ')}` : ''));
+      (errors.length ? `   ← ${errors.join('; ')}` : ''));
   }
 
-  /* Розмітка компонентів: те, що малюється інлайном і живе на сторінці. */
-  const comps = (await readdir('src/components')).filter((f) => f.endsWith('.astro'));
-  const rows = [];
-  for (const f of comps) {
-    const src = await readFile(`src/components/${f}`, 'utf8');
+  const components = (await readdir(SOURCE)).filter((f) => f.endsWith('.astro'));
+  const inline = [];
+  for (const file of components) {
+    const src = await readFile(`${SOURCE}/${file}`, 'utf8');
     const intent = glassOk(src);
     for (const svg of inlineSvgs(src)) {
-      for (const g of glass(svg)) {
-        rows.push({ f, g, intent });
-      }
-      tight.push(...scan(svg)
-        .filter((o) => o.op > 0.55 && o.sd < 4 && !glass(svg).some((x) => x.line === o.line))
-        .map((o) => ({ n: f, line: `${o.op} при ${o.sd}px на ${(100 * o.a / 65536).toFixed(2)}%` })));
+      for (const layer of glass(svg)) inline.push({ file, layer, intent });
+      tight.push(...tightLayers(svg, file));
     }
   }
-  if (rows.length) {
-    console.log('\n── інлайнові <svg> у компонентах ──');
-    for (const r of rows) {
-      const ok = r.intent;
-      if (!ok) bad++;
-      console.log(`  ${ok ? '·' : '✗'} ${r.f.padEnd(20)}скло ${Math.round(r.g.glare)}: ` +
-        `${r.g.op} при ${r.g.sd}px на ${(100 * r.g.a / 65536).toFixed(1)}%` +
-        (ok ? `   ← навмисне: ${ok}` : ''));
+
+  if (inline.length) {
+    console.log('\n── inline <svg> in components ──');
+    for (const { file, layer, intent } of inline) {
+      if (!intent) bad++;
+      console.log(`  ${intent ? '·' : '✗'} ${file.padEnd(20)}glare ${Math.round(layer.glare)}: ` +
+        layerLine(layer) + (intent ? `   ← intended: ${intent}` : ''));
     }
   }
 
   if (tight.length) {
-    console.log('');
-    console.log('── тугі яскраві шари: не помилка, але подивіться оком ──');
-    for (const t of tight) {
-      console.log(`  ${String(t.n).padEnd(20)}${t.line}` + (t.why ? `   ← навмисне: ${t.why}` : ''));
+    console.log('\n── tight bright layers: not failures, but look at them ──');
+    for (const layer of tight) {
+      console.log(`  ${String(layer.name).padEnd(20)}${layer.line}` +
+        (layer.why ? `   ← intended: ${layer.why}` : ''));
     }
-    console.log('  біле на склі — задум (ілюмінатор ракети, рогівка ока); біле на глині — ні');
+    console.log('  white on glass is intended (rocket porthole, cornea); white on clay is not');
   }
 
-  console.log(bad ? `\n${bad} поза бюджетом` : '\nвесь набір в одній стилістиці');
+  console.log(bad ? `\n${bad} over budget` : '\nwhole set in one material language');
   return bad;
 }
 
-/* argv[1] порожній при `node -e` та при імпорті з іншого модуля —
-   без цієї перевірки гард сам кидає, і файл стає неімпортовним */
+// argv[1] is empty under `node -e` and when imported from another module
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   process.exit((await report()) ? 1 : 0);
 }

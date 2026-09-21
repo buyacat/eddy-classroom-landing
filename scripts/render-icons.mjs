@@ -1,14 +1,11 @@
-/*
- * SVG → PNG for the objects drawn for this site (src/assets/icon-src/).
- *
- * The bought objects arrive as PNGs and are never touched. The drawn ones
- * have to be rasterised, and until now that happened by hand, which is why
- * three of them drifted out of the pack's material language without anyone
- * being able to diff it. Render is one command; `npm run check:icons`
- * measures the result against the bought objects.
+/**
+ * Rasterises the hand-drawn objects (src/assets/icon-src/*.svg) to 256px PNGs
+ * in public/assets/icons/. Licensed pack icons ship as PNGs and are not touched.
  *
  *   npm run icons            all of them
- *   npm run icons -- cube3d  just one
+ *   npm run icons -- cube3d  one by name
+ *
+ * `npm run check:icons` verifies the result against the pack's style budget.
  */
 import sharp from 'sharp';
 import { readdir } from 'node:fs/promises';

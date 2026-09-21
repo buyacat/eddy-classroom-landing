@@ -5,46 +5,17 @@ import type { Locale } from '../utils/i18n';
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 
-/*
- * The hero used to be a screenshot of a 3D lesson. Now it is one: a real,
- * draggable cut-away Earth, the same thing a teacher opens from the library.
- *
- * It used to be a quiz as well — pull the model apart and the panel handed you
- * a question, twenty-two pupils answered it, and the hero spent its last beat
- * on a percentage. The client asked for that half back out: the point of the
- * panel is the MODEL — turn it, take it apart, read what the pieces are called
- * — and a running test on top of it argued for attention with the one thing
- * the visitor came to see. What is left is the object and its captions.
- *
- * There is deliberately no poster image behind it. A still that gets swapped
- * for the live model just makes the panel jump on load, and the only still we
- * had was a different model entirely. Until the first rendered frame exists,
- * the panel simply holds its own light — nothing to flash and nothing to
- * replace. Geometry and materials live in the module; this file only carries
- * the localised labels.
- */
 const layers = tArray<{ name: string; meta?: string }>(locale, 'classroom_hero_globe_layers');
 
-/*
- * The one control on the panel, and the reason it exists at all: a drag is
- * the nicer way to take the model apart, and it is a gesture nobody can
- * discover with a keyboard and nobody can guess from a still screenshot. The
- * button says out loud what the model does, and it is the only route into the
- * exploded view for someone tabbing through the page.
- *
- * Both labels are handed over at once because the button is a toggle and the
- * model can be opened behind its back — a drag does it too — so the label has
- * to be able to change without a round trip for copy.
- */
+// Both labels are passed together: a drag can open the model too, not just this button,
+// so the label must be able to switch without a round trip for copy.
 const toggle = {
   open: t(locale, 'classroom_hero_globe_explode'),
   close: t(locale, 'classroom_hero_globe_collapse')
 };
 ---
 
-<!-- The picture is the canvas, so that is what carries the image role and
-     the alt. It used to sit on the whole panel, which made everything inside
-     it presentational for a screen reader — including the button below. -->
+<!-- alt/role live on the canvas, not the wrapper, so the button below isn't marked presentational to screen readers -->
 <div class="globe" data-globe data-layers={JSON.stringify(layers)}
      data-toggle-copy={JSON.stringify(toggle)}>
   <canvas class="globe-canvas" role="img" aria-label={t(locale, 'classroom_hero_globe_alt')}></canvas>
@@ -54,8 +25,7 @@ const toggle = {
   <div class="globe-foot">
     <p class="globe-note">{t(locale, 'classroom_hero_globe_scale_note')}</p>
 
-    <!-- hidden until the model is actually running: a control for a scene
-         that never mounted is a promise the panel cannot keep -->
+    <!-- hidden until the model mounts -->
     <button class="globe-toggle" type="button" data-explode hidden>
       <span class="globe-toggle-ico" aria-hidden="true"><i></i><i></i><i></i></span>
       <span data-explode-label>{toggle.open}</span>
@@ -67,18 +37,11 @@ const toggle = {
   .globe {
     position: relative;
     aspect-ratio: 1080 / 1071;
-    /* the soft halo the flat model sits in — cheaper than a real light rig */
+    /* soft halo behind the model — cheaper than a real light rig */
     background:
-      /* This plate was the first ambient wash on the site, written by hand
-         before there were tokens. Its .09 and .16 landed almost exactly on
-         --amb-1 and --amb-2, which is the best evidence the tiers are set
-         right — so it consumes them now instead of restating them. */
       radial-gradient(circle at 52% 46%,
         rgba(var(--amb-blue), var(--amb-1)) 0%,
         rgba(var(--amb-blue), 0) 58%),
-      /* The yellow used to sit at 68%/70% — dead under the lesson strip, so
-         the controls looked like they were bleeding into a stain. It backs
-         the model now, not the foot. */
       radial-gradient(circle at 74% 28%,
         rgba(var(--amb-yellow), var(--amb-1)) 0%,
         rgba(var(--amb-yellow), 0) 58%);
@@ -103,10 +66,7 @@ const toggle = {
   /* ---- layer tags ---- */
   .globe-tags { position: absolute; inset: 0; pointer-events: none; }
 
-  /* The leader from a shell down to the caption that names it — the same
-     hairline the library's eye viewer uses, so the two models on this page
-     annotate themselves the same way. 1px, --ink-4, and held well under full
-     opacity by the module: its job is to connect, not to be seen. */
+  /* leader line from shell to caption; kept 1px/faint so it connects without being seen */
   .globe-tags :global(.globe-lead) {
     position: absolute;
     top: 0;
@@ -143,7 +103,6 @@ const toggle = {
     font-size: 12px;
     color: var(--ink);
   }
-  /* the depth and the state of matter — the half of the tag that teaches */
   .globe-tags :global(.globe-tag em) {
     font-style: normal;
     font-size: 10.5px;
@@ -202,7 +161,7 @@ const toggle = {
     gap: 10px;
   }
 
-  /* ---- the honest caveat, shown only once the layers are apart ---- */
+  /* ---- caveat note, shown once layers are open ---- */
   .globe-note {
     display: none;
     margin: 0;
@@ -217,11 +176,7 @@ const toggle = {
   }
   .globe.is-open .globe-note { display: block; opacity: 1; }
 
-  /* ---- take apart / put back ----
-     White, not blue. The hero already spends its one blue button on the lead
-     form a column to the left; a second one inside the panel would read as
-     the more important of the two, and this is a control on an object, not a
-     call to action. */
+  /* ---- toggle button ---- */
   .globe-toggle {
     display: inline-flex;
     align-items: center;
@@ -239,17 +194,12 @@ const toggle = {
     pointer-events: auto;
     transition: transform var(--t-hover) var(--ease-out), box-shadow var(--t-hover) var(--ease-out);
   }
-  /* `hidden` alone loses to the display above, and a button that ships
-     visible over a scene that never mounted is the exact failure this
-     attribute exists to prevent */
+  /* [hidden] must override the display set above (attribute alone loses to the class rule) */
   .globe-toggle[hidden] { display: none; }
   .globe-toggle:hover { transform: translateY(-1px); box-shadow: var(--e4); }
   .globe-toggle:focus-visible { outline: none; box-shadow: var(--focus-ring), var(--e3); }
 
-  /* Three bars that move apart when the model does — the button's own small
-     copy of what pressing it will do, drawn rather than fetched. The middle
-     bar is the one that stays, the way the crust stays and the contents come
-     out of it. */
+  /* three bars that move apart on open; middle bar stays fixed */
   .globe-toggle-ico {
     position: relative;
     width: 17px;
@@ -272,9 +222,7 @@ const toggle = {
   .globe.is-open .globe-toggle-ico i:nth-child(1) { transform: translateY(-2px) scaleX(.72); }
   .globe.is-open .globe-toggle-ico i:nth-child(3) { transform: translateY(2px) scaleX(.72); }
 
-  /* On a narrow panel the model shrinks with the camera but the tags do not,
-     so four full captions would pile up. The depth line is the first thing to
-     go: the name and the order still carry the lesson. */
+  /* mobile: hide the depth line (em) so captions don't pile up as the model shrinks */
   @media (max-width: 760px) {
     .globe-tags :global(.globe-tag) { gap: 4px; padding: 3px 9px 4px 3px; }
     .globe-tags :global(.globe-tag b) { font-size: 10.5px; }
@@ -283,9 +231,7 @@ const toggle = {
 
     .globe-note { font-size: 9.5px; }
     .globe-toggle { padding: 8px 15px 8px 12px; font-size: 12px; }
-    /* the model badge sits over the panel's top-left corner on a phone
-       (Hero.astro, `top: 4%`), and at 5% the hint ran into it — drop the
-       hint below the badge; the sphere itself starts lower still */
+    /* avoids Hero.astro's badge (top: 4%) on mobile */
     .globe-hint { top: 13%; }
   }
 
@@ -309,12 +255,7 @@ const toggle = {
 
   const host = document.querySelector<HTMLElement>('[data-globe]');
 
-  /*
-   * Reduced motion no longer keeps the model off the page — it only silences
-   * the parts of it that move unbidden (see REDUCED in scripts/earth.ts) and
-   * cancels the one-time demo below. The panel IS the hero now; refusing to
-   * mount it left a white rectangle where the product was supposed to be.
-   */
+  // reduced motion: model still mounts; only auto-motion (demo, see REDUCED in scripts/earth.ts) is skipped
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (host && hasWebGL()) {
@@ -334,10 +275,7 @@ const toggle = {
         .then(async (earth) => {
           const globe = await earth.mountGlobe(host, canvas, tags, specs);
 
-          /* The button's own idea of the state is whatever the model last
-             said, never what it last asked for: a drag opens the model behind
-             the button's back, and an `open(true)` that arrives while the
-             planet is turned away is refused until it has turned round. */
+          // button label mirrors the model's actual state (onOpenChange) since a drag can open/close it too
           let open = false;
           globe.onOpenChange((next) => {
             open = next;
@@ -346,15 +284,11 @@ const toggle = {
           button.addEventListener('click', () => globe.open(!open));
           button.hidden = false;
 
-          /* The hint says the model comes apart; this shows it. It waits out
-             the canvas fade first (620ms in the CSS above) so the demo is not
-             played to a panel that is still arriving, and it bows out the
-             moment a hand arrives — see demo() in the module. */
+          // wait out the canvas fade (620ms, see CSS) before the one-time demo; demo() cancels on user interaction
           if (!reduced) window.setTimeout(() => globe.demo(), 900);
         })
         .catch((err) => {
-          // the panel keeps its own light and the page carries on; log it,
-          // because a silently blank hero is worse than a noisy console
+          // non-fatal: panel keeps its ambient background if the model fails to mount
           console.warn('[globe] not mounted:', err);
         });
     }, { rootMargin: '200px' });

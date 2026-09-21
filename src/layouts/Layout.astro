@@ -11,10 +11,8 @@ interface Props {
 
 const { locale, path = '/' } = Astro.props;
 
-/* No domain has been assigned to the standalone Classroom landing yet, so
-   canonical / og:url / hreflang are emitted ONLY when SITE_URL is set at
-   build time (`SITE_URL=https://… npm run build`). Guessing a hostname
-   here would ship a wrong canonical, which is worse than shipping none. */
+/* canonical / og:url / hreflang are emitted only when the deploy domain is
+   known: `SITE_URL=https://… npm run build`. */
 const siteUrl = (import.meta.env.SITE_URL || '').replace(/\/$/, '');
 
 const title = t(locale, 'classroom_meta_title');
@@ -58,9 +56,8 @@ const schema = JSON.stringify({
 <html lang={locale}>
 <head>
   <meta charset="UTF-8" />
-  <!-- Google Tag Manager — is:inline is required: without it Astro bundles
-       and defers the script, the container starts late and loses the first
-       events. Same Eddy Group container as the sibling sites. -->
+  <!-- Google Tag Manager (shared Eddy Group container). is:inline keeps Astro
+       from bundling and deferring it, which would lose the first events. -->
   <script is:inline>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
   new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
   j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -108,8 +105,7 @@ const schema = JSON.stringify({
   <script is:inline>document.documentElement.classList.add('js');</script>
 </head>
 <body>
-  <!-- Google Tag Manager (noscript) — must be the first node in <body> or
-       Search Console stops seeing it. -->
+  <!-- GTM noscript fallback — must stay the first node in <body>. -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M9JXZ4RN"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 

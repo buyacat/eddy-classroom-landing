@@ -16,11 +16,8 @@ const phoneHref = 'tel:' + phone.replace(/\s/g, '');
    (e.g. drstem.eu): a row of links out to the rest of the group. */
 const familyLinks = tArray<{ label: string; url: string }>(locale, 'footer_family_links');
 
-/* Two of the TZ's footer bullets: the tender-requirements list and the free
-   teacher course. The brief names both but supplies no destination for
-   either, so an entry with an empty `url` renders as plain text — a footer
-   full of href="#" is worse than a footer that simply states what exists.
-   Fill in the URL in site.json and it becomes a link, no code change. */
+/* entries with an empty `url` in site.json render as plain text instead of a link;
+   fill in the URL there and it becomes a link, no code change needed. */
 const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_links');
 ---
 
@@ -100,21 +97,14 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
 </footer>
 
 <style>
-  /* No background and no pool of its own: the light that reaches this far is
-     the CTA band's, overhanging from above. A pool anchored here would have
-     to overhang the bottom of the last section on the page. */
+  /* no pool of its own — light here comes from the CTA band's overhang above;
+     anchoring one here would overhang the page's last section */
   .footer { padding-bottom: clamp(16px, 2vw, 28px); }
   /* the footer is a rounded black block on the canvas, matching the
      wordmark's tag and the library's fourth colour */
   .footer-inner {
     background-color: var(--ink-block);
-    /* Ambient light cannot survive on ink, so instead of fading the page's
-       blue into black, the block absorbs it and re-emits it a shade deeper.
-       This is the palette's --violet finally doing the job it was reserved
-       for — the one deep note, used only where a second dark is needed — and
-       it is the only place it appears on the whole site. Layered over the
-       flat fill, never instead of it: the footer is still a black shape, not
-       a gradient panel. */
+    /* --violet is used only here on the site, layered over the flat black fill, not replacing it */
     background-image:
       radial-gradient(130% 100% at 8% 0%,
         rgba(var(--amb-violet), .34) 0%,
@@ -203,11 +193,8 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
     .footer-top { grid-template-columns: 1fr 1fr 1fr; }
   }
   @media (max-width: 1024px) {
-    /* The links are phone numbers and mail addresses — things a thumb
-       actually taps — set 21px tall with 10px between them. The padding
-       grows the hit area to ~41px and the negative margin gives the same
-       space straight back, so the column does not get any taller. 1024
-       and not 760 because a tablet held sideways is still a thumb. */
+    /* padding + negative margin grows tap targets to ~41px without changing layout height;
+       1024 breakpoint covers tablets held sideways */
     .fcol a, .fl a { padding-block: 10px; margin-block: -10px; }
     .soc a { width: 42px; height: 42px; }
   }

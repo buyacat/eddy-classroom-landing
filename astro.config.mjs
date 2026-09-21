@@ -1,8 +1,7 @@
 import { defineConfig } from 'astro/config';
 
-// Production will deploy to the site's own domain root. The GitHub Pages
-// preview (buyacat.github.io/eddy-classroom-landing/) needs its own base path
-// instead — set via `npm run build:pages`, never hardcoded here.
+// Production deploys to the domain root; the GitHub Pages preview serves the
+// site from a sub-path and sets SITE_BASE via `npm run build:pages`.
 const base = process.env.SITE_BASE || '/';
 
 export default defineConfig({

@@ -1,59 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
   <!--
-    "Працює без стабільного інтернету" — the struck-through wifi the client
-    asked for, and the right call even though the glyph negates something:
-    the CARD's own headline is written as a negation too ("без стабільного
-    інтернету"), so icon and heading say the same sentence. A "downloaded
-    ahead" icon would have illustrated the body copy instead of the promise,
-    and at 88px nothing beats this silhouette for being understood in a
-    glance.
+    "Works without a stable connection" — a struck-through wifi fan. The
+    card's own headline is a negation too, so glyph and heading say the same
+    sentence. The ribs stay brand blue and the bar is ink rather than red:
+    this is a live product, not an error state.
 
-    What keeps it from reading as an error state: the ribs stay brand blue
-    (a live product, not a dead router) and the bar is ink, not red. In this
-    grid a red X would be the only alarm on the page.
-
-    THE BAR IS NOT PAINTED OVER THE RIBS. `ofCut` knocks a 16px groove out of
+    The bar is not painted over the ribs. `ofCut` knocks a 16px groove out of
     them along the bar's line, and the 10px bar sits inside it with 3px of
-    daylight on each side. Bar and groove use butt caps, not round — round
-    caps on a bar this thin read as a sausage; a flat-cut end reads as a
-    slash. That gap is the whole difference between a
-    struck-through sign and a stick lying on top of one: the eye has to see
-    the card's own background through the glyph to read the two parts as one
-    object. The first version was a 26px slab with no groove, and it read as
-    a foreign body.
+    daylight on each side. Both use butt caps, not round — a flat-cut end
+    reads as a slash, a round one as a sausage. Seeing the card's background
+    through the glyph is what makes the two parts read as one object.
 
-    THE RIBS SPAN 140°, NOT 90°. A 45° bar through the fan's centre meets a
-    90° rib exactly at its end point — it grazes the tip instead of cutting
-    the rib, which is why the first version looked lopsided: there was
-    nothing left of the bar to see, so the whole fan appeared to lean right.
-    At 140° the cut lands 25° in from the end and every rib keeps a real
-    stub on BOTH sides of the groove, which is the thing that makes a
-    struck-through sign read as struck through. 120° was tried first and
-    the stubs were still too short to survive the groove.
+    The ribs span 140°, not 90°: a 45° bar through a 90° fan grazes the rib
+    tips instead of cutting them, and the whole fan then appears to lean. At
+    140° the cut lands 25° in from each end, leaving a real stub on both
+    sides of the groove.
 
-    The bar's volume comes from a gradient laid ACROSS it, not along it
-    (`ofBar` is userSpaceOnUse, its axis perpendicular to the 45° run), plus
-    a cream specular on the lit flank and a dark line on the shaded one. A
-    flat bar next to modelled ribs is the other half of why the old one
-    looked pasted on.
-
-    THE RIBS ARE LIT, NOT POLISHED. This file used to say the opposite —
-    that the bought objects "put one hot streak on the lit face" and that a
-    soft sheen was what made this set read matte next to them. That was
-    never true of the pack, and the claim outlived this file: the glass cube
-    and the reflections on the laptop and tablet screens were both drawn to
-    it, and the client saw all three at once. Measured, each rib was dumping
-    ~550 of undiffused white (scripts/check-icons.mjs explains the number)
-    against the 198 of the brightest object the client accepted. The light
-    is broad and weak now, and the budget is checked instead of asserted.
-
-    THE BAR RUNS CORNER TO CORNER, which is where the height came from. The
-    fan is a wide, shallow shape — 197 × 139 as drawn — and `.obj` renders
-    into a SQUARE 88px box, so a short bar left the object drawing 58px tall
-    next to an 85px neighbour. The line is unchanged (y = x + 32, still
-    through the fan's centre, still cutting every rib 25° in from its end);
-    only its ends are longer, which adds height and width in equal measure
-    and squares the silhouette up. It is also what the standard glyph does.
+    The bar's volume comes from a gradient laid ACROSS it (`ofBar` is
+    userSpaceOnUse, its axis perpendicular to the 45° run), plus a cream
+    specular on the lit flank and a dark line on the shaded one. It runs
+    corner to corner, which is what squares up a wide, shallow silhouette
+    inside `.obj`'s square box.
   -->
   <defs>
     <linearGradient id="ofArc" x1="0.1" y1="0" x2="0.9" y2="1">

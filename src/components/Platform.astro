@@ -13,64 +13,26 @@ const items = tArray<{ icon: string; title: string; text: string; shot_alt?: str
   'classroom_platform_items'
 );
 
-/*
- * This is the band that has to prove the feature list is real, so five of
- * the seven cards carry a window onto the product. Those windows used to
- * hold real captures of the shipping app; the captures had drifted out of
- * date (an old build's UI), so each one is now a drawn stand-in — see
- * PlatformMock.astro for why a sketch beats a stale screenshot.
- */
+// Windows are drawn stand-ins, not real screenshots (see PlatformMock.astro).
 const shots: Record<string, { url: string }> = {
   web: { url: 'classroom.eddygroup.eu/library' },
-  /* The one window that shows the product doing its whole job at once: the
-     class answering on the right, the teacher's live table on the left. */
   session: { url: 'classroom.eddygroup.eu/session' },
   student: { url: 'classroom.eddygroup.eu/quiz' },
   panel: { url: 'classroom.eddygroup.eu/board' },
   analytics: { url: 'classroom.eddygroup.eu/results' }
 };
 
-/*
- * No hanging 3D object on these cards, and that absence is the design.
- *
- * The band used to carry seven of them at 96–128px — folder, apple, key,
- * pin, medal, gift, speech bubbles — on top of five browser windows, two
- * colour blocks, three tinted tool tiles and a roster panel. The client read
- * the result as crowded ("нагромадженість"), and the objects were the part
- * doing the crowding: each one is a saturated focal point competing with the
- * screenshot directly under it, and several of them (an apple for a group
- * test, a key for student access) were decorating rather than explaining.
- *
- * So the page now splits the two jobs between bands. WhyUs is the object
- * band: six claims, six objects, nothing else to look at. Platform is the
- * proof band: the product's own screens carry it, and the only icons left
- * are the three inside the games card, where they are the content and wear
- * their own labels.
- */
+// No hanging 3D objects on this band (see WhyUs for that treatment); only the games card keeps icons, as labeled content.
 
-/* One colour block per row, on a diagonal: yellow top-left of the second
-   row, blue bottom-right of the third. Blue is the product's own colour and
-   it used to belong to the course card — the section keeps it on the card
-   that shows a LIVE state. */
 const blocks: Record<string, string> = {
   student: 'is-yellow',
   virtual: 'is-blue'
 };
 
-/* `games` and `virtual` have no shipping screen worth cropping, so instead
-   of a crop they show a state of the product: the three in-lesson tools, and
-   a roster with a LIVE chip — the same grammar as the hero's roster badge.
-   That is why they are the two cards that still carry an image of their own
-   after the band's decorative objects were dropped. */
+// games/virtual show a product state instead of a screen crop (in-lesson tools; live roster).
 const half = new Set(['games', 'virtual']);
 
-/* The three in-lesson tools. Two of them used to be named by their reward
-   instead of by themselves: a gold coin for the fortune wheel said "prize"
-   when the point is the spin that picks a pupil, and a music note for the
-   noise meter said "music" when the point is the noise. The wheel is drawn
-   for this site (src/assets/icon-src/wheel.svg) because the pack has none;
-   the megaphone is the pack's own object, and it is the one the client
-   pointed at. The alarm clock was right the first time. */
+// Wheel icon is custom-drawn (src/assets/icon-src/wheel.svg); clock/megaphone are from the icon pack.
 const tools = [
   { key: 'wheel', title: t(locale, 'classroom_hero_wheel_title'), tint: 'is-yellow' },
   { key: 'clock', title: t(locale, 'classroom_hero_timer_title'), tint: 'is-blue' },
@@ -162,11 +124,7 @@ const roster = [
       })}
     </div>
 
-    {/* The phone pager. It exists only below 760px, where the grid turns into
-        a swipe strip (see the media query) — above that it is display:none and
-        the grid is a grid. One dot per card, labelled with the card's own
-        title, so it is a list of destinations to a screen reader rather than
-        seven anonymous circles. */}
+    {/* Phone pager: only visible below 760px, where the grid becomes a swipe strip */}
     <div class="plat-dots" data-plat-dots>
       {items.map((it, i) => (
         <button class="plat-dot" type="button" data-plat-dot={i} aria-label={it.title}></button>
@@ -179,44 +137,29 @@ const roster = [
   /* see WhyUs — the band is transparent so the ambient plane shows through */
   .platform::before {
     background:
-      /* Blue is the product's own colour: the shot-bar dot, the library
-         count, the CTA block. This is the band that has to prove the feature
-         list is real, so this is the band lit in blue. */
+      /* blue: top-right, echoes the product's own colour */
       radial-gradient(var(--amb-r-xl) calc(var(--amb-r-xl) * .58) at 98% 22%,
         rgba(var(--amb-blue), var(--amb-2)) 0%,
         rgba(var(--amb-blue), 0) var(--amb-fade)),
-      /* Yellow low and left, under the colour-block cards, so the grid's own
-         yellow has somewhere to have come from. */
+      /* yellow: bottom-left, under the colour-block cards */
       radial-gradient(var(--amb-r-md) calc(var(--amb-r-md) * .62) at 2% 82%,
         rgba(var(--amb-yellow), var(--amb-2)) 0%,
         rgba(var(--amb-yellow), 0) var(--amb-fade)),
-      /* A wide, weak green through the middle. The band is long and its
-         centre column was the one stretch of bare canvas on the page; this
-         fills it without putting a second colour event next to the blue. */
+      /* green: wide and weak through the middle, fills the long band's bare centre column */
       radial-gradient(var(--amb-r-xl) calc(var(--amb-r-xl) * .44) at 46% 56%,
         rgba(var(--amb-green), var(--amb-1)) 0%,
         rgba(var(--amb-green), 0) var(--amb-fade));
   }
 
-  /* A wider gutter than the rest of the page uses. This band carries seven
-     cards where WhyUs carries six, and five of them hold a second framed
-     object inside — at the shared --gap-card the frames were only ~16px
-     apart and the row read as one striped slab. The extra air is bought
-     back by the ~64px of object overhang every card just lost, so the band
-     is shorter than before, not longer. */
+  /* wider gutter than the shared --gap-card: cards here hold a framed screenshot, which needs more air */
   .plat-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: clamp(18px, 1.8vw, 26px);
-    /* no objects hang off these cards any more, so the grid no longer needs
-       headroom for them — this is now just the gap under the band head */
     margin-top: clamp(40px, 3.6vw, 56px);
   }
 
-  /* A `.card` (style.css) with the padding moved off the card and onto
-     `.plat-body`, because the browser window below has to run edge to edge
-     of the card. Surface, radius, hover lift, heading/body type and the
-     colour-block variants all come from the shared rule. */
+  /* extends .card (style.css); padding moves to .plat-body so the browser window below runs edge to edge */
   .plat-card {
     grid-column: span 2;
     display: flex;
@@ -225,16 +168,10 @@ const roster = [
   }
 
   .plat-body { padding: clamp(26px, 2.4vw, 34px) var(--pad-card) clamp(20px, 1.9vw, 28px); }
-  /* a one- and a two-line title in the same row must still align their
-     body copy — Ukrainian card titles wrap unpredictably (same as WhyUs) */
+  /* reserves 2 lines so 1- and 2-line titles still align body copy below (UA titles wrap unpredictably) */
   .plat-card:not(.is-wide) h3 { min-height: calc(2 * 1.22em); }
 
-  /* Three tiers of card, and the type says which is which. With the objects
-     gone the only thing left to rank the seven items is the text itself, so
-     the two product screens lead at 26px, the two product states sit at the
-     shared 22px, and the three supporting features drop to 19px with lighter
-     body copy. Seven items at one size is the other way a grid reads as a
-     pile. */
+  /* three type tiers rank the cards: screens (26px) > states (22px) > features (19px) */
   .plat-card:not(.is-wide):not(.is-half) h3 { font-size: clamp(1.0625rem, 1rem + .3vw, 1.1875rem); }
   .plat-card:not(.is-wide):not(.is-half) p { font-size: .875rem; }
 
@@ -242,21 +179,13 @@ const roster = [
   .plat-card.is-blue { box-shadow: var(--e-blue); }
   .plat-card.is-blue:hover { box-shadow: 0 18px 40px -14px rgba(64, 80, 255, .6); }
 
-  /* ---- wide cards: the two that carry a full product screen ----
-     They used to take a whole row each, which pushed the band past two
-     viewport heights before the small cards even appeared. Paired at half
-     width they read as one "here is the product" row, and the band lands
-     in three rows: 2 screens / 3 features / 2 states. */
+  /* ---- wide cards: the two full product-screen cards, paired at half width each ---- */
   .plat-card.is-wide { grid-column: span 3; }
   .plat-card.is-wide .plat-body { flex: none; }
   .plat-card.is-wide h3 { font-size: clamp(1.25rem, 1.05rem + .55vw, 1.625rem); }
   .plat-card.is-wide p { font-size: .9375rem; max-width: 46ch; }
 
-  /* A browser window resting in the bottom of the card: chrome on top, the
-     screen under it, and a real bottom edge — a window that ran off the
-     card looked like a screenshot someone forgot to finish cropping. One
-     viewport height for every window in the band, wide cards included, so
-     five different screens read as five views of one product. */
+  /* one fixed window height across every card (wide included) so all five screens read as one product */
   .plat-win {
     --win-inset: clamp(18px, 1.7vw, 28px);
     margin: auto var(--win-inset) var(--win-inset);
@@ -295,9 +224,7 @@ const roster = [
     white-space: nowrap;
     overflow: hidden;
   }
-  /* A browser viewport is a wide letterbox, never a square. Height is set
-     per card width so the ratio stays roughly 2:1 or wider — at 212px the
-     narrow cards were showing a window shape no laptop has. */
+  /* height kept per-card so the window ratio stays ~2:1 or wider, never a square */
   .win-view {
     display: block;
     height: 152px;
@@ -311,8 +238,7 @@ const roster = [
   .plat-card.is-half .plat-body { flex: 1; }
   .plat-card.is-half p { max-width: 44ch; }
 
-  /* three in-lesson tools, each on its own soft tint — a tile row, not a
-     row of icons: the label is what makes it read as UI */
+  /* each tool tinted separately; the label is what makes this read as UI, not just icons */
   .plat-tools {
     list-style: none;
     margin: 0;
@@ -339,15 +265,7 @@ const roster = [
   .plat-tool.is-blue { background: var(--blue-soft); }
   .plat-tool.is-green { background: var(--green-soft); }
 
-  /* ---- the three tools wake up together, each answers on its own --------
-     Hovering the card used to tilt all three objects at once with no other
-     cue, which said "this is a picture on a card". It is not: it is three
-     tools a teacher presses in a lesson. So the card hover now only lifts
-     all three a touch — "these are pressable" — and the specific thing each
-     tool does (the wheel spins and coasts to a stop, the timer trembles,
-     the noise meter puts out sound) still only plays on the tile actually
-     under the pointer. No tilt anywhere: an object doing its job does not
-     lean. */
+  /* card hover lifts all three tools ("pressable"); each tool's own animation only plays on its own hover */
   .plat-tool {
     transition: transform var(--t-hover) var(--ease-out),
                 box-shadow var(--t-hover) var(--ease-out);
@@ -374,13 +292,9 @@ const roster = [
      only fires on the one tile actually under the pointer */
   .plat-card:hover .plat-tool .obj { transform: translateY(-3px); }
 
-  /* wheel: the spin lives in WheelIcon.astro, because only the wedges turn
-     and the flapper has to be knocked aside by them. Nothing here. */
+  /* wheel spin animation lives in WheelIcon.astro (only the wedges turn) */
 
-  /* timer: an alarm clock that has just gone off — the body trembles and the
-     two bells throw off buzz lines. The tremble is deliberately small and
-     fast (2.5deg at 14Hz): any wider and it swings like a pendulum, which is
-     a different object doing a different thing. */
+  /* tremble kept small/fast (2.5deg, 14Hz) so it reads as a buzz, not a pendulum swing */
   @keyframes tool-tremble {
     0%, 100% { transform: translate(0, -3px) rotate(0deg); }
     20%      { transform: translate(-.8px, -3px) rotate(-2.5deg); }
@@ -388,18 +302,13 @@ const roster = [
     60%      { transform: translate(-.7px, -2.8px) rotate(-2deg); }
     80%      { transform: translate(.7px, -3.2px) rotate(1.8deg); }
   }
-  /* two short rings with a beat of silence between them, like a real alarm
-     catching its breath, rather than one continuous shake — each ring is
-     4.5 cycles (~0.5s, 10% off the even half of the old single 10-cycle
-     run), then ~0.15s still, then the second ring plays the same length */
+  /* two 4.5-cycle rings (~0.5s each) with a ~0.15s pause between, instead of one continuous shake */
   .plat-card .plat-tool.is-clock:hover .obj {
     animation: tool-tremble .11s linear 4.5,
                tool-tremble .11s linear 4.5 .65s;
   }
 
-  /* the buzz lines sit off the bells, not off the middle of the clock: two
-     arcs a side, the outer one a beat behind the inner one, so the sound
-     reads as leaving the bell rather than as a halo around the icon */
+  /* positioned off the bells (not the clock centre) so the arcs read as leaving the bell */
   .plat-tool.is-clock .buzz {
     position: absolute;
     top: -5px;
@@ -425,9 +334,7 @@ const roster = [
     35%  { opacity: 1; scale: 1; }
     100% { opacity: 0; scale: 1.25; }
   }
-  /* same two-ring shape as the tremble above: one buzz pair per ring,
-     each pulse 10% shorter than before, the second pair timed to the
-     second ring at .65s */
+  /* timed to the same two-ring shape as the tremble above (second pair at .65s) */
   .plat-tool.is-clock:hover .buzz-l {
     animation: tool-buzz .4s ease-out,
                tool-buzz .4s ease-out .65s;
@@ -443,9 +350,7 @@ const roster = [
   .plat-tool.is-megaphone .tool-ic::after {
     content: '';
     position: absolute;
-    /* the horn opens up and to the right, so the arcs leave from there and
-       are tipped to match it — waves square to the tile read as a loading
-       spinner rather than as sound */
+    /* tipped to match the horn's opening (up-right); square to the tile it reads as a loading spinner */
     top: 34%;
     right: -9px;
     width: 20px;
@@ -523,19 +428,8 @@ const roster = [
   /* the pager is a phone control; above 760px the grid is a grid */
   .plat-dots { display: none; }
 
-  /* ---- phones: a swipe strip, not seven stacked slabs ----
-     Stacked one per row, this band was ~5800px tall on a 390px phone: seven
-     cards, five of them carrying a browser window, all full width. That is
-     six screens of scrolling for a feature list, and the two-up treatment
-     that works for "why us" does not work here — a product screenshot at
-     169px wide is a grey smear, so shrinking the cards would cost exactly the
-     proof the band exists to give.
-
-     So the cards keep their size and the band gives up its height instead:
-     one card per screen, swiped sideways with scroll-snap, a pager
-     underneath. The strip bleeds to both viewport edges (negative margin,
-     matching padding) so the next card peeks in at the right — without that
-     peek a snapping carousel reads as a single static card. */
+  /* ---- phones: swipe strip (scroll-snap) instead of stacked full-width cards ----
+     Negative margin + matching padding bleeds the strip to both viewport edges so the next card peeks in. */
   @media (max-width: 760px) {
     .plat-grid {
       display: flex;
@@ -560,10 +454,7 @@ const roster = [
       flex: 0 0 min(86%, 360px);
       scroll-snap-align: start;
     }
-    /* Inside a horizontal scroller the reveal's 20px drop never resolves for
-       the cards still off to the right, and a card that is 20px lower than
-       its neighbours makes the strip's height wobble as you swipe. The band
-       head still reveals; the cards arrive with the swipe instead. */
+    /* disable .reveal's transform here: an off-screen card stuck 20px low would wobble the strip's height */
     .plat-grid .reveal { transform: none; }
     /* every card the same height, so the pager underneath does not jump */
     .plat-card:not(.is-wide) h3 { min-height: 0; }
@@ -581,8 +472,7 @@ const roster = [
       gap: 10px;
       margin-top: 4px;
     }
-    /* 7px of ink inside a 26px tap target: the dot is what you see, the
-       padding is what you hit. */
+    /* 26px tap target around a 7px visible dot */
     .plat-dot {
       width: 26px; height: 26px;
       border: 0;
@@ -606,18 +496,8 @@ const roster = [
 </style>
 
 <script>
-  /*
-   * The pager under the platform strip. Below 760px the grid is a
-   * scroll-snap carousel (see the media query); this keeps the dots and the
-   * scroll position agreeing in both directions, and does nothing at all on
-   * a desktop, where the dots are display:none and the grid never scrolls.
-   *
-   * The active card is the one whose centre is nearest the strip's centre,
-   * rather than one computed from a card width — the cards are min(86%,
-   * 360px) wide, which is a different number on every phone, and the last
-   * card can never reach the left edge because the strip runs out of scroll
-   * before it gets there.
-   */
+  // Syncs the pager dots with the scroll-snap carousel below 760px (no-op on desktop).
+  // Active card = nearest to strip centre, not computed from card width (cards are min(86%, 360px), variable per phone).
   const strip = document.querySelector<HTMLElement>('.plat-grid');
   const dots = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-plat-dot]'));
   const cards = strip ? Array.from(strip.children) as HTMLElement[] : [];

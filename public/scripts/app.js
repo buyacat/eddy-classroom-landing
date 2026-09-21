@@ -1,27 +1,19 @@
-/* ============ Eddy Classroom — landing interactions ============
-   Vanilla ES5, no build step, no dependencies. Everything here is either a
-   state indicator or a one-shot entrance; nothing loops except the four
-   hero badges and the two pulse dots, which are CSS.
-
-   One init per concern, wired up in boot() at the bottom. The library band's
-   own interaction (picking a sample tab) is small enough to live in its own
-   component script (Library3D.astro) instead of here — see that file. The
-   two things every init here shares, the reduced-motion answer and the
-   query helper, are read once up here so no init carries its own copy.   */
+/**
+ * Eddy Classroom — landing interactions.
+ * Vanilla ES5, no build step, no dependencies; loaded as a plain <script> from
+ * Layout.astro. Component-local behaviour lives in its own component instead
+ * (Library3D.astro, ModelViewer.astro, EarthGlobe.astro).
+ */
 (function () {
   "use strict";
 
-  /* Read once. The OS setting does not change under a page in any way that
-     matters here, and one answer keeps every init on the same side of it. */
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function $all(sel, root) {
     return [].slice.call((root || document).querySelectorAll(sel));
   }
 
-  /* Cubic ease-out, driven off requestAnimationFrame: `write` gets the eased
-     0..1 every frame, `done` runs once at the end. Both count-ups on the
-     page use this one loop; each used to carry a copy of it. */
+  /** Cubic ease-out over `dur` ms: `write` receives the eased 0..1 each frame. */
   function tween(dur, write, done) {
     var t0 = null;
     requestAnimationFrame(function step(now) {
@@ -62,10 +54,8 @@
     var nav = document.getElementById("nav");
     if (!nav) return;
     var on = false;
-    // Two thresholds, not one. With a single value, any scroll that hovers
-    // around it flips the state on every wheel notch and the header rattles;
-    // the gap means the close has to be committed to before it plays, and
-    // undone properly before it reopens.
+    // Hysteresis: a single threshold flips state on every wheel notch when the
+    // scroll position hovers around it.
     var SHUT = 96, OPEN = 32;
     function check() {
       var y = window.scrollY;
@@ -73,7 +63,7 @@
       if (next === on) return;
       on = next;
       nav.classList.toggle("is-stuck", on);
-      // the hero's coloured light is bound to the same beat
+      // the hero's coloured light reacts to the same flag (Hero.astro)
       document.documentElement.classList.toggle("nav-stuck", on);
     }
     check();
@@ -81,16 +71,10 @@
   }
 
   /* ---------- mobile menu ----------
-     The sheet is full-screen, so the page behind it must not scroll: a
-     locked body is the difference between "a menu opened" and "the page
-     jumped". The lock is put ON at open and taken off at close — open()
-     used to set nothing while close() cleared it, so the only thing that
-     ever ran was the cleanup for a lock that was never applied.
-
-     position: fixed rather than overflow: hidden, because iOS Safari keeps
-     scrolling the body regardless of overflow; the scroll offset is parked
-     and restored so closing the menu lands the reader exactly where they
-     left off. */
+     The sheet is full-screen, so the body is locked while it is open. The lock
+     is `position: fixed` (see body.menu-open in style.css) rather than
+     `overflow: hidden`, which iOS Safari ignores; the scroll offset is parked
+     on open and restored on close. */
   function initMenu() {
     var burger = document.getElementById("nav-burger");
     var menu = document.getElementById("mobile-menu");
@@ -123,10 +107,8 @@
     burger.addEventListener("click", function () {
       if (menu.classList.contains("open")) close(); else open();
     });
-    /* Any link closes the sheet. An in-page one (#demo) has to close it
-       FIRST and jump after, because the jump is a scroll and the body is
-       still parked while the sheet is open — so the anchor is resolved by
-       hand once the lock is off. */
+    /* Any link closes the sheet. An in-page one (#demo) is scrolled to by hand
+       after the close, since the body is still scroll-locked while open. */
     $all("a", menu).forEach(function (a) {
       a.addEventListener("click", function (e) {
         var href = a.getAttribute("href") || "";

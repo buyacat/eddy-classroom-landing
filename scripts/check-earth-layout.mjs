@@ -1,10 +1,10 @@
-/*
+/**
  * The no-overlap contract for the hero globe, checked rather than asserted in
- * a comment. Run with `npm run check`.
+ * a comment. Run with `npm run check:layout`.
  *
- * It samples the whole gesture, not just the ends: the bug this exists to stop
- * came back three times as "it looks right when it is open", and it was never
- * the open state that was wrong.
+ * The whole gesture is sampled, not just its ends: an exploded view can look
+ * correct fully open and still have shells passing through each other on the
+ * way there.
  */
 import {
   GAP,

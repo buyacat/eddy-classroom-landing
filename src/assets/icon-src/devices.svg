@@ -1,57 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
   <!--
-    "Один застосунок для всіх пристроїв". The card lists three machines
-    (ноутбук, планшет, смартфон) and the icon has to show all three or it is
-    illustrating a different sentence — which is exactly what the green
-    handset it replaces was doing.
+    "One app for every device" card: laptop, tablet and phone, all three
+    carrying the SAME yellow app tile — that repetition is the card's point.
 
-    The three screens carry the SAME yellow app tile. That repetition is the
-    whole point of the card: not "we support many devices" but "it is one
-    app". The tile was brand blue in the first version, which is also the
-    colour of the card this icon sits on — the one mark that had to be
-    unmissable was the one that disappeared.
+    Device classes are told apart by silhouette, not scale: landscape
+    wide-bezel tablet, 1:2 portrait phone with a speaker slot and home line,
+    laptop with a keyboard deck. Scale alone does not survive 88px. Thick
+    bezels and small screens keep the object chunky next to the licensed
+    pack, and the cream rim holds the silhouette against #4050FF without
+    costing the height a floor plinth would.
 
-    THREE CLASSES OF DEVICE, TOLD BY SILHOUETTE, NOT BY SIZE. The tablet is
-    landscape and wide-bezelled, the phone is portrait at 1:2 with a
-    speaker slot and a home line, the laptop has a keyboard deck. The first
-    version differentiated them by scale alone, and scale is the one cue
-    that does not survive being shrunk to 88px — two rounded rectangles of
-    different sizes read as two of the same thing.
-
-    NO GLASS. Both screens used to carry a hard diagonal streak — a white
-    path at 0.9 opacity with NO blur on it at all — and the phone shell a
-    third at 0.85. That is a window reflection, and nothing in the bought
-    pack has one: their share of hard near-white pixels runs 0.00%–1.66%,
-    this object read 8.38%, and it was the first thing the client saw. The
-    screens are lit by their own gradient now, the way the pack's folder is.
-    scripts/check-icons.mjs holds the budget.
-
-    NO PLINTH. The surface the devices used to stand on was the other half
-    of the complaint — "менша інших". It was never really a size problem:
-    a floor drawn in near-white ate a third of the frame, and what was left
-    for the devices themselves was 183px of the 256 box, so inside `.obj`'s
-    square 88px they drew 63px tall against the folder's 73 and the bulb's
-    85. Removing the floor and spreading the cluster vertically instead puts
-    the object at 234, inside the range the bought ones occupy (212–248).
-    What the floor was really for — keeping the silhouette off #4050FF —
-    is now done the way the tablet and phone already did it, with a cream
-    rim, which costs no height and works on a card of any colour.
-
-    MASS, NOT INVENTORY. Side by side at the size they actually render, the
-    bought objects are one chunky body in one saturated colour with a small
-    cream detail — the folder is blue with a sliver of paper, the tick is a
-    green disc. This one was the other way round: big pale screens inside
-    thin frames, so at 88px it read as fiddly next to them even after it
-    stopped being pale. The bezels are thicker and the screens smaller for
-    that reason, the bodies are deep enough to hold a silhouette against
-    #4050FF, and the app tiles are large enough to survive the size the
-    card draws them at. The phone stays the one saturated body: it was
-    already the part of this object that read first.
-
-    Depth is read from the baselines: the laptop is furthest and sits
-    highest, the phone is nearest and sits lowest. Each keeps the faint
-    contact shadow that rocket/dino/wheel use — a shadow implies the ground
-    without anyone having to draw it.
+    Baselines read as depth: the laptop is furthest and sits highest, the
+    phone is nearest and sits lowest, each with the faint contact shadow the
+    rest of the set uses.
   -->
   <defs>
     <linearGradient id="dvBody" x1="0.15" y1="0" x2="0.85" y2="1">
@@ -101,10 +62,8 @@
     <path d="M46 30 L236 30 L233 39 L49 39 Z" fill="#FFFFFF" opacity=".24" filter="url(#dvb4)"/>
   </g>
 
-  <!-- Телефон: спереду і нижче. Корпус тут був зелений - його задумували як
-       "пристрій учня", але зелених телефонів не буває, і на 88px це читалося
-       не смисловою міткою, а помилкою. Обидва корпуси тепер одного кольору;
-       розрізняє їх силует і біле обведення, а не фарба. -->
+  <!-- Phone: nearest, so lowest. Same body colour as the tablet — silhouette
+       and the white rim tell them apart, not paint. -->
   <g>
     <ellipse cx="47" cy="250" rx="42" ry="10" fill="#0E1330" opacity=".22" filter="url(#dvb10)"/>
     <rect x="8" y="112" width="78" height="140" rx="27" fill="#FFFFFF"/>

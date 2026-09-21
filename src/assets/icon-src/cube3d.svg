@@ -1,25 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
   <!--
-    "Бібліотека 3D-контенту". The client's reference was a glossy cube with
-    "3D" on it, and nothing else says three dimensions as fast: a book says
-    library, a cube says the thing the library is FULL of.
+    "3D content library" card. Isometric, not perspective: an iso cube reads
+    as a solid at 96px where a perspective cube reads as a dented box. The
+    rounded silhouette is a clip path over three hard-edged faces — rounding
+    the faces themselves would round the interior corner too, and a cube with
+    a soft centre stops looking like a cube.
 
-    Isometric geometry, not perspective — an iso cube reads as a solid at
-    96px, where a perspective cube reads as a dented box. The rounded outer
-    silhouette is a clip path over three hard-edged faces: rounding the faces
-    themselves would round the interior corner too, and a cube with a soft
-    centre stops looking like a cube.
-
-    Light comes from the upper left, same as every other object in this set:
-    top face lightest, left face the brand blue, right face in shadow.
-
-    THE LIGHT IS BROAD, NOT A HOTSPOT. The bought objects have no specular
-    at all — their share of hard near-white pixels runs 0.00%–1.66%
-    (scripts/check-icons.mjs prints it). This cube used to answer with a
-    tight 0.95-opacity ellipse under a 3px blur, which is glass, not clay,
-    and it read as 3.84% — the thing the client pointed at. Every
-    highlight here is now wide and weak enough to stay inside the pack's
-    own budget.
+    Light comes from the upper left, as in the rest of the set: top face
+    lightest, left face brand blue, right face in shadow. Highlights stay
+    broad and weak to hold the pack's glare budget (scripts/check-icons.mjs).
   -->
   <defs>
     <linearGradient id="c3Top" x1="0.1" y1="0" x2="0.85" y2="1">

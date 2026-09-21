@@ -1,28 +1,6 @@
-/*
- * Hero globe — a photoreal cut-away Earth built entirely in code, no GLB.
- *
- * Every pixel of surface here is generated at runtime: continents, ice caps,
- * cloud cover, relief and gloss all come out of one fractal noise field, so
- * the whole thing still costs nothing but the three.js runtime. It also means
- * the model takes light the way a real object does — PBR materials lit by a
- * generated sky, not flat fills.
- *
- * Gesture: drag right to take it apart, drag left to turn it (mouse only — on
- * touch there is no free spin), tap to latch it open. Let go and it springs
- * back together. Both jobs live on the same axis now because the cascade is
- * horizontal and pulling along it is the only reading that matches what the
- * eye sees; the sign is what tells them apart. The pull has two acts and the
- * first one is not optional — a planet that is turned away from its own cut
- * turns back to face it before anything is allowed to open.
- *
- * Scene graph, and the reason for it:
- *
- *   stack      shrinks + re-centres as the model opens, so the exploded state
- *    │         still fits the square panel
- *    └ holder  carries the explode offset — deliberately NOT rotated, so the
- *       │      layers always cascade the same way on screen whatever the yaw
- *       └ spin every holder gets the same yaw/pitch, so it still reads as one
- *              rotating body
+/**
+ * Hero globe: procedurally generated cut-away Earth (noise-based textures/geometry, no GLB).
+ * Scene graph per layer: stack (shrinks/recenters on explode) > holder (explode offset, unrotated) > spin (yaw/pitch).
  */
 import {
   ACESFilmicToneMapping,
@@ -80,15 +58,10 @@ interface LayerDef {
 }
 
 /**
- * Radii as fractions of Earth's 6371 km, from PREM. Three of the four are the
- * real numbers: the core-mantle boundary sits at 2891 km (0.5462) and the
- * inner-core boundary at 5150 km (0.1917).
- *
- * The crust is the one lie, and it is unavoidable: continental crust is 35 km,
- * i.e. 0.9945, which at the size this panel renders would be a single pixel
- * and would vanish under antialiasing. It is thickened about fourfold to 0.978
- * so it can be seen at all — and the panel says so, in words a pupil reads,
- * rather than only in this comment.
+ * Radii as fractions of Earth's 6371 km radius, per PREM: core-mantle
+ * boundary at 2891 km (0.5462), inner-core boundary at 5150 km (0.1917).
+ * Crust is exaggerated ~4x (real continental crust is 0.9945) to stay
+ * visible under antialiasing.
  */
 const LAYERS: LayerDef[] = [
   { kind: 'crust', rIn: 0.978, rOut: 1 },
@@ -102,129 +75,49 @@ const PHI_START = 0;
 const PHI_LENGTH = Math.PI * 1.34;
 
 /**
- * Screen-space direction the layers cascade along.
- *
- * Horizontal, not stacked. The panel is square, but its bottom edge carries the
- * caveat line and the explode button, so the vertical budget is the scarce one
- * all the same — a column made the
- * layers fight each other for room and forced them all smaller. Laid out
- * across, the labels get their own row underneath, and the slight rise stops
- * it reading as a dead flat line.
- *
- * It points LEFT because that is the side the wedge is open on. Pulling the
- * shells out the other way slides them straight through the solid half of the
- * planet, which is exactly the thing an exploded view is supposed to show is
- * impossible. Out through the opening is the only direction that reads.
- *
- * The pair (this and BASE_YAW below) is what decides the handedness of the
- * whole drawing: turn the model so its cut faces the other way and this has
- * to follow it, or the shells start travelling backwards through rock.
+ * Cascade direction: points toward the wedge opening (left). Paired with
+ * BASE_YAW below — the two set the handedness of the layout, so turning the
+ * model must flip both or shells travel through the solid crust.
  */
 const AXIS = new Vector3(-1, 0.05, 0).normalize();
 
 /**
- * Three-quarter view: far enough round that the sphere still reads as a
- * sphere, open enough that you look straight into the cross-section.
- *
- * The number is set by one hard constraint, not by taste: the direction the
- * shells travel has to lie INSIDE the mouth of the cut. The opening is 119°
- * wide, so its bisector may sit at most 59.4° off the travel axis; park it at
- * 45° and the cascade leaves through the hole with 14° to spare, while the
- * cross-section is still turned far enough toward the camera to be read.
- *
- * The pose this replaced had the bisector 28° off camera — prettier, more
- * face-on, and 2.4° short of legal: the contents came out through the rim
- * rather than through the opening, so every shell scraped through the solid
- * half of the crust on its way out. That was true of the original right-handed
- * pose too (mirrored, it had the same 2.4° deficit), which is why it is fixed
- * here rather than treated as fallout from turning the model round.
- *
- * A rotation, not a reflection, so the map is not printed backwards; the
- * meridians that face out simply move round with the opening.
+ * Three-quarter view yaw. The wedge opening is 119° wide, so its bisector
+ * must be within 59.4° of the travel axis; 45° leaves ~14° of margin while
+ * still turning the cross-section toward the camera.
  */
 const BASE_YAW = 1.8221;
 /** 23.44 degrees — the real axial tilt, so even the pose teaches something. */
 const BASE_PITCH = 0.409;
 
 /**
- * The cascade: how far each shell ends up from the one outside it, and — the
- * part that used to be wrong — WHEN each of them moves. Spacing and sequencing
- * both live in earth-layout, which has no three.js in it so the rule they keep
- * ("no shell is ever half inside a shell it is not currently coming out of")
- * can be checked on its own: npm run check.
- *
- * The CRUST stays put and the contents come out of it, not the other way
- * round — that is how you actually take a nested thing apart, and it means
- * nothing ever travels backwards through the solid half of the planet. Right
- * to left the row therefore reads outside-to-inside, the same order as the
- * numbers on the tags.
+ * Stage spacing/sequencing computed in earth-layout.ts (no three.js
+ * dependency, so the no-overlap invariant is unit-testable via `npm run
+ * check`). Crust stays fixed; contents extract outside-in.
  */
 const STAGE_D = stageDistances(LAYERS);
 const STAGES = stageWindows(STAGE_D);
 const TOTAL_TRAVEL = totalTravel(STAGE_D);
 
 /**
- * Where the tags hang, just clear of the largest shell. They sit in two rows:
- * four names this long will not fit across one panel side by side, and
- * staggering them buys each tag twice the width without shrinking the type or
- * pushing the spheres further apart.
- *
- * The DROP is in model units and shrinks with the model; the gap between the
- * two rows is in PIXELS, and is the height of a tag plus clear air. That split
- * is the fix for a real bug: the stagger used to be a model-space offset too,
- * so on a 390px phone — where the model is drawn small and the type is not —
- * the two rows converged until they printed on the same line, eight pixels
- * apart, with the panel's own foot running between them.
- *
- * WHICH row a tag lands in is decided by the half of the picture its shell is
- * in, not by whether its index is odd — see the loop below. That is what keeps
- * the leader lines from crossing.
+ * TAG_DROP (model units, scales with model) and TAG_ROW_GAP (pixels, row
+ * spacing) are deliberately different units — keeping the stagger in model
+ * space made the two caption rows converge on small phones.
  */
 const TAG_DROP = 1.16;
 const TAG_ROW_GAP = 6;
 
-/**
- * The leader line: a hairline from the bottom of a shell down to the caption
- * that names it, the same device the library's model viewer uses on the eye.
- *
- * It starts just below the silhouette and stops just short of the pill, so it
- * touches neither: a line that runs into a shell reads as part of the drawing,
- * and a line that runs under a pill reads as a mistake.
- */
+/** Leader line from shell bottom to caption; stops short of both ends so it touches neither. */
 const LEAD_FROM = 3;
 const LEAD_TO = 4;
-/**
- * Below this panel width the leaders come off altogether.
- *
- * Measured rather than guessed, because the guess was wrong: the fear was that
- * four lines could not work on a phone at all, and they do. Walked from 288px
- * to 620px with the model open, counting lines whose box crosses a caption
- * that is not its own — at 288px (a 320px phone) two of the four cross, since
- * the captions no longer fit the panel and spreadRow has to push them through
- * each other's columns; from 328px up (a 360px phone) nothing crosses
- * anything. So the cut is just under that, and every real phone keeps them.
- *
- * Where they do come off, nothing is lost that is not said twice already: the
- * caption still sits under its own shell and still carries the shell's number.
- */
+/** Below this panel width leaders are hidden — measured: they start crossing captions under ~328px, clean above it. */
 const LEAD_MIN_PANEL = 310;
 
 /**
- * How far off the cut-facing pose the model may sit and still be allowed to
- * come apart.
- *
- * There is exactly one angle at which an exploded view of this thing is
- * truthful: the wedge open toward the side the shells travel. At any other
- * angle they appear to be dragged out through the solid half of the planet,
- * which is the one thing the drawing must never show. Fading the free yaw out
- * while the layers were already moving used to hide that badly — the model
- * twisted and opened at the same time and neither read.
- *
- * So orientation is now a gate, not a blend, and it governs every way the
- * model can open, the panel's own explode button included: while it is turned
- * away, nothing separates. Idle rock alone (ROCK rad) is enough to hold the
- * gate shut, which is what gives the pull its first act — the planet swings
- * round to face you, and only then does it start to come apart.
+ * Alignment gate: the model may explode only when within ALIGN_FREE rad of
+ * the cut-facing pose; the gate closes again past ALIGN_BLOCK. Without it,
+ * shells appear to pull out through the solid half of the planet at the
+ * wrong yaw.
  */
 const ALIGN_FREE = 0.02;
 const ALIGN_BLOCK = 0.1;
@@ -232,17 +125,7 @@ const ALIGN_BLOCK = 0.1;
 /** Clear air kept between two captions in the same row, in pixels. */
 const TAG_PAD = 8;
 
-/*
- * Everything that moves here on its own — the idle rock, the Moon on its
- * orbit — is ambient: nobody asked for it. So a visitor who has asked the
- * system for less movement gets none of it, and still gets every part of the
- * model that answers a gesture.
- *
- * What the page used to do instead was refuse to mount the globe at all,
- * which left the hero one empty white panel. That was arguable while the
- * panel was a running quiz; now the model IS the hero, and withholding it
- * withholds the page from the very people most likely to read the captions.
- */
+/* Ambient motion (idle rock, Moon orbit) respects prefers-reduced-motion; gesture-driven motion is unaffected. */
 const REDUCED =
   typeof window !== 'undefined' &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -250,19 +133,7 @@ const REDUCED =
 /** Amplitude of the idle rock, in radians. Zero when motion is not wanted. */
 const ROCK = REDUCED ? 0 : 0.17;
 
-/**
- * The demo: how far the model opens itself, once, to say that it opens.
- *
- * A caption under a static planet is a fact about the page. A planet that
- * breaks a little way apart and closes again is a fact about the planet, and
- * it is read before the caption is. Deliberately a quarter of the travel —
- * far enough that the mantle clears the crust and the gesture is unmistakable,
- * short enough that it is an invitation and not the show itself.
- *
- * The window has to cover act one as well: the model is rocking when this
- * fires, the alignment gate holds it shut until it has turned to face its own
- * cut (~0.5s), and only then does the pull count. Hence two seconds, not one.
- */
+/** One-time demo: opens 26% of travel for 2s (covers the ~0.5s alignment gate plus a visible opening). */
 const DEMO_OPEN = 0.26;
 const DEMO_MS = 2000;
 
@@ -270,18 +141,9 @@ const CAM_Z = 5.9;
 /** How much the whole assembly shrinks at full explode, to stay in the panel. */
 const OPEN_SHRINK = 0.5;
 /**
- * Bias applied to the open state only. The cascade is not symmetric — the
- * crust at the top is three times the radius of the core at the bottom — so
- * re-centring on the middle of the travel still hangs it low. These pull the
- * open fan back to the optical centre of the panel.
- *
- * The Y lift also buys the foot its room. The lesson strip used to do that
- * job with its own transform (`compact`, now gone): it shrank and raised the
- * whole picture while a quiz was running. What sits down there now is two
- * lines at most — the caveat and the explode button — and they are only there
- * once the model is open, which is exactly when this lift applies. One number
- * instead of a second eased transform, and the captions clear the button at
- * every panel width we ship.
+ * Recenters the open cascade in the panel. The stack is asymmetric — the
+ * crust radius is ~3x the core's — so centring on the travel midpoint alone
+ * hangs it low.
  */
 const OPEN_LIFT_Y = 0.3;
 // nudged off the right edge, where the floating tool badges overlap the panel
@@ -289,29 +151,12 @@ const OPEN_LIFT_X = -0.06;
 
 /* ------------------------------------------------------------------- moon */
 
-/*
- * The Moon is here to give the planet a scale and a companion, and it has to
- * do it inside a square panel that already holds a globe of radius 1 and four
- * captions. So two of these three numbers are true and one is a compromise,
- * the same bargain the crust makes above.
- *
- * MOON_R is 0.27 in reality; 0.19 is as large as it can be here before it
- * starts colliding with the caption row on the way past. MOON_ORBIT is a lie
- * by two orders of magnitude — the real distance is 60 Earth radii, which at
- * this scale would put it four metres off the side of the screen — and the
- * orbit is drawn as a visible line precisely because a path you can see is
- * the only honest way to say "this is a diagram, not a photograph".
- *
- * The tilt is what makes the path READ as a path: seen exactly edge-on an
- * orbit is a straight line, and a moon sliding along a line looks like a bug,
- * not a body going round.
- *
- * 0.88 rad is not a guess. Tip the orbit less than asin(1 / MOON_ORBIT) = 0.78
- * and its highest point still falls inside the planet's silhouette, so the top
- * and bottom of the ellipse are swallowed and all that is left is two side
- * arcs — the loop stops being a loop. Past that angle the whole ellipse clears
- * the disc, the path is legible in a single glance, and the Moon never crosses
- * in front of the cross-section it would otherwise hide.
+/**
+ * Moon dimensions are stylized to fit the panel: MOON_R 0.19 (real 0.27) and
+ * MOON_ORBIT 1.42 (real ~60 Earth radii) are both scaled down; the orbit is
+ * drawn as a visible ring since the scale isn't realistic. MOON_TILT_X must
+ * exceed asin(1 / MOON_ORBIT) ≈ 0.78 rad or the ellipse collapses inside the
+ * planet's silhouette.
  */
 const MOON_R = 0.19;
 const MOON_ORBIT = 1.42;
@@ -320,38 +165,17 @@ const MOON_PERIOD = 26;
 const MOON_TILT_X = 0.88;
 const MOON_TILT_Z = 0.09;
 
-/*
- * Where the Moon waits out the exploded view.
- *
- * The orbit cannot survive the model coming apart: it is a fixed ring at
- * r = MOON_ORBIT while the shells fan out along their own axis, so past a
- * third of the travel the Moon flies straight through them — and through
- * half-transparent shells that reads as passing through the planet, the one
- * thing this drawing must never show.
- *
- * Deleting it outright works and is dull: the companion that gave the planet
- * its scale simply stops existing the moment the model opens. So it steps
- * out of the way instead — up and to the right of the crust, where the top
- * corner is empty once the layers have gone left and the captions have
- * dropped under them, and where the sun already is (2.6, 2.2, 3.8), so the
- * parked face is the lit one.
- *
- * Offsets are in the units the open stack is drawn at and ride its scale, so
- * "one crust-diameter up" stays one crust-diameter up however far the row has
- * opened. Smaller than in orbit, because up there it is scenery and not the
- * subject.
+/**
+ * Parked position (upper-right of crust, near the sun at (2.6, 2.2, 3.8))
+ * avoids the Moon passing through the shells or the half-transparent crust
+ * during explode. Offset rides the open stack's own scale, so the gap stays
+ * constant however far the row has opened.
  */
 const MOON_PARK_DIR = new Vector3(0.22, 1, 0).normalize();
 /**
- * Clear air between the crust's rim and the parked Moon. The park is measured
- * off the RIM, not off a fixed point in the panel: the crust halves in size as
- * the row opens, and a Moon pinned to panel coordinates either grazes it early
- * in the pull or floats off into the top edge late in it. Hung off the rim it
- * keeps the same gap the whole way and simply drifts in as the planet shrinks.
- *
- * Only 12 degrees off vertical, though the corner invites more: the floating
- * tool badges hang over the right edge of the panel from about 5% to 18% of
- * its height, and a Moon parked further right would drift under the rocket.
+ * Gap is measured off the crust's rim, not fixed panel coordinates, so it
+ * holds steady as the crust scales during explode. 12° off vertical to clear
+ * the floating tool badges (~5-18% of panel height on the right edge).
  */
 const MOON_PARK_CLEAR = 0.22;
 const MOON_PARK_SCALE = 0.66;
@@ -421,19 +245,10 @@ interface EarthMaps {
 }
 
 /**
- * One pass over an equirectangular grid produces everything the surface needs.
- * The height field decides land against sea; colour, relief and gloss all fall
- * out of the same number, which is why the coastlines line up across all three.
- */
-/*
- * The surface is NASA's Blue Marble (public domain), not an invented planet.
- * A procedural world looked convincing and was the wrong call: this product
- * sells geography lessons, and a photoreal planet that is not Earth is a map
- * of the world that is not the world. Everything else here is still generated.
- *
- * Only two files are fetched — colour and cloud cover. Relief and gloss are
- * derived from the colour map in one pass, because Blue Marble's oceans are
- * the only dark, blue-dominant pixels in it, so water separates cleanly.
+ * Base colour is NASA's Blue Marble (public domain), not procedural noise,
+ * since the product teaches real geography. Relief and roughness are derived
+ * from it in one pass: ocean pixels are the only dark, blue-dominant ones, so
+ * water separates cleanly without a second texture.
  */
 const TEX_SURFACE = withBase('/assets/textures/earth-surface.webp');
 const TEX_CLOUDS = withBase('/assets/textures/earth-clouds.webp');
@@ -512,11 +327,9 @@ async function loadEarthMaps(anisotropy: number): Promise<EarthMaps> {
 }
 
 /**
- * Sedimentary bedding for the crust's cut face. RingGeometry lays its UVs
- * across the ring's bounding box, so bands drawn concentrically land as real
- * bedding planes on the cross-section. Greyscale, so the material colour tints
- * it. Only the crust gets this — bedding is a sedimentary feature, and drawing
- * it on mantle rock or liquid iron would be a lie a geologist spots at once.
+ * Crust cross-section bedding texture. RingGeometry maps UVs across its
+ * bounding box, so concentric bands become real bedding planes. Only the
+ * crust gets this — bedding is a sedimentary feature.
  */
 function buildStrata(): CanvasTexture {
   const S = 512;
@@ -531,9 +344,7 @@ function buildStrata(): CanvasTexture {
       const r = Math.sqrt(dx * dx + dy * dy);
       const a = Math.atan2(dy, dx);
 
-      // turbulence first, so the beds buckle instead of sitting as clean rings.
-      // Frequency stays low on purpose: fine rings alias into a moire pattern
-      // the moment the model turns.
+      // low-frequency warp — buckles the bands and avoids moire aliasing when the model turns
       const warp = (fbm(dx * 3.6, dy * 3.6, 3.7, 4) - 0.5) * 0.26;
       const bands = 0.5 + 0.5 * Math.sin((r + warp) * 27);
       const grain = fbm(dx * 22, dy * 22, Math.cos(a) * 3, 4);
@@ -575,15 +386,10 @@ function buildGrain(): CanvasTexture {
 }
 
 /**
- * The Moon's face, generated the same way the Earth's is — no second texture
- * file for an object 200px wide.
- *
- * Two passes, because the Moon really is two things: the pale, saturated
- * highlands from the fractal field, and the maria, the dark basalt seas that
- * are the part everyone can actually name. The craters go on last, each drawn
- * as a dark floor under a lit rim, and each stretched horizontally by
- * 1/cos(latitude) so it comes back out round once the equirectangular map is
- * wrapped onto a sphere — without that the poles wear ellipses.
+ * Procedural Moon texture (no separate file): fbm highlands plus a maria
+ * (dark basalt) pass, then craters stretched by 1/cos(latitude) so they
+ * render round after the equirectangular map wraps onto a sphere — without
+ * that the poles get elliptical craters.
  */
 function buildMoonMaps(): { color: CanvasTexture; bump: CanvasTexture } {
   const W = 512, H = 256;
@@ -707,10 +513,8 @@ function buildRecipes(
   grain: CanvasTexture
 ): Record<Kind, Recipe> {
   /**
-   * Cut faces, with the texture that belongs to the material. Bedding planes
-   * are a sedimentary feature of the upper crust; drawing them on molten iron
-   * is the kind of detail a geologist spots instantly, so only the crust gets
-   * strata, the mantle gets mineral grain, and the two cores get neither.
+   * Bedding is a sedimentary feature: only the crust gets strata texture,
+   * the mantle gets mineral grain, and the two cores get neither.
    */
   const face = (texture: CanvasTexture | null, o: Record<string, unknown>) =>
     new MeshStandardMaterial({
@@ -740,9 +544,7 @@ function buildRecipes(
       })
     },
     mantle: {
-      // The mantle is SOLID silicate rock — only ~1-2% partial melt, and only
-      // in the asthenosphere. It must not glow, or the model teaches the
-      // "sea of fire under the crust" myth the lesson exists to correct.
+      // solid silicate rock (only ~1-2% partial melt) — must not glow, avoids the "sea of fire under the crust" myth
       shell: new MeshStandardMaterial({
         color: new Color('#c2662c'),
         roughness: 0.88,
@@ -775,9 +577,7 @@ function buildRecipes(
       })
     },
     innerCore: {
-      // solid iron-nickel, held solid by 330-360 GPa. Matte against the
-      // liquid layer above it, and pale straw rather than gold — "the core is
-      // gold" is its own persistent myth.
+      // solid iron-nickel, held solid by 330-360 GPa; pale straw not gold (avoids the "core is gold" myth)
       shell: new MeshStandardMaterial({
         color: new Color('#ffe0a0'),
         roughness: 0.55,
@@ -861,13 +661,8 @@ function buildLayer(
     spin.add(cutFace(def.rIn, def.rOut, phi, recipe.cut));
   }
 
-  // The tag rides the holder, not the spinner, so it stays put while the
-  // model turns — a label that orbits with the mesh is unreadable.
-  // Every tag hangs at the same depth below its layer, so the four of them
-  // line up as a caption row instead of scattering with the radii. Which of
-  // the two rows it lands in is settled in screen space by the frame loop,
-  // not here. Anchored by its own top-centre (see the CSS transform), so a
-  // name never covers the thing it names.
+  // Anchor rides the holder (not spin) so the tag doesn't rotate with the
+  // model; positioned via its own top-centre CSS transform.
   const anchor = new Object3D();
   anchor.position.set(0, -TAG_DROP, 0);
   holder.add(anchor);
@@ -888,13 +683,7 @@ export interface GlobeHandle {
   destroy(): void;
   /** Latch the model apart (or back together), overriding the idle state. */
   open(apart: boolean): void;
-  /**
-   * Fires whenever the model crosses between "a planet" and "a row of layers",
-   * however it got there. The panel's explode button is the only caller, and
-   * it needs this precisely because it is not the only way the model opens: a
-   * button still labelled "take it apart" over a model a drag has already
-   * pulled apart is lying about what pressing it will do.
-   */
+  /** Fires when the model crosses between open and closed, from any cause (drag, tap, or the explode button). */
   onOpenChange(cb: (open: boolean) => void): void;
   /** Open a little way and close again, once, to show that it opens at all. */
   demo(): void;
@@ -948,9 +737,7 @@ export async function mountGlobe(
     (el.querySelector('em') as HTMLElement).textContent = specs[i]?.meta ?? '';
     labelHost.appendChild(el);
 
-    /* Prepended, not appended: every leader has to paint under every pill,
-       not merely under its own, or a line grazing a neighbour's corner would
-       be drawn on top of it. */
+    // prepended so every leader paints under every pill, not just its own
     const lead = document.createElement('i');
     lead.className = 'globe-lead';
     labelHost.prepend(lead);
@@ -958,23 +745,11 @@ export async function mountGlobe(
     return { ...built, el, lead };
   });
 
-  /*
-   * The Moon system hangs off the SCENE, not off the model.
-   *
-   * It cannot ride the spinner: the Earth turning on its axis does not carry
-   * the Moon round with it, and one drag of the globe would whip the Moon
-   * through a month. It cannot ride the stack either, and that one was tried:
-   * the stack shrinks by half and slides sideways as the model comes apart, so
-   * an orbit parented to it shrank and slid too — the ring sagged out of the
-   * panel mid-fade and read as broken rather than as leaving.
-   *
-   * Parented to the scene it is a fixed frame instead: the path holds its
-   * size and its centre, and the planet opens INSIDE it.
-   *
-   * The path is drawn as a real ring rather than implied: with depth testing
-   * on, the planet occludes the far half of it, which is the whole lesson —
-   * the line goes behind, so the Moon going behind reads as depth and not as
-   * the Moon being deleted for a while.
+  /**
+   * Moon system parented to the scene, not the model: riding the spinner
+   * would tie the orbit to Earth's own rotation, and riding the stack would
+   * resize/reposition it as the model explodes. Depth-tested, so the planet
+   * occludes the far half of the orbit ring.
    */
   const moonMaps = buildMoonMaps();
   const moonSystem = new Group();
@@ -993,9 +768,7 @@ export async function mountGlobe(
   orbitRing.rotation.x = -Math.PI / 2;
   moonSystem.add(orbitRing);
 
-  /* The arm turns; the Moon does not turn inside it. That is tidal locking,
-     and it comes free: a body carried round on a rotating arm keeps the same
-     face pointed at the centre unless you spin it the other way. */
+  /* Tidal locking comes free: the Moon mesh doesn't rotate within the arm, so it always faces the orbit centre. */
   const moonArm = new Group();
   moonSystem.add(moonArm);
   const moonMat = new MeshStandardMaterial({
@@ -1010,16 +783,11 @@ export async function mountGlobe(
   moonMesh.position.set(MOON_ORBIT, 0, 0);
   moonArm.add(moonMesh);
 
-  /*
-   * The same Moon, parked — a second mesh rather than the first one flown to
-   * the corner. Flying it there would send it across the row it is being
-   * moved out of, and from half the phases it would cross in front of the
-   * cross-section on the way: the very shot this is meant to prevent. Two
-   * meshes cross-fade with a gap between them instead, so at no frame are
-   * there two Moons, and at no frame does one travel through rock.
-   *
-   * Its own material (and its own, coarser sphere — it is drawn at two thirds
-   * the size) so the two opacities are independent. The maps are shared.
+  /**
+   * Parked Moon is a separate mesh (not the orbiting one relocated) so it
+   * never crosses the cross-section in flight; the two cross-fade with a gap
+   * so both are never visible at once. Own material and a coarser, smaller
+   * geometry for independent opacity; maps are shared.
    */
   const parkMat = moonMat.clone();
   parkMat.opacity = 0;
@@ -1048,12 +816,7 @@ export async function mountGlobe(
   let height = 0;
   let t = 0;
 
-  /*
-   * One drag does one job. Which job is settled once, as soon as the hand
-   * commits to a direction, and then held for the rest of the gesture — a pull
-   * that wanders back the other way used to start spinning the model half way
-   * through, and a spin that drifted right used to start prising it open.
-   */
+  /* Drag direction commits to one mode ('turn' or 'open') once threshold is crossed, and holds for the rest of the gesture. */
   type Mode = 'idle' | 'turn' | 'open';
   let mode: Mode = 'idle';
 
@@ -1061,12 +824,9 @@ export async function mountGlobe(
   // itself is swiped, and taking it would fight the browser for the gesture.
   const coarse = window.matchMedia('(pointer: coarse)').matches;
 
-  /*
-   * Anything shorter than this is a tap, anything longer commits to a drag —
-   * one number for both, so there is no band in between where a gesture is
-   * neither and does nothing. A finger wanders further than a mouse, and on
-   * touch the tap is the ONLY way to close a latched-open model, so the slop
-   * there has to be generous enough to actually catch one.
+  /**
+   * One threshold for both tap and drag. Touch needs a larger slop since a
+   * tap is the only way to close a latched-open model on touch.
    */
   const TAP_SLOP = coarse ? 12 : 7;
 
@@ -1077,32 +837,23 @@ export async function mountGlobe(
   const worldPos = new Vector3();
   const recentre = new Vector3();
 
-  /* The strip along the bottom of the panel — the caveat and the explode
-     button. The captions have to stay above it, and where its top is depends
-     on the breakpoint and on whether the model is open, so it is measured
-     rather than assumed. */
+  // Bottom strip (caveat + explode button); measured rather than assumed,
+  // since its top depends on breakpoint and open state.
   const foot = host.querySelector<HTMLElement>('.globe-foot');
 
-  /*
-   * Tag widths, cached. They are measured rather than computed because a
-   * caption's width is a fact about the font and the translation, not about
-   * the model — "Зовнішнє ядро" and "Outer core" do not need the same room.
-   * Reading them every frame would thrash layout against the transforms
-   * written in the same loop, so it happens rarely.
+  /**
+   * Tag widths, cached rather than measured every frame — caption width
+   * depends on font/translation length, and reading layout every frame would
+   * thrash against the transforms written in the same loop.
    */
   const tagWidth = new Array<number>(LAYERS.length).fill(0);
-  /* The height of a tag, and the top of the panel's foot. Both are read from
-     the DOM rather than assumed, because both change with the breakpoint —
-     the tags drop their depth line under 760px, and the foot grows a second
-     line the moment the model is open. */
+  // Read from the DOM since both change with breakpoint (tags drop their
+  // depth line under 760px; the foot grows a line when the model is open).
   let tagHeight = 0;
   let footTop = Number.POSITIVE_INFINITY;
   let measureIn = 0;
 
-  /*
-   * Where each caption wants to sit, and the two rows they are resolved in.
-   * Reused every frame rather than rebuilt, because this runs at 60Hz.
-   */
+  // Reused every frame (60Hz) rather than reallocated.
   const place = LAYERS.map(() => ({ x: 0, y: 0, width: 0 }));
   const rows: (typeof place)[] = [[], []];
 
@@ -1150,20 +901,14 @@ export async function mountGlobe(
 
     if (mode === 'idle') {
       if (Math.hypot(dx, dy) < TAP_SLOP) return;
-      /*
-       * Rightwards opens it, on every pointer: the shells come out to the
-       * left, through the cut, and the hand draws the crust off them the way
-       * you would draw a lid.
-       *
-       * That claims the axis the free spin used to have all of, so the spin
-       * keeps the other half of it — leftwards, on a mouse, and only while the
-       * thing is still a globe: once it is coming apart the angle is no longer
-       * the visitor's to choose.
+      /**
+       * Rightward drag opens it (shells exit left, through the cut); leftward
+       * spin is only available on mouse, and only while still a globe.
        */
       mode = !coarse && dx < 0 && Math.abs(dx) > Math.abs(dy) * 1.4 && explode < 0.08
         ? 'turn'
         : 'open';
-      // taking hold of it to spin it means you want the globe back
+      // grabbing to spin cancels a pending explode
       if (mode === 'turn') {
         pinned = false;
         explodeTarget = 0;
@@ -1175,12 +920,9 @@ export async function mountGlobe(
       return;
     }
 
-    // Act one: bring it round to face its own cut. The gate in the frame loop
-    // is what actually holds the layers shut until it has; all this does is
-    // ask for the pose. Act two: pull it apart.
+    // Act one: turn to face the cut (gated in the frame loop). Act two: pull apart.
     yawTarget = 0;
-    // one axis, one sign: dragging back to the left folds it up again rather
-    // than opening it a second time, which is what an absolute value did
+    // one axis, one sign — dragging left folds it back up instead of opening a second time
     const pull = Math.max(0, dx) / Math.max(width * 0.34, 1);
     explodeTarget = Math.max(pinned ? 1 : 0, Math.min(1, pull));
   }
@@ -1203,13 +945,7 @@ export async function mountGlobe(
     release();
   }
 
-  /*
-   * A cancel is the browser saying this gesture did not happen — a second
-   * finger arrived and it became a pinch, or the capture was taken away. It
-   * must not commit anything: routing it into onUp latched the model open off
-   * a gesture the visitor had abandoned, because at that point the finger has
-   * not travelled far enough to be anything but a tap.
-   */
+  /* A cancel means the gesture didn't happen (second finger, capture lost) — must not commit like onUp would. */
   function onCancel(e: PointerEvent) {
     if (!dragging || e.pointerId !== pointerId) return;
     explodeTarget = pinned ? 1 : 0;
@@ -1241,34 +977,19 @@ export async function mountGlobe(
     if (!visible) return;
     t += dt;
 
-    /*
-     * Idle life is a slow rock, not a full spin. It is the model's own
-     * movement and it has no business fighting the visitor's, so the moment a
-     * hand is on it — or the button opens it — the rock damps away instead of
-     * being added on top of the drag.
-     */
+    // Idle rock damps out (not additive) the moment a hand is on it or the explode target moves.
     rockGain += ((dragging || explodeTarget > 0.01 ? 0 : 1) - rockGain) * Math.min(1, dt * 4);
     yaw += (yawTarget - yaw) * Math.min(1, dt * 9);
     const offset = yaw + Math.sin(t * 0.42) * ROCK * rockGain;
     const heading = BASE_YAW + offset;
 
-    /*
-     * Act one of every opening, however it was asked for. While the planet is
-     * turned away from its own cut this is 0 and nothing separates; it only
-     * lets go once the model is facing the way the layers travel. That is why
-     * a pull on a rocking globe turns it first and opens it second, and why
-     * you cannot spin a half-open model into a lie.
-     */
+    // Gate: layers stay shut until yaw is near the cut-facing pose (act one of the gesture).
     const facing = smoothstep(ALIGN_BLOCK, ALIGN_FREE, Math.abs(offset));
 
     explode += (explodeTarget * facing - explode) * Math.min(1, dt * (dragging ? 11 : 6));
 
-    /*
-     * One extraction at a time, outside-in: the whole contents come out of the
-     * crust as one rigid group, then the cores out of the mantle, then the
-     * inner core out of the outer one. Nothing moves relative to anything it
-     * is still inside, so no two shells are ever seen half through each other.
-     */
+    // Outside-in extraction: crust's contents come out as one group, then the
+    // cores, then the inner core — never two stages at once.
     const progress = stageProgress(STAGES, explode);
     const pos = offsets(STAGES, progress);
     const spread = pos[pos.length - 1];
@@ -1282,19 +1003,12 @@ export async function mountGlobe(
     recentre.y += OPEN_LIFT_Y * openness;
     stack.position.copy(recentre);
 
-    /*
-     * The Moon keeps its own clock — it is not driven by the drag, the rock or
-     * the explode, because none of those are time passing.
-     *
-     * Opening the model takes it out of orbit — see MOON_PARK_* above for why
-     * the ring cannot stay once the shells fan out through it. The orbit and
-     * the body on it fade out early, well before the crust reaches the radius
-     * the Moon travels on, and the group is switched off once there is nothing
-     * left to see: a fully transparent mesh still sorts and still costs a draw.
-     *
-     * Then the parked one fades in up-right of the crust, on a gap after the
-     * first has gone. Both halves run off `openness`, so closing the model
-     * plays the whole handover backwards for free.
+    /**
+     * Moon runs on its own clock, independent of drag/rock/explode. It fades
+     * out of orbit before the crust reaches the orbit radius, and the group
+     * is switched off once fully transparent (a transparent mesh still costs
+     * a draw). The parked Moon fades in after, on the same `openness` curve,
+     * so closing the model reverses the handover for free.
      */
     if (!REDUCED) moonPhase = (moonPhase + dt / MOON_PERIOD) % 1;
     moonArm.rotation.y = moonPhase * Math.PI * 2;
@@ -1305,16 +1019,10 @@ export async function mountGlobe(
     moonMat.opacity = 1 - leaving;
     moonSystem.visible = leaving < 0.999;
 
-    /*
-     * The park rides the crust, not the panel. The crust is the shell that
-     * stays put while the rest of the row leaves it, so `recentre` IS the
-     * crust's centre and `scale` IS its radius — the Moon can be hung off the
-     * rim in one line, and stays the same distance off it at any openness.
-     *
-     * It fades in as the orbiting one finishes leaving, not later: a window
-     * that waits for the row to finish opening leaves a stretch with no Moon
-     * anywhere, and the invitation demo — which opens a quarter of the way and
-     * closes again — would spend the whole of itself inside that stretch.
+    /**
+     * Park position rides the crust's rim (recentre + scale), so the gap
+     * stays constant at any openness. Fades in as the orbiting Moon finishes
+     * leaving, so there's no stretch with no Moon visible at all.
      */
     const parked = smoothstep(0.13, 0.27, openness);
     parkMat.opacity = parked;
@@ -1355,17 +1063,10 @@ export async function mountGlobe(
       layer.anchor.getWorldPosition(worldPos);
       worldPos.project(camera);
 
-      /*
-       * The row a caption lands in is the half of the picture its shell is in,
-       * not its parity — and that one change is what makes the leaders legible.
-       *
-       * Dealt alternately, the rows interleave across the whole width: the
-       * inner core's caption sits in the lower row directly beneath the outer
-       * core's, so its leader has to be drawn straight through a pill naming a
-       * different shell. Grouped by side, the lower row lies wholly to the LEFT
-       * of the upper one — the cascade runs right to left, so indices 0 and 1
-       * are the right-hand pair — and no line ever passes under a caption that
-       * is not its own. The four of them fan out instead of tangling.
+      /**
+       * Row = which half of the screen the shell is in, not index parity —
+       * grouping by side keeps leader lines from crossing under a different
+       * shell's caption.
        */
       const row = i < 2 ? 0 : 1;
 
@@ -1377,14 +1078,7 @@ export async function mountGlobe(
       rows[row].push(p);
     }
 
-    /*
-     * Then lift the pair of rows clear of the foot. The captions are hung off
-     * the model and the foot is pinned to the bottom of the panel, so on a
-     * short panel the two meet: measured on a 390px phone, the lower row sat
-     * BELOW the explode button and the caveat line ran between the rows. The
-     * model is what gives way, because it can — it is drawn inside a square
-     * that is mostly air once it is open.
-     */
+    // Lift both rows clear of the foot strip if they'd overlap it (measured, not assumed).
     const lowest = Math.max(place[2].y, place[3].y) + tagHeight;
     const ceiling = footTop - 8;
     if (lowest > ceiling) {
@@ -1398,11 +1092,9 @@ export async function mountGlobe(
     rows[0].reverse();
     rows[1].reverse();
 
-    /*
-     * Captions are laid out, not merely projected. Clamping each one to the
-     * panel on its own piles several of them into the same corner on a narrow
-     * card; resolving the row pushes them off each other instead, so a name is
-     * never printed over a name.
+    /**
+     * Resolve each row instead of clamping captions independently, so they
+     * push off each other rather than stacking on top of one another.
      */
     spreadRow(rows[0], 6, width - insetRight, TAG_PAD);
     spreadRow(rows[1], 6, width - insetRight, TAG_PAD);
@@ -1414,22 +1106,14 @@ export async function mountGlobe(
       const style = layers[i].el.style;
       style.transform =
         'translate3d(' + p.x.toFixed(1) + 'px, ' + p.y.toFixed(1) + 'px, 0) translate(-50%, 0)';
-      /*
-       * A caption arrives with its own layer rather than with the gesture. It
-       * says "this piece is now a thing of its own", which is not true until
-       * the extraction that freed it has finished — and it means the row
-       * writes itself right to left as the model comes apart.
-       */
+      // Caption opacity tracks its own stage's progress (not the whole
+      // gesture), so the row reveals right-to-left as each shell is freed.
       const arrived = progress[revealStage(i, STAGES.length)];
       const shown = Math.min(1, Math.max(0, (arrived - 0.55) / 0.3));
       style.opacity = String(shown);
 
-      /*
-       * And the line that joins the two. It is drawn between two points the
-       * loop already has — the bottom of the shell and the top-centre of the
-       * caption, the latter AFTER the row has been spread, so the line follows
-       * the caption to wherever it was pushed.
-       */
+      // Leader line: shell-bottom to caption top-centre, computed after the
+      // row spread so it follows the caption to wherever it landed.
       const lead = layers[i].lead.style;
       if (!leaders || shown < 0.01) {
         lead.opacity = '0';
@@ -1456,12 +1140,7 @@ export async function mountGlobe(
       lead.opacity = String(shown * 0.55);
     }
 
-    /*
-     * One threshold, read twice. The caveat about the crust's thickness shows
-     * because the model has stopped being a planet, and the button relabels
-     * itself for exactly the same reason — so both hang off this number rather
-     * than off two that could drift apart.
-     */
+    // Single threshold shared by the caveat text and the button label, so they can't drift apart.
     const open = openness > 0.35;
     host.classList.toggle('is-open', open);
     if (open !== wasOpen) {
@@ -1484,22 +1163,15 @@ export async function mountGlobe(
     open(apart: boolean) {
       pinned = apart;
       explodeTarget = apart ? 1 : 0;
-      // the button gets the same deal as a visitor: it may ask for the model
-      // to open, but it opens facing its cut or not at all. A spin still under
-      // the hand has to be called off with it, or the next pointermove would
-      // put the yaw straight back and hold the gate shut for good.
+      // Opening still requires facing the cut; cancel an in-progress spin,
+      // or the next pointermove would re-block the gate.
       if (apart) {
         yawTarget = 0;
         if (mode === 'turn') mode = 'open';
       }
     },
 
-    /*
-     * Show, don't caption. Runs once per mount and never against the visitor:
-     * a hand on the model at any point during it — even before it starts —
-     * cancels it, because at that moment the demo would be arguing with the
-     * gesture it exists to teach.
-     */
+    // Runs once per mount; a hand on the model at any point cancels it.
     demo() {
       if (demoed || touched || pinned) return;
       demoed = true;
@@ -1513,8 +1185,7 @@ export async function mountGlobe(
 
     onOpenChange(cb: (open: boolean) => void) {
       openCb = cb;
-      // the caller is labelling a control off this, so it has to be handed the
-      // state it starts from as well as every crossing after it
+      // hand the caller the starting state too, not just future crossings
       cb(wasOpen);
     },
 

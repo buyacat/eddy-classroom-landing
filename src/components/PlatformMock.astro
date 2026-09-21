@@ -1,15 +1,6 @@
 ---
-/*
- * A drawn stand-in for a product screen, not a screenshot. The five shots in
- * Platform.astro used real captures of the shipping app, and those had gone
- * stale — they showed an old version of the product. Rather than re-shoot,
- * each card gets an abstract, on-brand sketch of what that screen is FOR
- * (a library grid, a quiz with picked answers, a live roster, a model with
- * annotations, a results chart), built only from the site's own palette and
- * shapes. It reads as "here is the shape of this feature", not as a claim
- * about a specific pixel — which is honest about being a placeholder and
- * needs no upkeep when the real app's UI changes.
- */
+// Abstract, on-brand sketch of what each screen is FOR (not a real product screenshot),
+// built only from the site's own palette/shapes so it needs no upkeep when the app's UI changes.
 export interface Props {
   variant: 'web' | 'session' | 'student' | 'panel' | 'analytics';
 }
@@ -175,15 +166,9 @@ const { variant } = Astro.props;
   .an-row .dot.is-green { background: var(--green-deep); }
   .an-row .bar { flex: 1; height: 6px; border-radius: 3px; background: #eceef4; }
 
-  /* ---- every coloured dot INSIDE a window is a hexagon ----
-     Not the three in the title bar: those are window controls, they belong to
-     the browser we are drawing, and turning them into our shape would claim
-     the chrome as ours too. Everything below is content — a nav item, a
-     pupil, a tool, a chart key — so it wears the site's mark.
-
-     A mask, not a clip-path, so the corners stay as round as the library's
-     hexagons; each dot is re-heighted because the shape is 2/√3 taller than
-     it is wide and a square box would squash it. */
+  /* every coloured dot INSIDE a window is a hexagon (not the title-bar dots — those are browser chrome).
+     mask-image, not clip-path, keeps the hexagon's rounded corners; height is scaled by --hex-ratio
+     since the shape is 2/√3 taller than it is wide. */
   .nav-dot, .r-av, .r-ok, .pan-tools i, .an-row .dot {
     border-radius: 0;
     -webkit-mask-image: var(--hex-mask);

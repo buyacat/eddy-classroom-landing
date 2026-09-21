@@ -6,14 +6,7 @@ import { withBase } from '../utils/url';
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 
-/* The Eddy Group header, rebuilt from eddygroup.eu: full-width white bar,
-   group wordmark on the left, the group menu centred in uppercase, the
-   language switch on the right. The old in-page section menu
-   (#why / #platform / #library) is gone — this page is a landing, so the
-   header's job is moving between Eddy sites, not inside this one.
-
-   Menu targets and the #1F2C2E link ink are taken verbatim from the live
-   eddygroup.eu header so the bar reads as the same navigation everywhere. */
+// Menu targets and the #1F2C2E link ink match the live eddygroup.eu header.
 const links = [
   { href: 'https://trade.eddygroup.eu/', label: 'Trade' },
   { href: 'https://1vision.eddygroup.eu/', label: '1-Vision' },
@@ -34,12 +27,7 @@ const alt = altPath(locale);
 <header class="gnav" id="nav">
   <div class="gnav-bar">
    <div class="gnav-inner">
-    <!-- Group wordmark, hairline, product wordmark — the same lockup the
-         1-Vision site carries, so a visitor arriving from any Eddy property
-         reads the same sentence: the company, then which of its products
-         this is. The two halves are separate links because they are separate
-         destinations: the group mark leaves for eddygroup.eu, the product
-         mark returns to the top of this page. -->
+    <!-- Group mark links out to eddygroup.eu; product mark links to #top -->
     <div class="gnav-brand">
       <a href="https://eddygroup.eu/" class="gnav-group" target="_blank" rel="noopener">
         <img class="gnav-eddy" src={withBase('/assets/brand/eddy-black.svg')}
@@ -78,18 +66,7 @@ const alt = altPath(locale);
   </div>
 </header>
 
-<!-- The mobile menu is a full-screen sheet, not a dropdown card.
-     Six destinations at finger size do not fit in a 300px panel hanging off
-     the bar, and the old one proved it: a cramped list of 14px uppercase rows
-     with no hierarchy, no way back to this page's own goal, and a hamburger
-     that folded into a chevron instead of an X.
-
-     The pattern is the one a marketing site with a flat, wide menu should
-     use (UXPin / Webstacks / DesignStudio all land in the same place): take
-     the whole screen, set the links large enough to be the page, and put the
-     things a thumb actually reaches — the CTA and the language switch — at
-     the BOTTOM, inside the natural thumb zone. The header bar stays visible
-     above the sheet so the brand and the close control never move. -->
+<!-- Full-screen sheet, not a dropdown: CTA + language switch sit at the bottom, in thumb reach -->
 <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true"
      aria-label={t(locale, 'nav_menu_open')}>
   <div class="mm-scroll">
@@ -108,10 +85,6 @@ const alt = altPath(locale);
       ))}
     </nav>
 
-    <!-- The foot is the part a thumb can reach without moving the phone, so
-         it carries the one action this page wants and the language switch —
-         the two controls that were previously buried at the end of a list of
-         six outbound links. -->
     <div class="mm-foot" style={`--i:${links.length}`}>
       <a href="#demo" class="btn btn-primary mm-cta">{t(locale, 'classroom_hero_cta_primary')}</a>
 
@@ -133,20 +106,13 @@ const alt = altPath(locale);
 </div>
 
 <style>
-  /* ---------- the header is a stack of exercise books ----------
-     At the top of the page three coloured sheet edges are fanned out under
-     the white bar, each one further back in real 3D space. As soon as the
-     page scrolls the stack closes: the sheets drop to Z=0 and clip into
-     three equal segments of a single 3px line, and the bar itself plays a
-     short "settle" tilt, the way a stack lands on a desk. */
+  /* Three coloured sheet edges fanned out in 3D under the bar; on scroll they close into one 3px line */
   .gnav {
     position: fixed;
     inset: 0 0 auto;
     z-index: 60;
     perspective: 900px;
-    /* vanishing point on the stack line, so receding sheets shrink toward
-       it instead of drifting up the bar */
-    perspective-origin: 50% 100%;
+    perspective-origin: 50% 100%; /* vanishing point on the stack line */
     transition: filter 200ms var(--ease-out);
   }
   .gnav-bar {
@@ -155,13 +121,7 @@ const alt = altPath(locale);
   }
   .gnav.is-stuck .gnav-bar { box-shadow: 0 4px 10px rgba(0, 0, 0, .05); }
 
-  /* The bar itself never moves. It used to play a short rotateX "settle" on
-     every is-stuck toggle, and that was a mistake three times over: the
-     keyframe restarted each time the threshold was crossed, so slow scrolling
-     around it rattled; the bar's text rendered through a 3D transform for the
-     whole animation; and on a 1440px bar a few degrees of rotateX reads as
-     the header coming loose, not as depth. The choreography lives entirely in
-     the sheets below, where there is no type to distort. */
+  /* Bar itself never transforms (avoids distorting its text) — all motion lives in the sheets below */
 
   .gnav-stack {
     position: absolute;
@@ -177,17 +137,14 @@ const alt = altPath(locale);
     border-radius: 0 0 3px 3px;
     clip-path: inset(0 0 0 0);
     will-change: transform, clip-path;
-    /* order matters: the per-state rules below address these four by index */
+    /* order matters: the per-state rules below address these four transitions by index */
     transition:
       transform 1050ms var(--ease-glide),
       clip-path 850ms var(--ease-glide),
       opacity 380ms var(--ease-out),
       height 650ms var(--ease-glide);
   }
-  /* Fanned at rest: a stepped block of three sheet edges. scaleX sets the
-     step so it stays predictable at every viewport width; the small
-     translateZ keeps the layers genuinely apart in 3D, which is what makes
-     the settle tilt read as depth rather than as a slide. */
+  /* scaleX steps the fan predictably at any width; translateZ keeps layers genuinely apart in 3D */
   .sheet-y { background: var(--yellow); z-index: 3; }
   .sheet-g {
     background: var(--green);
@@ -202,17 +159,11 @@ const alt = altPath(locale);
     transition-delay: 120ms;
   }
 
-  /* Closed until the page is ready, so the stack visibly fans open on load
-     — the transition above does the work, no extra keyframes. */
+  /* Closed until page ready, so the stack fans open on load via the transition above (no keyframes) */
   html:not(.is-loaded) .sheet { transform: none; }
 
-  /* Closing: the stack shuts. All three sheets rise out of the fan into one
-     row on the same long glide, staggered back to front, and each clips to
-     its own third — so the line the reader lives with still carries the full
-     brand chord instead of going one or two colours. Nothing springs: every
-     move here is one the eye follows the whole way, and an overshoot reads
-     as a twitch. The hero's coloured light drains on the same beat
-     (Hero.astro, `html.nav-stuck`), so header and hero read as one system. */
+  /* Closing: sheets rise into one row, staggered back to front, each clipped to its own third.
+     Synced with the hero's blob fade via html.nav-stuck (see Hero.astro). */
   .gnav.is-stuck .sheet { height: 5px; }
   .gnav.is-stuck .sheet-y {
     clip-path: inset(0 66.67% 0 0);
@@ -231,8 +182,7 @@ const alt = altPath(locale);
 
   .gnav-inner {
     height: var(--nav-h);
-    /* eddygroup.eu runs the bar to a 70px gutter, not to a centred column */
-    padding-inline: clamp(16px, 4.6vw, 70px);
+    padding-inline: clamp(16px, 4.6vw, 70px); /* eddygroup.eu's 70px gutter, not a centred column */
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
@@ -240,20 +190,10 @@ const alt = altPath(locale);
   }
 
   .gnav-brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
-  /* min-width on the brand alone was not enough: its two children are flex
-     items carrying images, and a flex item's floor is its content size
-     unless it is told otherwise — so the lockup kept its full width, spilled
-     out of its column and lay on top of the burger. Playwright caught it
-     before a thumb did: the click on #nav-burger was intercepted by
-     .gnav-brand. */
+  /* min-width: 0 also needed on these flex children (their content-size floor otherwise overflows into the burger) */
   .gnav-group, .gnav-product { display: flex; min-width: 0; }
   .gnav-group img, .gnav-product img { object-fit: contain; object-position: left center; }
-  /* The group mark is the taller of the two on purpose: it is the constant,
-     and the product name reads as its subordinate rather than its twin. */
   .gnav-eddy { height: 26px; width: auto; display: block; }
-  /* The product mark is set a touch taller than the group mark because its
-     canvas carries the three-spark burst above the cap line: at an equal
-     height the word itself would read smaller than "Eddy" beside it. */
   .gnav-mark { height: 26px; width: auto; display: block; }
   .gnav-vline { width: 1px; height: 24px; background: rgba(31, 44, 46, .22); }
 
@@ -290,17 +230,8 @@ const alt = altPath(locale);
   }
   .gnav-lang:hover { border-color: var(--ink); background: var(--ink); color: #fff; }
 
-  /* The icon has to be measured, not guessed, or the open state is not an X.
-     It was not: the button is a grid, `place-items` sets align-ITEMS and says
-     nothing about align-CONTENT, so the three auto rows stretched to fill the
-     36px button and the bars ended up 12px apart while the open state moved
-     them 7. Two bars crossing 5px off centre draw a chevron — the ">" the
-     screenshots kept showing where an X belonged.
-
-     `place-content: center` stops the rows stretching and `gap` states the
-     spacing outright, so the distance between two bar centres is a number
-     this file owns (2px bar + 4px gap = 6px) instead of a number the button's
-     height happens to produce. */
+  /* place-content (not place-items) — place-items only sets align-items, leaving rows to stretch
+     and the bars misaligned, so the open state crossed off-centre and drew a chevron instead of an X. */
   .gnav-burger {
     display: none;
     width: 44px; height: 36px;
@@ -325,12 +256,6 @@ const alt = altPath(locale);
   .gnav-burger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
   .gnav-burger.open { border-color: var(--ink); }
 
-  /* ---------- the mobile sheet ----------
-     Full screen below the bar, not a floating card. dvh rather than vh:
-     on mobile Safari 100vh is the height WITHOUT the address bar, which is
-     exactly the strip a bottom-anchored CTA would be hidden behind. The
-     sheet scrolls internally if a small phone needs it, and the body is
-     locked while it is open (app.js), so the page behind never moves. */
   .mobile-menu {
     position: fixed;
     inset: var(--nav-h) 0 0;
@@ -339,9 +264,7 @@ const alt = altPath(locale);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    /* the sheet wipes up from under the bar rather than fading in place —
-       the same "a stack lands on a desk" gesture the header plays */
-    clip-path: inset(0 0 100% 0);
+    clip-path: inset(0 0 100% 0); /* wipes up from under the bar rather than fading in place */
     transition:
       clip-path 420ms var(--ease-glide),
       opacity 200ms var(--ease-out),
@@ -360,10 +283,7 @@ const alt = altPath(locale);
 
   .mm-scroll {
     height: 100%;
-    /* The sheet is full-bleed but its CONTENTS are not: at the 1000px end of
-       this breakpoint a full-width row left 700px of blank between "TRADE"
-       and its arrow, which reads as a broken table rather than as a menu.
-       A measure, centred — the same thing the page does with its own column. */
+    /* content is centred to a max measure, not full-bleed like the sheet itself */
     width: 100%;
     max-width: 620px;
     margin-inline: auto;
@@ -387,9 +307,6 @@ const alt = altPath(locale);
 
   .mm-nav { margin-top: 10px; }
 
-  /* Each row is index / label / arrow. The index is what turns six equal
-     outbound links into a list with a beginning and an end; the arrow says
-     the link leaves this site, which every one of them does. */
   .mm-link {
     display: grid;
     grid-template-columns: 26px 1fr auto;
@@ -443,9 +360,7 @@ const alt = altPath(locale);
     text-transform: uppercase;
     color: var(--ink-4);
   }
-  /* A switch that shows both sides, so it reads as a choice rather than as
-     a two-letter link somebody left at the bottom of the list. The bold half
-     is where you are; the plain half is where the tap goes. */
+  /* bold half = current locale, plain half = the tap target */
   .mm-lang {
     display: inline-flex;
     align-items: center;
@@ -476,9 +391,7 @@ const alt = altPath(locale);
   }
   .mm-contacts a:active { color: var(--blue); }
 
-  /* Rows arrive one after another once the wipe is under way — staggered off
-     the row's own index, so the list reads top to bottom the way it is
-     meant to be read. */
+  /* rows stagger in top-to-bottom via --i */
   .mobile-menu .mm-link,
   .mobile-menu .mm-foot { opacity: 0; transform: translateY(14px); }
   .mobile-menu.open .mm-link,
@@ -522,10 +435,7 @@ const alt = altPath(locale);
     .gnav-mark { height: 21px; }
     .gnav-vline { height: 19px; }
   }
-  /* The lockup has to fit next to the two pills: at 360px that leaves
-     216px for it, and the 21px/19px pair needs 248. Before this step the
-     global `img { max-width: 100% }` did the fitting — by squeezing the
-     group mark to 104px wide at a fixed 21px tall, i.e. squashing it. */
+  /* below 430px the global img{max-width:100%} would otherwise squash the group mark instead of shrinking height */
   @media (max-width: 430px) {
     .gnav-inner { gap: 12px; }
     .gnav-brand { gap: 8px; }
@@ -533,8 +443,7 @@ const alt = altPath(locale);
     .gnav-mark { height: 18px; }
     .gnav-vline { height: 16px; }
   }
-  /* below 340px even that pair does not fit: the group mark is the
-     constant, the product mark is what goes */
+  /* below 340px the product mark is dropped; group mark stays */
   @media (max-width: 340px) {
     .gnav-vline, .gnav-product { display: none; }
   }

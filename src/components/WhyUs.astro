@@ -8,41 +8,8 @@ const { locale } = Astro.props;
 
 const items = tArray<{ icon: string; title: string; text: string }>(locale, 'classroom_why_items');
 
-/*
- * One 3D object per card, plus a colour rhythm lifted from the mock: mostly
- * white cards with a green, a yellow and a blue block breaking the grid up.
- * The object hangs off the card's top-left corner rather than sitting in a
- * tinted plate — that overhang is the whole personality of this style.
- *
- * The rule for what goes in this map: the object has to illustrate the
- * card's own SENTENCE, not a neighbouring idea. Three of the six used to
- * fail that test — a padlock for offline (that is security), a handset for
- * multi-device (that is a phone call), an open book for 3D content (that is
- * a library of text) — so those three are drawn for this site instead, in
- * the pack's clay language. Sources in src/assets/icon-src/, rendered to
- * 256px PNGs next to the bought objects with `npm run icons`.
- *
- * Sitting next to the bought objects is a claim, and it is checked rather
- * than asserted: `npm run check:icons` measures the drawn ones against the
- * pack and fails on the two ways this row has actually gone wrong — a white
- * highlight bright and tight enough to read as glass, and an object drawn
- * too short for the square 88px box, which is what made the devices one
- * look smaller than its neighbours. That script's header says what each
- * number means and what it deliberately leaves to the eye.
- *
- *   allInOne  folder   — a container holding many things is literally
- *                        "все в одному місці"
- *   journal   check    — the green tick of an answer landing while the
- *                        lesson is still running
- *   library   cube3d   — a cube is the thing the library is full of; a book
- *                        only says "library" and loses the 3D entirely
- *   ai        lightbulb— the assistant's output is an idea for the lesson
- *   offline   offline  — struck-through wifi, matching the headline, which
- *                        is itself written as a negation
- *   devices   devices  — laptop, tablet and phone carrying the SAME app
- *                        mark: the card's claim is "one app", not "many
- *                        gadgets"
- */
+// Custom-drawn icons (library/offline/devices/ai/journal/allInOne) live in src/assets/icon-src/,
+// rendered to 256px PNGs via `npm run icons`; `npm run check:icons` verifies they match the bought pack's style.
 const objects: Record<string, string> = {
   allInOne: 'document',
   journal: 'check',
@@ -76,27 +43,14 @@ const blocks = ['', 'is-green', '', 'is-yellow', '', 'is-blue'];
 </section>
 
 <style>
-  /* No background here: the band lets the page-wide ambient plane through. It
-     used to repaint an opaque #f5f5f5 identical to body's own, which bought
-     nothing and would now cover the light. */
+  /* no background here — lets the page-wide ambient plane show through */
   .why::before {
     background:
-      /* Green is this system's reassurance colour — the offline chip, the
-         live dot, the is-green card three tiles down. "Why us" is the
-         reassurance band. This pool does not introduce the green: it
-         continues the hero's, which already lies in this band's top padding.
-         It sits low enough to pass under the first row of cards, so it does
-         not tint the white balance of the 3D objects hanging off them. */
+      /* green pool kept low so it passes under the first row of cards without tinting their 3D objects */
       radial-gradient(var(--amb-r-lg) calc(var(--amb-r-lg) * .62) at 2% 52%,
         rgba(var(--amb-green), var(--amb-2)) 0%,
         rgba(var(--amb-green), 0) var(--amb-fade)),
-      /* Blue low and right, so the eye is already in Platform's colour before
-         it arrives there. The centre stays inside the BAND, not merely inside
-         the box — at 104% it was an ellipse hanging below the box and all you
-         saw was the straight line where the box stopped; at 84% it was still
-         out in the overhang, which left the fade 13px less room than it needs
-         and put that line back, fainter. The band occupies 20%–80% of its own
-         box, and that is the range a centre may use. */
+      /* pool centre must stay within the band's own box (20%-80%); centres at 104% or 84% left a visible seam */
       radial-gradient(var(--amb-r-lg) calc(var(--amb-r-lg) * .58) at 94% 78%,
         rgba(var(--amb-blue), var(--amb-2)) 0%,
         rgba(var(--amb-blue), 0) var(--amb-fade));
@@ -113,17 +67,7 @@ const blocks = ['', 'is-green', '', 'is-yellow', '', 'is-blue'];
      body copy — Ukrainian card titles wrap unpredictably */
   .why-grid h3 { min-height: calc(2 * 1.22em); }
 
-  /* ---- phones: two up, not one ----
-     Six full-width cards ran the band to ~3000px of scroll, which is three
-     screens of the same shape before the reader reaches anything new. Paired,
-     the band is one and a bit — and six short claims read better as a grid of
-     tiles than as a column of paragraphs anyway.
-
-     Everything in the card comes down together: the hanging object from 88px
-     to 56, the title to 15px, the body to 13px, and the padding from 22px to
-     16 — a 173px card with 22px of padding each side leaves 129px of text
-     column, which is not enough for a Ukrainian compound word. The object
-     keeps its overhang, because that overhang is the style. */
+  /* ---- phones: 2-column grid instead of 6 stacked cards (was ~3000px of scroll) ---- */
   @media (max-width: 700px) {
     .why-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -136,18 +80,13 @@ const blocks = ['', 'is-green', '', 'is-yellow', '', 'is-blue'];
       font-size: .9375rem;
       line-height: 1.2;
       margin-bottom: 7px;
-      /* Two lines, which is what five of the six titles take at this size.
-         Three was the honest maximum and it was the wrong number: reserving
-         for the one long title put a dead line of air under every other one,
-         which reads as a mistake on five cards to spare a step on one. */
+      /* 2-line min-height fits 5 of 6 titles; reserving 3 lines for the 6th left dead space on the rest */
       min-height: calc(2 * 1.2em);
     }
     .why-grid p { font-size: .8125rem; line-height: 1.45; }
   }
 
-  /* Under ~345px two columns stop being a layout and start being two
-     columns of hyphens, so the stack comes back — at the compact sizes,
-     not at the desktop ones. */
+  /* below 345px, single column instead of a squeezed two-column layout */
   @media (max-width: 344px) {
     .why-grid { grid-template-columns: minmax(0, 1fr); }
     .why-grid h3 { min-height: 0; font-size: 1rem; }

@@ -1,30 +1,10 @@
-/*
- * The library band's one real model: a glTF file off the client's own shelf,
- * turned and taken apart in the page.
+/**
+ * Loads and drives a single glTF model: drag to turn, slider to explode,
+ * per-part select/zoom. Per-model specifics (hotspots, travel directions,
+ * explode spacing) are passed in by the caller (src/data/models.json).
  *
- * Why this exists at all. The comb above it shows 1200+ models as coloured
- * cells with a rendered object in each, and the client's note about tenders
- * was that a cell is not evidence — a buyer wants to see the thing itself.
- * So one model out of the catalogue is shipped whole and handed over: drag to
- * turn, a slider to pull it apart, a list of its structures with what each of
- * them does. Everything the hero globe does, except that this one is a FILE,
- * and that is the point being made.
- *
- * What this module is not: a general glTF viewer. It knows the scene is a
- * flat list of named nodes and that a part's caption lives in the translated
- * content next to its node name. Everything that is a fact about ONE model —
- * where a caption hangs, which way a part travels when the model opens, how
- * far apart the parts end up, which of them travel as one piece — is handed
- * in by the caller (src/data/models.json), because the band now carries nine
- * of them and they differ in every one of those numbers.
- *
- * Scene graph:
- *
- *   root     scaled as the model opens, so the exploded state stays framed
- *    │       without moving the camera out from under the visitor's drag
- *    └ scene the glTF, shifted so the model's own centre sits on the origin
- *       ├ Sclera, Choroid, … each pushed along its own explode direction
- *       └ anchors            one per part, moved with it, for the caption
+ * Scene graph: root (scaled on explode) > scene (glTF, recentred on origin)
+ *   > parts (offset along explode direction) + anchors (caption points)
  */
 import {
   ACESFilmicToneMapping,
@@ -54,17 +34,8 @@ export interface PartSpec {
   desc: string;
 }
 
-/**
- * Where a part's caption points, and which way the part travels when the
- * model comes apart. Both are facts about one model in its own coordinates,
- * not about a language — a Ukrainian hotspot and an English one are the same
- * three numbers — so they are shipped alongside the file in models.json and
- * handed to `mountViewer` rather than translated.
- *
- * `out` may be missing: a part that already sits well off centre leaves in
- * the direction it is already in, which the fallback below works out for
- * itself. So may `at`, and then the caption hangs on the part's own middle.
- */
+/** Part hotspot + explode direction, in model-space coordinates (models.json).
+ *  Both are optional; omitted values fall back to the part's own centre/direction. */
 export interface PartGeometry {
   /** the point the caption points at, in model space */
   at?: [number, number, number];
@@ -73,18 +44,9 @@ export interface PartGeometry {
 }
 
 /**
- * How far apart the parts of one model end up, as a multiple of its own size,
- * and which of them have to travel together.
- *
- * Every model was authored against a factor of its own — an eye opens to 2.2,
- * a Newton's cradle to 1.5 — and the spacing rule below is the one the source
- * viewer applies, kept term for term on purpose: the directions were tuned
- * against it, and a tidier formula would send two of them through each other.
- *
- * A group is a set of parts that must not come apart from each other: the
- * membrane and the sugar chains standing on it, a frame and the wires hanging
- * from it. They are offset as one body — one direction, one distance, solved
- * on the box around all of them — so what is drawn on one stays on it.
+ * `factor`: how far apart parts end up, as a multiple of the model's own size.
+ * `groups`: sets of parts that must travel together as one body (offset solved
+ * on the bounding box of the whole group, not each part individually).
  */
 export interface ExplodeSpec {
   factor: number;
@@ -104,11 +66,7 @@ const FIT_MARGIN = 1.04;
 /** Where the camera stands before anybody has turned anything. */
 const START_DIR = new Vector3(0.5, 0.45, 0.75).normalize();
 
-/**
- * The callout. LEAD is the length the client asked for — far enough that the
- * name stands well off the silhouette — and LEAD_MIN is as short as the line
- * may be cut before the name would leave the stage. DOT matches the CSS.
- */
+/** Callout dimensions. DOT must match .mv-marker-dot in ModelViewer.astro. */
 const DOT = 10;
 const LEAD = 92;
 const LEAD_MIN = 26;
@@ -119,27 +77,14 @@ const EDGE = 12;
 const ZOOM_MIN = 0.45;
 const ZOOM_MAX = 1.6;
 
-/**
- * The invitation: once, shortly after the model arrives, it swings a little
- * way round and comes back.
- *
- * Not a continuous auto-rotate, which was the first thing tried. A model that
- * never stops turning holds a GPU at 60Hz for as long as the tab is open, it
- * drifts away from the pose the shot was composed for, and it reads as a
- * video — the one thing this panel exists to prove it is not. A swing that
- * returns says "this turns, and you are the one who turns it", and then the
- * scene goes quiet.
- */
+/** One swing-and-return on load, not continuous auto-rotate (which would
+ *  hold the GPU at 60Hz for as long as the tab stays open). */
 const SWING = 0.5;
 const SWING_MS = 2600;
 const SWING_DELAY = 500;
 
-/**
- * The highlight. Emissive rather than a colour swap, because half of these
- * materials are transparent gels and a flat tint on them reads as a bug; warm
- * rather than brand blue, because the parts that most need pointing out (the
- * lens, the aqueous, the vitreous) are already pale blue themselves.
- */
+/** Highlight via emissive, not a colour swap — a flat tint reads as a bug on
+ *  transparent materials. */
 const GLOW = new Color('#ffbe3d');
 const GLOW_STRENGTH = 0.62;
 
@@ -169,18 +114,9 @@ interface Part {
 }
 
 /**
- * A bounding sphere tight enough to frame a model by.
- *
- * `Box3.getBoundingSphere` circumscribes the BOX, so for this model — 2.7
- * wide, 2.0 tall, 1.0 deep — it hands back a radius of 1.74 for something
- * that is 1.35 at its longest. Framed on that the eye sat in the middle of
- * the stage at two thirds the size it could have been, with a quarter of the
- * panel empty all the way round.
- *
- * Geometry bounding spheres are computed from the vertices themselves, so a
- * hollow shell reports the radius of the shell and not of a cube around it.
- * Gathering them around the box's centre stays conservative — nothing ever
- * pokes out — while giving back most of the room the box was wasting.
+ * A tighter bounding sphere than `Box3.getBoundingSphere`, which circumscribes
+ * the box's corners and over-estimates radius for non-cubic models. Uses each
+ * mesh's own geometry bounding sphere, gathered around the box's centre.
  */
 function tightSphere(object: Object3D, target: Sphere): Sphere {
   const box = new Box3().setFromObject(object);
@@ -241,12 +177,8 @@ export async function mountViewer(opts: MountOptions): Promise<ViewerHandle> {
 
   const scene = new Scene();
 
-  /*
-   * A room, not a sky. These materials are mostly clear gels and wet tissue:
-   * with nothing structured to reflect, the lens and the vitreous come out as
-   * grey fog. RoomEnvironment is generated, so it costs one render pass at
-   * mount and nothing at all on the network.
-   */
+  // RoomEnvironment gives transparent/gel materials something to reflect
+  // (a flat sky reads as grey fog); generated once, no network cost.
   const pmrem = new PMREMGenerator(renderer);
   const envTexture: Texture = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
   scene.environment = envTexture;
@@ -271,12 +203,8 @@ export async function mountViewer(opts: MountOptions): Promise<ViewerHandle> {
 
   const model = gltf.scene;
 
-  /*
-   * Explode offsets are solved in the model's ORIGINAL coordinates, before it
-   * is re-centred below: the rule measures how far each part already sits
-   * from the model's own origin, and shifting the whole thing first would
-   * quietly change every one of those distances.
-   */
+  // Solved in the model's original (pre-recentre) coordinates — recentring
+  // first would change every part's distance from origin.
   const whole = new Box3().setFromObject(model);
   const centre = whole.getCenter(new Vector3());
   const span = whole.getSize(new Vector3()).length() / 2 || 1;
@@ -289,14 +217,7 @@ export async function mountViewer(opts: MountOptions): Promise<ViewerHandle> {
   const shutSpheres: { at: Vector3; r: number }[] = [];
   const openSpheres: { at: Vector3; r: number }[] = [];
 
-  /*
-   * Where a part goes when the model opens.
-   *
-   * The travel grows with how far out the part already sits. The shells that
-   * wrap the whole eye barely move — they only have to clear each other —
-   * while the lens and the iris start bunched at one pole and have to come
-   * right out before there is anything to see.
-   */
+  // Travel distance grows with how far the part already sits from centre.
   function travelFrom(middle: Vector3, out?: [number, number, number]) {
     const distance = middle.length();
     const direction = out
@@ -308,13 +229,8 @@ export async function mountViewer(opts: MountOptions): Promise<ViewerHandle> {
     return direction.multiplyScalar(travel);
   }
 
-  /*
-   * Grouped parts are solved before anything else, on the box around the
-   * whole group and in the direction of its first member, so that each of
-   * them is handed the SAME offset below. Solved one by one they would fan
-   * out from their own centres, and the sugar chains would walk off the
-   * membrane they are drawn standing on.
-   */
+  // Groups solved first, on the bounding box of the whole group, so every
+  // member gets the same offset (solving individually would fan them apart).
   const grouped = new Map<string, Vector3>();
   for (const group of opts.explode?.groups ?? []) {
     const nodes = group
@@ -358,19 +274,11 @@ export async function mountViewer(opts: MountOptions): Promise<ViewerHandle> {
   root.add(model);
   scene.add(root);
 
-  /*
-   * The open state is not the shut one grown outwards: the eye throws nine
-   * parts toward the cornea and the optic nerve the other way entirely, so the
-   * cloud's centre is a long way from the eyeball's. Framed on the shut centre
-   * the open view drifted into the right half of the stage and shrank to fit
-   * the nerve trailing off the left. So the framing has its own centre and its
-   * own radius, and the root travels between the two as the slider moves.
-   *
-   * Centre first — the midpoint of the extremes, so no part is favoured for
-   * being large — then the radius as the furthest any part reaches from it.
-   * A box's own bounding sphere would do neither job: it circumscribes the
-   * corners of a box nothing occupies, and the open model would come out a
-   * third smaller than it needs to be.
+  /**
+   * Open and shut states can have very different centres (parts fanning out
+   * asymmetrically), so each is framed with its own centre/radius; root
+   * travels between the two as the slider moves. Centre = midpoint of extremes
+   * (not size-weighted); radius = furthest part from that centre.
    */
   function frameOf(spheres: { at: Vector3; r: number }[], at?: Vector3) {
     const min = new Vector3(Infinity, Infinity, Infinity);
@@ -384,9 +292,7 @@ export async function mountViewer(opts: MountOptions): Promise<ViewerHandle> {
     return { middle, radius: radius || 1 };
   }
 
-  // the shut state is framed on the model's own centre, because that is the
-  // point the camera orbits and a framing that drifted off it would tilt the
-  // whole drag
+  // shut state framed on the model's own centre — the camera's orbit point
   const shut = frameOf(shutSpheres, centre);
   const open = frameOf(openSpheres);
   const shutRadius = shut.radius;
@@ -403,25 +309,11 @@ export async function mountViewer(opts: MountOptions): Promise<ViewerHandle> {
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.enablePan = false;
-  /*
-   * The wheel belongs to the page.
-   *
-   * OrbitControls' own zoom calls preventDefault on every wheel event over
-   * the canvas, which on a landing page means a reader scrolling past this
-   * band gets stuck inside it, zooming an eyeball they never asked to zoom.
-   * Two fingers are no better — a pinch here would fight the page's own. So
-   * zooming is a pair of buttons instead (see zoom()), which has the second
-   * benefit of being reachable from a keyboard.
-   */
+  // Disabled: OrbitControls' wheel zoom calls preventDefault on every wheel
+  // event over the canvas, trapping page scroll. Zoom is buttons instead (see zoom()).
   controls.enableZoom = false;
-  /*
-   * `pan-y`, replacing the `none` OrbitControls writes on connect: a finger
-   * dragged up or down the model scrolls the page, exactly as a finger
-   * anywhere else on the page does, and only a sideways drag turns the model.
-   * Vertical orbit by touch is the price, and it is the right one — a viewer
-   * that traps the scroll on a phone is a viewer people escape by closing the
-   * tab.
-   */
+  // Overrides the `none` OrbitControls sets on connect: vertical drag scrolls
+  // the page like anywhere else; only horizontal drag orbits the model.
   canvas.style.touchAction = 'pan-y';
 
   let explode = 0;
@@ -452,19 +344,13 @@ export async function mountViewer(opts: MountOptions): Promise<ViewerHandle> {
     }
   }
 
-  /*
-   * Rendered on demand, not on a clock. Nothing in this scene moves unless a
-   * visitor moves it, and a band most readers scroll straight past has no
-   * business holding a GPU at 60Hz for the length of the page.
-   */
+  // Rendered on demand (dirty flag) rather than a fixed clock/rAF loop cost.
   let dirty = true;
   let visible = true;
   let raf = 0;
   let last = performance.now();
 
-  /* When the swing runs, or -1 once it has been spent. A hand on the model at
-     any point during it cancels it: at that moment the demonstration would be
-     arguing with the very gesture it exists to teach. */
+  // When the swing runs, or -1 once spent/cancelled by user interaction.
   let swingAt = reduced ? -1 : performance.now() + SWING_DELAY;
 
   const invalidate = () => { dirty = true; };
@@ -496,25 +382,14 @@ export async function mountViewer(opts: MountOptions): Promise<ViewerHandle> {
   ro.observe(host);
   resize();
 
-  /*
-   * The callout: a dot on the geometry, a hairline off it, the name at the
-   * end of the line and clear of the model.
-   *
-   * Which side the line leaves on is decided every frame, not fixed, because
-   * the visitor turns the model and the point being named can end up
-   * anywhere. It goes OUTWARD — away from the middle of the stage, which is
-   * where the model is — so the line leaves the silhouette instead of
-   * crossing it. It flips inward only when the outward side has no room for
-   * the leader and the words, and when neither side has room the leader is
-   * cut short rather than the name allowed off the edge.
-   */
+  // Leader direction recomputed every frame: defaults outward (away from
+  // stage centre), flips inward only if that side lacks room, else gets cut short.
   function placeMarker() {
     if (!selected) {
       marker.hidden = true;
       return;
     }
-    // unhidden before it is measured: a hidden element is 0 wide, and every
-    // callout would spend its first frame with a full-length leader
+    // unhidden before measuring — a hidden element measures 0 wide
     marker.hidden = false;
 
     const rect = host.getBoundingClientRect();
@@ -539,10 +414,8 @@ export async function mountViewer(opts: MountOptions): Promise<ViewerHandle> {
     marker.style.setProperty('--lead', Math.round(lead) + 'px');
     marker.style.transform = 'translate3d(' + x.toFixed(1) + 'px, ' + y.toFixed(1) + 'px, 0)';
 
-    /* Then measure what was actually laid out, and cut the leader again if the
-       row still runs off the stage. The name is allowed to wrap, so its width
-       is not a thing the arithmetic above can be sure of — and a caption half
-       off the panel is exactly the failure this callout replaced. */
+    // Re-measure after layout and cut again if needed — the name can wrap,
+    // so its actual width isn't known until rendered.
     const width = marker.offsetWidth;
     const over = left
       ? EDGE - (x + DOT / 2 - width)
@@ -569,16 +442,9 @@ export async function mountViewer(opts: MountOptions): Promise<ViewerHandle> {
         part.anchor.position.copy(part.at).addScaledVector(part.offset, explode);
       }
 
-      /* The model shrinks and slides rather than the camera pulling back and
-         panning, so a visitor who has zoomed or turned it keeps what they set
-         while the parts fan out — and the framing is exact rather than a
-         guess, because both centres and both radii were measured off the
-         geometry at load.
-
-         The slide is written onto the MODEL, inside the root, so that it is
-         expressed in the model's own axes: the root also carries the swing
-         below, and a shift applied outside a rotation would send the open
-         cloud off in whatever direction the model happened to be facing. */
+      // Model shrinks/slides rather than camera moving, so user zoom/orbit is
+      // preserved. Shift applied to the model (inside root) so it stays in the
+      // model's own axes and isn't skewed by the swing rotation on root.
       const framed = shutRadius + (openRadius - shutRadius) * explode;
       root.scale.setScalar((shutRadius / framed) * zoomLevel);
       model.position.copy(centre).negate().addScaledVector(openShift, -explode);

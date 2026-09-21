@@ -80,32 +80,72 @@
     window.addEventListener("scroll", check, { passive: true });
   }
 
-  /* ---------- mobile menu ---------- */
+  /* ---------- mobile menu ----------
+     The sheet is full-screen, so the page behind it must not scroll: a
+     locked body is the difference between "a menu opened" and "the page
+     jumped". The lock is put ON at open and taken off at close — open()
+     used to set nothing while close() cleared it, so the only thing that
+     ever ran was the cleanup for a lock that was never applied.
+
+     position: fixed rather than overflow: hidden, because iOS Safari keeps
+     scrolling the body regardless of overflow; the scroll offset is parked
+     and restored so closing the menu lands the reader exactly where they
+     left off. */
   function initMenu() {
     var burger = document.getElementById("nav-burger");
     var menu = document.getElementById("mobile-menu");
     if (!burger || !menu) return;
 
+    var openLabel = burger.getAttribute("aria-label") || "";
+    var closeLabel = burger.getAttribute("data-label-close") || openLabel;
+    var parked = 0;
+
     function close() {
+      if (!menu.classList.contains("open")) return;
       menu.classList.remove("open");
       burger.classList.remove("open");
       burger.setAttribute("aria-expanded", "false");
-      document.body.style.overflow = "";
+      burger.setAttribute("aria-label", openLabel);
+      document.body.classList.remove("menu-open");
+      document.body.style.top = "";
+      window.scrollTo(0, parked);
     }
     function open() {
+      parked = window.scrollY;
       menu.classList.add("open");
       burger.classList.add("open");
       burger.setAttribute("aria-expanded", "true");
+      burger.setAttribute("aria-label", closeLabel);
+      document.body.style.top = -parked + "px";
+      document.body.classList.add("menu-open");
     }
 
     burger.addEventListener("click", function () {
       if (menu.classList.contains("open")) close(); else open();
     });
+    /* Any link closes the sheet. An in-page one (#demo) has to close it
+       FIRST and jump after, because the jump is a scroll and the body is
+       still parked while the sheet is open — so the anchor is resolved by
+       hand once the lock is off. */
     $all("a", menu).forEach(function (a) {
-      a.addEventListener("click", close);
+      a.addEventListener("click", function (e) {
+        var href = a.getAttribute("href") || "";
+        if (href.charAt(0) === "#" && href.length > 1) {
+          var target = document.querySelector(href);
+          if (target) {
+            e.preventDefault();
+            close();
+            requestAnimationFrame(function () {
+              target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+            });
+            return;
+          }
+        }
+        close();
+      });
     });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
-    window.addEventListener("resize", function () { if (window.innerWidth > 960) close(); });
+    window.addEventListener("resize", function () { if (window.innerWidth > 1000) close(); });
   }
 
   /* ---------- count-up on numerals ---------- */

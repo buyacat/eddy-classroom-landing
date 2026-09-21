@@ -130,17 +130,15 @@ const tools = [
       ))}
     </div>
   </div>
-
-  <a class="scroll-cue" href="#why" aria-hidden="true" tabindex="-1">
-    <span class="mouse"><i></i></span>
-    <span>{t(locale, 'scroll')}</span>
-  </a>
 </section>
 
 <style>
   .hero {
     position: relative;
-    padding: calc(var(--nav-h) + clamp(32px, 5vw, 72px)) 0 var(--pad-band);
+    /* Half a band at the bottom, not a full one. The scroll cue used to sit
+       in that gap and carry it; with the cue gone, a full --pad-band here
+       plus a full one on top of "why us" left the hero floating in a hole. */
+    padding: calc(var(--nav-h) + clamp(32px, 5vw, 72px)) 0 clamp(28px, 3.4vw, 56px);
     /* Clip X, never Y. The old `overflow: hidden` guillotined the green and
        blue pools in a straight line across the full viewport width at the
        hero's bottom edge — the one visible seam on the page. But the yellow
@@ -371,43 +369,33 @@ const tools = [
     transition: opacity 520ms var(--ease-out) var(--d), transform 520ms var(--ease-spring) var(--d);
   }
 
-  /* ---- scroll cue ---- */
-  .scroll-cue {
-    position: relative;
-    z-index: 2;
-    margin: clamp(30px, 4vw, 56px) auto 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    font-size: .6875rem;
-    font-weight: 800;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--ink-4);
-  }
-  .scroll-cue .mouse {
-    width: 22px; height: 34px;
-    border: 2.5px solid var(--ink-4);
-    border-radius: 12px;
-    display: grid;
-    justify-items: center;
-    padding-top: 6px;
-  }
-  .scroll-cue .mouse i {
-    width: 4px; height: 4px;
-    border-radius: 50%;
-    background: var(--ink-4);
-    animation: cue 1.8s var(--ease-in-out) infinite;
-  }
-  @keyframes cue { 0% { transform: translateY(0); opacity: 1; } 70% { transform: translateY(12px); opacity: 0; } 100% { opacity: 0; } }
+  /* ---- stacked: the chips move under the demo ----
+     On one column the two chips sat between the lede and the buttons, i.e.
+     directly on the path from the sentence that explains the product to the
+     button that asks for the sale — two yellow-and-green pills interrupting
+     the one moment the page has to close. Under the demo panel they do the
+     job they were written for instead: the reader has just turned the model,
+     and "1–12 класи / працює офлайн" is the caption to what they touched.
 
+     The reorder is done by making .hero-copy `display: contents`, so its
+     children become items of the hero's own flex column and can be ordered
+     freely — rather than by rendering the chips twice and hiding one, which
+     is two sources of truth for one sentence. Each child then carries its own
+     top margin, which is why the column's gap is zero. */
   @media (max-width: 1080px) {
-    .hero-grid { grid-template-columns: 1fr; gap: 44px; }
-    .hero-copy { text-align: center; }
-    .hero-copy h1, .hero-copy .lede { margin-inline: auto; }
-    .hero-chips, .hero-cta { justify-content: center; }
-    .hero-stage { max-width: 620px; margin-inline: auto; width: 100%; }
+    .hero-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      text-align: center;
+    }
+    .hero-copy { display: contents; }
+    .hero-copy .eyebrow { order: 1; align-self: center; }
+    .hero-copy h1 { order: 2; margin-inline: auto; }
+    .hero-copy .lede { order: 3; margin-inline: auto; }
+    .hero-cta { order: 4; justify-content: center; margin-top: 32px; }
+    .hero-stage { order: 5; max-width: 620px; margin: 44px auto 0; width: 100%; }
+    .hero-chips { order: 6; justify-content: center; margin-top: 26px; }
     .badge-model { left: -4%; }
     .badge-tool { right: -10px; }
   }

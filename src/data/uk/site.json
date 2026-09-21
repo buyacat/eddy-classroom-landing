@@ -1,11 +1,13 @@
 {
   "nav_news": "Новини",
   "nav_contacts": "Контакти",
+  "nav_menu_close": "Закрити меню",
+  "nav_menu_sites": "Екосистема Eddy Group",
+  "nav_menu_lang": "Мова",
   "nav_menu_open": "Відкрити меню",
   "nav_lang_label": "EN",
   "nav_lang_aria": "Switch to English",
 
-  "scroll": "Гортайте",
 
   "footer_about": "Цифрова платформа для підготовки й проведення уроку від Eddy Group — виробника інтерактивних панелей, STEM-лабораторій і робототехнічних наборів.",
   "footer_col_support": "Сервісна підтримка",

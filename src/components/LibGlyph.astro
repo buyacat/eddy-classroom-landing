@@ -1,0 +1,587 @@
+---
+/*
+ * Об'єкти для комірок стрічки 3D-бібліотеки — по одному на модель, що має
+ * файл.
+ *
+ * Чому мальовані, а не рендери з самого .glb. Комірка показує об'єкт 32
+ * пікселями завширшки. На цій величині фотографія моделі — це пляма: у
+ * ліпідного бішару там три сотні кульок, у манометра — шкала з цифрами
+ * заввишки в півпікселя. Пак малювався інакше: одне суцільне тіло, дві-три
+ * форми на об'єкт, широке м'яке світло з верхнього лівого, темний бік
+ * праворуч-донизу, і рух на ховері, що показує, ЩО ця річ робить — стрілка
+ * ходить, кулька б'є, заряд перетинає перехід. Тут та сама мова.
+ *
+ * Правила пластики, спільні з src/assets/icon-src/:
+ *   · 256×256, об'єкт заповнює кадр, не сидить у ньому марочкою;
+ *   · світло широке й слабке, розмите — не гарячий блік. Тверде біле в паку
+ *     тримається під 2% площі (scripts/check-icons.mjs це і міряє), тож
+ *     кожне підсвічування тут іде крізь розмиття;
+ *   · на затіненому боці — контровий відблиск, інакше об'єкт чорніє на 32px;
+ *   · під об'єктом м'яка тінь, та сама фіолетова, що в решти паку.
+ *
+ * Анімація живе тут же, поряд з формою, яку вона рухає — і вимикається
+ * повністю, коли система просить менше руху.
+ */
+interface Props { id: string }
+const { id } = Astro.props;
+---
+
+{id === 'red-blood-cell' && (
+  /* Двоввігнутий диск: одне тіло і ямка. На ховері диск ледь повертається
+     до глядача, а ямка «дихає» — еритроцит пружний, це його головна
+     властивість, і вона показується рухом, а не деталізацією. */
+  <svg class="hex-obj gl gl-rbc" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+    <defs>
+      <radialGradient id="rbcBody" cx="32%" cy="22%" r="88%">
+        <stop offset="0" stop-color="#FF9C8E" />
+        <stop offset=".42" stop-color="#F2564F" />
+        <stop offset="1" stop-color="#A81B2A" />
+      </radialGradient>
+      <radialGradient id="rbcPit" cx="42%" cy="34%" r="80%">
+        <stop offset="0" stop-color="#C9303A" />
+        <stop offset="1" stop-color="#8A1226" />
+      </radialGradient>
+      <filter id="rbcB8" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="8" /></filter>
+      <filter id="rbcB14" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="14" /></filter>
+      <clipPath id="rbcClip"><ellipse cx="128" cy="130" rx="118" ry="86" transform="rotate(-12 128 130)" /></clipPath>
+    </defs>
+
+    <ellipse cx="132" cy="226" rx="86" ry="13" fill="#2A2140" opacity=".18" filter="url(#rbcB8)" />
+
+    <g class="gl-spin">
+      <ellipse cx="128" cy="130" rx="118" ry="86" transform="rotate(-12 128 130)" fill="url(#rbcBody)" />
+      <g clip-path="url(#rbcClip)">
+        <ellipse cx="72" cy="78" rx="52" ry="30" transform="rotate(-24 72 78)" fill="#FFFFFF" opacity=".34" filter="url(#rbcB14)" />
+        <ellipse cx="196" cy="182" rx="56" ry="26" transform="rotate(-12 196 182)" fill="#FFC6BC" opacity=".3" filter="url(#rbcB14)" />
+        <ellipse cx="150" cy="206" rx="80" ry="26" fill="#6E0C1C" opacity=".45" filter="url(#rbcB14)" />
+      </g>
+      <g class="gl-pit">
+        <ellipse cx="116" cy="118" rx="46" ry="30" transform="rotate(-12 116 118)" fill="url(#rbcPit)" />
+        <ellipse cx="116" cy="112" rx="40" ry="22" transform="rotate(-12 116 112)" fill="#7E0F22" opacity=".5" filter="url(#rbcB8)" />
+        <ellipse cx="104" cy="128" rx="30" ry="14" transform="rotate(-12 104 128)" fill="#FF8C80" opacity=".3" filter="url(#rbcB8)" />
+      </g>
+    </g>
+  </svg>
+)}
+
+{id === 'lipid-bilayer' && (
+  /* Два ряди головок хвостами всередину — усе, чим бішар є. Три кульки на
+     ряд, не тридцять: на 32px ряд із тридцяти — це сіра смуга. На ховері
+     ряди розходяться й сходяться: мембрана дихає, як їй і належить. */
+  <svg class="hex-obj gl gl-lb" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+    <defs>
+      <radialGradient id="lbHead" cx="32%" cy="24%" r="86%">
+        <stop offset="0" stop-color="#A8B4FF" />
+        <stop offset=".45" stop-color="#5566F2" />
+        <stop offset="1" stop-color="#26309B" />
+      </radialGradient>
+      <linearGradient id="lbTail" x1="0" y1="0" x2=".9" y2="1">
+        <stop offset="0" stop-color="#FFF0C4" />
+        <stop offset="1" stop-color="#D9AE55" />
+      </linearGradient>
+      <filter id="lbB8" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="8" /></filter>
+      <filter id="lbB12" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="12" /></filter>
+    </defs>
+
+    <ellipse cx="128" cy="236" rx="88" ry="11" fill="#2A2140" opacity=".16" filter="url(#lbB8)" />
+
+    <g class="gl-lb-top">
+      <g fill="url(#lbTail)">
+        <rect x="42" y="62" width="26" height="72" rx="13" />
+        <rect x="115" y="62" width="26" height="72" rx="13" />
+        <rect x="188" y="62" width="26" height="72" rx="13" />
+      </g>
+      <g fill="url(#lbHead)">
+        <circle cx="55" cy="62" r="40" />
+        <circle cx="128" cy="62" r="40" />
+        <circle cx="201" cy="62" r="40" />
+      </g>
+      <g fill="#FFFFFF" opacity=".34" filter="url(#lbB12)">
+        <ellipse cx="42" cy="46" rx="20" ry="13" />
+        <ellipse cx="115" cy="46" rx="20" ry="13" />
+        <ellipse cx="188" cy="46" rx="20" ry="13" />
+      </g>
+    </g>
+
+    <g class="gl-lb-bottom">
+      <g fill="url(#lbTail)">
+        <rect x="42" y="122" width="26" height="72" rx="13" />
+        <rect x="115" y="122" width="26" height="72" rx="13" />
+        <rect x="188" y="122" width="26" height="72" rx="13" />
+      </g>
+      <g fill="url(#lbHead)">
+        <circle cx="55" cy="194" r="40" />
+        <circle cx="128" cy="194" r="40" />
+        <circle cx="201" cy="194" r="40" />
+      </g>
+      <g fill="#C3CBFF" opacity=".34" filter="url(#lbB12)">
+        <ellipse cx="70" cy="214" rx="20" ry="12" />
+        <ellipse cx="143" cy="214" rx="20" ry="12" />
+        <ellipse cx="216" cy="214" rx="20" ry="12" />
+      </g>
+    </g>
+  </svg>
+)}
+
+{id === 'pn-junction' && (
+  /* Той самий ізометричний куб, що й у знака бібліотеки, розрізаний навпіл:
+     тепла половина — p, холодна — n, між ними шов. На ховері крізь шов
+     переходять носії — власне те, чим p-n перехід і є. */
+  <svg class="hex-obj gl gl-pn" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="pnTopP" x1=".1" y1="0" x2=".85" y2="1">
+        <stop offset="0" stop-color="#FFD0BE" />
+        <stop offset="55%" stop-color="#FF9E7A" />
+        <stop offset="1" stop-color="#E46B45" />
+      </linearGradient>
+      <linearGradient id="pnTopN" x1=".1" y1="0" x2=".85" y2="1">
+        <stop offset="0" stop-color="#CFE0FF" />
+        <stop offset="55%" stop-color="#8FB6FF" />
+        <stop offset="1" stop-color="#4C7BD8" />
+      </linearGradient>
+      <linearGradient id="pnFaceP" x1="0" y1="0" x2=".6" y2="1">
+        <stop offset="0" stop-color="#FF9F7E" />
+        <stop offset="45%" stop-color="#EE6F4A" />
+        <stop offset="1" stop-color="#A63A22" />
+      </linearGradient>
+      <linearGradient id="pnFaceN" x1="0" y1="0" x2=".7" y2="1">
+        <stop offset="0" stop-color="#6E9BE8" />
+        <stop offset="50%" stop-color="#3F68B8" />
+        <stop offset="1" stop-color="#1D3573" />
+      </linearGradient>
+      <filter id="pnB6" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="6" /></filter>
+      <filter id="pnB12" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="12" /></filter>
+      <clipPath id="pnBox">
+        <path d="M141.85 44.02 L190.15 71.98 Q204 80 204 96 L204 152 Q204 168 190.15 176.02
+                 L141.85 203.98 Q128 212 114.15 203.98 L65.85 176.02 Q52 168 52 152
+                 L52 96 Q52 80 65.85 71.98 L114.15 44.02 Q128 36 141.85 44.02 Z" />
+      </clipPath>
+      <clipPath id="pnSeamClip"><path d="M128 124 L204 80 L204 168 L128 212 Z" /></clipPath>
+    </defs>
+
+    <ellipse cx="128" cy="240" rx="74" ry="12" fill="#2A2140" opacity=".18" filter="url(#pnB6)" />
+
+    <g transform="translate(128 128) scale(1.34) translate(-128 -124)">
+      <g clip-path="url(#pnBox)">
+        <path d="M128 36 L52 80 L128 124 Z" fill="url(#pnTopP)" />
+        <path d="M128 36 L204 80 L128 124 Z" fill="url(#pnTopN)" />
+        <path d="M52 80 L128 124 L128 212 L52 168 Z" fill="url(#pnFaceP)" />
+        <path d="M128 124 L204 80 L204 168 L128 212 Z" fill="url(#pnFaceN)" />
+
+        <ellipse cx="96" cy="66" rx="34" ry="14" transform="rotate(30 96 66)" fill="#FFFFFF" opacity=".36" filter="url(#pnB12)" />
+        <ellipse cx="70" cy="118" rx="12" ry="32" fill="#FFFFFF" opacity=".3" filter="url(#pnB12)" />
+        <g clip-path="url(#pnSeamClip)">
+          <ellipse cx="201" cy="116" rx="8" ry="32" fill="#CADAFF" opacity=".42" filter="url(#pnB6)" />
+          <ellipse cx="150" cy="204" rx="44" ry="24" fill="#0C1A45" opacity=".5" filter="url(#pnB12)" />
+        </g>
+        <ellipse cx="108" cy="208" rx="46" ry="22" fill="#5E1C0C" opacity=".5" filter="url(#pnB12)" />
+
+        {/* шов: збіднена зона, по ній і йде весь рух */}
+        <path d="M128 36 L128 212" fill="none" stroke="#FFF6DC" stroke-opacity=".75" stroke-width="7" stroke-linecap="round" filter="url(#pnB6)" />
+      </g>
+
+      {/* носії: три через шов і назад — стільки, скільки видно на 32px */}
+      <g class="gl-pn-carriers" fill="#FFF3C0">
+        <circle class="c1" cx="128" cy="96" r="9" opacity="0" />
+        <circle class="c2" cx="128" cy="140" r="9" opacity="0" />
+        <circle class="c3" cx="128" cy="178" r="9" opacity="0" />
+      </g>
+    </g>
+  </svg>
+)}
+
+{id === 'lithium-ion-cell' && (
+  /* Банка 18650: корпус, плюсовий ґудзик, смуга заряду. На ховері смуга
+     набігає знизу вгору — елемент заряджається. */
+  <svg class="hex-obj gl gl-li" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="liBody" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#8E9DBE" />
+        <stop offset=".3" stop-color="#5A6B8F" />
+        <stop offset=".62" stop-color="#36425F" />
+        <stop offset="1" stop-color="#5C6A8A" />
+      </linearGradient>
+      <linearGradient id="liCharge" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#7CE3A6" />
+        <stop offset=".35" stop-color="#31C06E" />
+        <stop offset="1" stop-color="#17864A" />
+      </linearGradient>
+      <linearGradient id="liCap" x1=".2" y1="0" x2=".8" y2="1">
+        <stop offset="0" stop-color="#FFFFFF" />
+        <stop offset=".55" stop-color="#E7EBF5" />
+        <stop offset="1" stop-color="#AFB9D0" />
+      </linearGradient>
+      <filter id="liB6" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="6" /></filter>
+      <filter id="liB12" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="12" /></filter>
+      <clipPath id="liCan"><rect x="70" y="44" width="116" height="180" rx="26" /></clipPath>
+    </defs>
+
+    <ellipse cx="128" cy="236" rx="66" ry="12" fill="#2A2140" opacity=".2" filter="url(#liB6)" />
+
+    {/* плюсовий вивід */}
+    <rect x="110" y="20" width="36" height="28" rx="10" fill="url(#liCap)" />
+
+    <rect x="70" y="44" width="116" height="180" rx="26" fill="url(#liBody)" />
+    <g clip-path="url(#liCan)">
+      {/* рівень заряду — рухома частина */}
+      <rect class="gl-li-fill" x="70" y="44" width="116" height="180" fill="url(#liCharge)" />
+      <ellipse cx="92" cy="130" rx="16" ry="78" fill="#FFFFFF" opacity=".28" filter="url(#liB12)" />
+      <ellipse cx="180" cy="134" rx="9" ry="76" fill="#D6DEF5" opacity=".34" filter="url(#liB6)" />
+      <ellipse cx="128" cy="228" rx="66" ry="22" fill="#141A2E" opacity=".45" filter="url(#liB12)" />
+      <ellipse cx="128" cy="46" rx="60" ry="16" fill="#FFFFFF" opacity=".22" filter="url(#liB12)" />
+    </g>
+
+    {/* блискавка: одна суцільна форма, як і решта знаків паку */}
+    <path class="gl-li-bolt" d="M142 76 L96 146 L124 146 L112 200 L162 124 L132 124 Z"
+          fill="#FFD84D" stroke="#B97F0C" stroke-opacity=".35" stroke-width="3" stroke-linejoin="round" />
+  </svg>
+)}
+
+{id === 'newtons-cradle' && (
+  /* Рама і три кулі. На ховері крайня відходить і б'є — імпульс проходить
+     крізь ряд і виштовхує протилежну. Саме це колиска й демонструє. */
+  <svg class="hex-obj gl gl-nc" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+    <defs>
+      <radialGradient id="ncBall" cx="32%" cy="26%" r="86%">
+        <stop offset="0" stop-color="#FFFFFF" />
+        <stop offset=".38" stop-color="#C8D0E2" />
+        <stop offset="1" stop-color="#6E7893" />
+      </radialGradient>
+      <linearGradient id="ncFrame" x1=".2" y1="0" x2=".9" y2="1">
+        <stop offset="0" stop-color="#EDF0F8" />
+        <stop offset=".5" stop-color="#C2CADC" />
+        <stop offset="1" stop-color="#8790A8" />
+      </linearGradient>
+      <linearGradient id="ncBase" x1=".2" y1="0" x2=".8" y2="1">
+        <stop offset="0" stop-color="#454E6B" />
+        <stop offset=".5" stop-color="#2A3148" />
+        <stop offset="1" stop-color="#141827" />
+      </linearGradient>
+      <filter id="ncB6" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="6" /></filter>
+      <filter id="ncB10" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="10" /></filter>
+    </defs>
+
+    <ellipse cx="128" cy="236" rx="96" ry="12" fill="#2A2140" opacity=".2" filter="url(#ncB6)" />
+
+    {/* рама */}
+    <g fill="url(#ncFrame)">
+      <rect x="34" y="34" width="188" height="20" rx="10" />
+      <rect x="34" y="44" width="20" height="150" rx="10" />
+      <rect x="202" y="44" width="20" height="150" rx="10" />
+    </g>
+    <rect x="22" y="192" width="212" height="30" rx="15" fill="url(#ncBase)" />
+    <ellipse cx="96" cy="42" rx="46" ry="8" fill="#FFFFFF" opacity=".4" filter="url(#ncB10)" />
+
+    {/* кулі: крайні підвішені окремо, бо саме вони рухаються */}
+    <g class="gl-nc-left">
+      <path d="M72 44 L72 140" stroke="#9AA3BB" stroke-width="5" stroke-linecap="round" />
+      <circle cx="72" cy="162" r="30" fill="url(#ncBall)" />
+    </g>
+    <g>
+      <path d="M128 44 L128 140" stroke="#9AA3BB" stroke-width="5" stroke-linecap="round" />
+      <circle cx="128" cy="162" r="30" fill="url(#ncBall)" />
+    </g>
+    <g class="gl-nc-right">
+      <path d="M184 44 L184 140" stroke="#9AA3BB" stroke-width="5" stroke-linecap="round" />
+      <circle cx="184" cy="162" r="30" fill="url(#ncBall)" />
+    </g>
+  </svg>
+)}
+
+{id === 'pressure-gauge' && (
+  /* Циферблат зі стрілкою і штуцером. На ховері стрілка йде по шкалі й
+     сідає з легким перельотом — прилад під тиском. */
+  <svg class="hex-obj gl gl-pg" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="pgBezel" x1=".2" y1="0" x2=".8" y2="1">
+        <stop offset="0" stop-color="#FFFFFF" />
+        <stop offset=".5" stop-color="#DCE1EE" />
+        <stop offset="1" stop-color="#9AA3BC" />
+      </linearGradient>
+      <radialGradient id="pgFace" cx="34%" cy="26%" r="86%">
+        <stop offset="0" stop-color="#FFFFFF" />
+        <stop offset=".6" stop-color="#FDF7E6" />
+        <stop offset="1" stop-color="#E4D9BE" />
+      </radialGradient>
+      <linearGradient id="pgPort" x1=".2" y1="0" x2=".85" y2="1">
+        <stop offset="0" stop-color="#FFD98A" />
+        <stop offset=".5" stop-color="#D9A33A" />
+        <stop offset="1" stop-color="#9A6C14" />
+      </linearGradient>
+      <filter id="pgB6" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="6" /></filter>
+      <filter id="pgB12" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="12" /></filter>
+      <clipPath id="pgFaceClip"><circle cx="128" cy="114" r="78" /></clipPath>
+    </defs>
+
+    <ellipse cx="128" cy="240" rx="52" ry="10" fill="#2A2140" opacity=".2" filter="url(#pgB6)" />
+
+    <rect x="106" y="188" width="44" height="52" rx="12" fill="url(#pgPort)" />
+    <circle cx="128" cy="114" r="100" fill="url(#pgBezel)" />
+    <circle cx="128" cy="114" r="78" fill="url(#pgFace)" />
+
+    <g clip-path="url(#pgFaceClip)">
+      <ellipse cx="86" cy="60" rx="46" ry="26" transform="rotate(-28 86 60)" fill="#FFFFFF" opacity=".5" filter="url(#pgB12)" />
+      <ellipse cx="168" cy="176" rx="60" ry="30" fill="#B8A87E" opacity=".34" filter="url(#pgB12)" />
+    </g>
+    <ellipse cx="84" cy="48" rx="42" ry="18" transform="rotate(-30 84 48)" fill="#FFFFFF" opacity=".45" filter="url(#pgB12)" />
+
+    {/* шкала: чотири засічки, не дванадцять — на 32px решта злипається */}
+    <g stroke="#6B6350" stroke-width="8" stroke-linecap="round" opacity=".75">
+      <path d="M66 76 L74 84" />
+      <path d="M128 52 L128 63" />
+      <path d="M190 76 L182 84" />
+      <path d="M198 132 L187 132" />
+    </g>
+
+    <g class="gl-pg-needle">
+      <path d="M128 114 L70 78 L128 100 Z" fill="#C8332B" />
+      <path d="M128 114 L70 78 L128 100 Z" fill="#7C1410" opacity=".25" filter="url(#pgB6)" />
+    </g>
+    <circle cx="128" cy="114" r="14" fill="#3A4055" />
+    <circle cx="124" cy="110" r="5" fill="#FFFFFF" opacity=".4" filter="url(#pgB6)" />
+  </svg>
+)}
+
+{id === 'radiation-dosimeter' && (
+  /* Прилад, екран і трилисник. На ховері набігають стовпчики на екрані —
+     те, що на приладі й видно, коли він рахує. Знак стоїть нерухомо: він
+     каже, що це за прилад, а не що з ним зараз відбувається. */
+  <svg class="hex-obj gl gl-rd" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="rdBody" x1="0" y1="0" x2="1" y2=".4">
+        <stop offset="0" stop-color="#6E7893" />
+        <stop offset=".4" stop-color="#3C4459" />
+        <stop offset="1" stop-color="#1E2331" />
+      </linearGradient>
+      <linearGradient id="rdScreen" x1=".2" y1="0" x2=".8" y2="1">
+        <stop offset="0" stop-color="#D7F5C8" />
+        <stop offset=".5" stop-color="#8FD37A" />
+        <stop offset="1" stop-color="#3E8A39" />
+      </linearGradient>
+      <filter id="rdB6" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="6" /></filter>
+      <filter id="rdB12" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="12" /></filter>
+      <clipPath id="rdCase"><rect x="56" y="24" width="144" height="208" rx="30" /></clipPath>
+    </defs>
+
+    <ellipse cx="128" cy="240" rx="70" ry="11" fill="#2A2140" opacity=".2" filter="url(#rdB6)" />
+
+    <rect x="56" y="24" width="144" height="208" rx="30" fill="url(#rdBody)" />
+    <g clip-path="url(#rdCase)">
+      <ellipse cx="74" cy="110" rx="18" ry="88" fill="#FFFFFF" opacity=".26" filter="url(#rdB12)" />
+      <ellipse cx="196" cy="140" rx="10" ry="86" fill="#C6CEE4" opacity=".3" filter="url(#rdB6)" />
+      <ellipse cx="140" cy="238" rx="80" ry="24" fill="#0B0E17" opacity=".5" filter="url(#rdB12)" />
+    </g>
+
+    <rect x="72" y="42" width="112" height="98" rx="16" fill="url(#rdScreen)" />
+    <ellipse cx="100" cy="56" rx="30" ry="11" fill="#FFFFFF" opacity=".4" filter="url(#rdB6)" />
+
+    {/*
+        Шкала дози: три стовпчики сходинкою, що ЗАГОРЯЮТЬСЯ один за одним.
+        Першим заходом вони росли вгору — на комірці 32px це рух на три
+        пікселі, тобто ніякий. Поява темного на світлому екрані видно й
+        там, бо міняється не розмір, а сама пляма.
+     */}
+    <g class="gl-rd-bars" fill="#183A1C">
+      <rect class="b1" x="86" y="100" width="24" height="26" rx="8" />
+      <rect class="b2" x="116" y="86" width="24" height="40" rx="8" />
+      <rect class="b3" x="146" y="70" width="24" height="56" rx="8" />
+    </g>
+
+    {/* трилисник: три пелюстки й ядро, як на самому приладі */}
+    <g fill="#FFCE33">
+      <path d="M128 184 L107 147.6 A42 42 0 0 1 149 147.6 Z" />
+      <path d="M128 184 L170 184 A42 42 0 0 1 149 220.4 Z" />
+      <path d="M128 184 L107 220.4 A42 42 0 0 1 86 184 Z" />
+      <circle cx="128" cy="184" r="11" fill="#2A3040" />
+      <circle cx="128" cy="184" r="6.5" />
+    </g>
+  </svg>
+)}
+
+{id === 'solar-panel' && (
+  /* Панель під кутом, два шви і ніжка. На ховері по ній проходить смуга
+     світла і спалахує комірка — панель працює тоді, коли на неї світять. */
+  <svg class="hex-obj gl gl-sp" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="spGlass" x1=".1" y1="0" x2=".9" y2="1">
+        <stop offset="0" stop-color="#6E8DFF" />
+        <stop offset=".45" stop-color="#2B45C9" />
+        <stop offset="1" stop-color="#101B6E" />
+      </linearGradient>
+      <linearGradient id="spEdge" x1=".2" y1="0" x2=".8" y2="1">
+        <stop offset="0" stop-color="#EEF1FA" />
+        <stop offset=".55" stop-color="#C3CADC" />
+        <stop offset="1" stop-color="#8A93AC" />
+      </linearGradient>
+      <linearGradient id="spSide" x1="0" y1="0" x2="1" y2=".2">
+        <stop offset="0" stop-color="#99A3BC" />
+        <stop offset=".5" stop-color="#6D7791" />
+        <stop offset="1" stop-color="#48506A" />
+      </linearGradient>
+      <filter id="spB6" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="6" /></filter>
+      <filter id="spB14" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="14" /></filter>
+      <clipPath id="spFace"><path d="M128 50 L232 122 L128 194 L24 122 Z" /></clipPath>
+    </defs>
+
+    <ellipse cx="128" cy="238" rx="86" ry="12" fill="#2A2140" opacity=".2" filter="url(#spB6)" />
+
+    {/* ніжка під панеллю */}
+    <path d="M108 182 L148 182 L162 230 L94 230 Z" fill="url(#spEdge)" />
+
+    {/*
+        Торець. Без нього панель читалася як плаский ромб — «не зрозуміло,
+        що там узагалі». Плита має товщину, і видно її з двох нижніх боків,
+        як у будь-якого предмета, на який дивишся згори.
+     */}
+    <path d="M6 122 L128 214 L250 122 L250 140 L128 232 L6 140 Z" fill="url(#spSide)" />
+
+    {/* рамка й скло */}
+    <path d="M128 30 L250 122 L128 214 L6 122 Z" fill="url(#spEdge)" />
+    <path d="M128 50 L232 122 L128 194 L24 122 Z" fill="url(#spGlass)" />
+
+    <g clip-path="url(#spFace)">
+      {/* комірки: по два шви на вісь, більше на 32px не читається */}
+      <g stroke="#9EB4FF" stroke-opacity=".5" stroke-width="5">
+        <path d="M76 86 L180 158 M180 86 L76 158" />
+        <path d="M128 50 L128 194 M24 122 L232 122" />
+      </g>
+      <ellipse cx="72" cy="90" rx="52" ry="26" transform="rotate(35 72 90)" fill="#FFFFFF" opacity=".26" filter="url(#spB14)" />
+      <ellipse cx="186" cy="162" rx="56" ry="26" transform="rotate(35 186 162)" fill="#000C4A" opacity=".34" filter="url(#spB14)" />
+      {/* комірки ловлять світло: по чверті за раз, зліва направо */}
+      <g class="gl-sp-cells" fill="#FFE79A">
+        <path class="q1" d="M128 50 L24 122 L128 122 Z" />
+        <path class="q2" d="M128 50 L232 122 L128 122 Z" />
+        <path class="q3" d="M128 194 L24 122 L128 122 Z" />
+        <path class="q4" d="M128 194 L232 122 L128 122 Z" />
+      </g>
+    </g>
+  </svg>
+)}
+
+<style>
+  /*
+   * transform-box ставимо ТІЛЬКИ тим елементам, чий початок координат
+   * заданий у відсотках. Глобальний fill-box переписав би й SVG-атрибут
+   * transform="rotate(a cx cy)" — повороти почали б крутитися навколо
+   * власних коробок, і об'єкт розсипається.
+   */
+  .gl { overflow: visible; }
+
+  /* ---- еритроцит: пружний диск ---- */
+  .gl-rbc .gl-spin, .gl-rbc .gl-pit { transform-box: fill-box; transform-origin: 50% 50%; }
+  :global(.hex:hover) .gl-rbc .gl-spin { animation: rbc-turn calc(var(--glyph-t) * 1.6) var(--glyph-e); }
+  :global(.hex:hover) .gl-rbc .gl-pit { animation: rbc-breathe calc(var(--glyph-t) * 1.6) var(--glyph-e); }
+  @keyframes rbc-turn {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    42%      { transform: rotate(-9deg) scale(1.04); }
+  }
+  @keyframes rbc-breathe {
+    0%, 100% { transform: scale(1); }
+    42%      { transform: scale(.82); }
+  }
+
+  /* ---- бішар: мембрана дихає ---- */
+  :global(.hex:hover) .gl-lb-top { animation: lb-up calc(var(--glyph-t) * 1.5) var(--glyph-e); }
+  :global(.hex:hover) .gl-lb-bottom { animation: lb-down calc(var(--glyph-t) * 1.5) var(--glyph-e); }
+  @keyframes lb-up   { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(-14px); } }
+  @keyframes lb-down { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(14px); } }
+
+  /* ---- p-n перехід: носії йдуть крізь шов ---- */
+  .gl-pn-carriers circle { opacity: 0; }
+  :global(.hex:hover) .gl-pn .c1 { animation: pn-cross var(--glyph-t) ease-out; }
+  :global(.hex:hover) .gl-pn .c2 { animation: pn-cross var(--glyph-t) ease-out 180ms; }
+  :global(.hex:hover) .gl-pn .c3 { animation: pn-cross var(--glyph-t) ease-out 340ms; }
+  @keyframes pn-cross {
+    0%   { transform: translate(-30px, 18px); opacity: 0; }
+    25%  { opacity: 1; }
+    75%  { opacity: 1; }
+    100% { transform: translate(30px, -18px); opacity: 0; }
+  }
+
+  /* ---- банка: заряд набігає знизу ---- */
+  .gl-li-fill { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(0); }
+  :global(.hex:hover) .gl-li-fill { animation: li-charge calc(var(--glyph-t) * 1.5) var(--glyph-e); }
+  @keyframes li-charge {
+    0%       { transform: scaleY(0); }
+    55%, 78% { transform: scaleY(.72); }
+    100%     { transform: scaleY(0); }
+  }
+  .gl-li-bolt { transform-box: fill-box; transform-origin: 50% 50%; }
+  :global(.hex:hover) .gl-li-bolt { animation: li-flash calc(var(--glyph-t) * 1.5) var(--glyph-e); }
+  @keyframes li-flash {
+    0%, 100% { transform: scale(1); }
+    58%      { transform: scale(1.16); }
+  }
+
+  /* ---- колиска: удар проходить крізь ряд ---- */
+  .gl-nc-left  { transform-origin: 72px 44px; }
+  .gl-nc-right { transform-origin: 184px 44px; }
+  :global(.hex:hover) .gl-nc-left  { animation: nc-strike calc(var(--glyph-t) * 2.8) ease-in-out; }
+  :global(.hex:hover) .gl-nc-right { animation: nc-fly calc(var(--glyph-t) * 2.8) ease-in-out; }
+  /* Знак кута тут не косметика: у координатах SVG вісь y дивиться вниз,
+     тож ДОДАТНИЙ кут веде підвішену кулю ліворуч, а відʼємний — праворуч.
+     Ліва куля мусить піти назовні ліворуч, права — назовні праворуч; з
+     переставленими знаками обидві йшли всередину й налазили на сусідні.
+
+     Повний цикл, а не один удар: ліва відходить і б'є, вилітає права,
+     вертається й б'є у відповідь — і ліва відходить знову, вже менше.
+     Імпульс мусить прийти назад, інакше колиска показує половину того,
+     чим вона цікава. */
+  @keyframes nc-strike {
+    0%        { transform: rotate(0deg); }
+    13%       { transform: rotate(30deg); }
+    28%, 58%  { transform: rotate(0deg); }
+    73%       { transform: rotate(21deg); }
+    88%, 100% { transform: rotate(0deg); }
+  }
+  @keyframes nc-fly {
+    0%, 28%   { transform: rotate(0deg); }
+    43%       { transform: rotate(-30deg); }
+    58%, 100% { transform: rotate(0deg); }
+  }
+
+  /* ---- манометр: стрілка йде під тиск ---- */
+  .gl-pg-needle { transform-origin: 128px 114px; }
+  :global(.hex:hover) .gl-pg-needle { animation: pg-sweep calc(var(--glyph-t) * 1.7) cubic-bezier(.3, 1.4, .5, 1); }
+  @keyframes pg-sweep {
+    0%       { transform: rotate(0deg); }
+    46%      { transform: rotate(128deg); }
+    62%      { transform: rotate(116deg); }
+    100%     { transform: rotate(0deg); }
+  }
+
+  /* ---- дозиметр: шкала набирає й скидається ---- */
+  .gl-rd-bars rect { opacity: .16; }
+  :global(.hex:hover) .gl-rd-bars .b1 { animation: rd-bar calc(var(--glyph-t) * 1.9) steps(1, end); }
+  :global(.hex:hover) .gl-rd-bars .b2 { animation: rd-bar calc(var(--glyph-t) * 1.9) steps(1, end) 170ms; }
+  :global(.hex:hover) .gl-rd-bars .b3 { animation: rd-bar calc(var(--glyph-t) * 1.9) steps(1, end) 340ms; }
+  /* Кроками, не плавно: прилад не «підсвічує» поділку, він її вмикає. */
+  @keyframes rd-bar {
+    0%       { opacity: .16; }
+    18%, 68% { opacity: 1; }
+    100%     { opacity: .16; }
+  }
+
+  /* ---- панель: комірки ловлять світло ----
+     Смуга, що пробігала склом, на 32px була невидима: біле по синьому під
+     розмиттям на висоті в тридцять пікселів не читається взагалі. Чверті,
+     що спалахують одна за одною, видно й на комірці, й на повний розмір. */
+  .gl-sp-cells path { opacity: 0; }
+  :global(.hex:hover) .gl-sp-cells .q1 { animation: sp-lit calc(var(--glyph-t) * .55) ease-out; }
+  :global(.hex:hover) .gl-sp-cells .q2 { animation: sp-lit calc(var(--glyph-t) * .55) ease-out 150ms; }
+  :global(.hex:hover) .gl-sp-cells .q3 { animation: sp-lit calc(var(--glyph-t) * .55) ease-out 300ms; }
+  :global(.hex:hover) .gl-sp-cells .q4 { animation: sp-lit calc(var(--glyph-t) * .55) ease-out 450ms; }
+  /* Спалах короткий і з добрим зсувом: коли всі чотири світяться разом,
+     панель просто блідне — читається як помилка, а не як сонце на склі. */
+  @keyframes sp-lit {
+    0%   { opacity: 0; }
+    40%  { opacity: .5; }
+    100% { opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.hex:hover) .gl *, :global(.hex:hover) .gl { animation: none; }
+    .gl-li-fill { transform: scaleY(.72); }
+    .gl-rd-bars rect { opacity: 1; }
+  }
+</style>

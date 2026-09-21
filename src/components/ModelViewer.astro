@@ -2,23 +2,27 @@
 import { t, tArray } from '../utils/i18n';
 import type { Locale } from '../utils/i18n';
 import { withBase } from '../utils/url';
+import geometry from '../data/models.json';
 
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 
 /*
  * The client's note on this band was about tenders: a buyer is shown a wall
- * of 3D-object cells and asks, reasonably, to see one. So one model out of
- * the 1200 is here in full — the same .glb a teacher opens in a lesson —
- * turned with a finger, pulled apart with a slider, with every structure in
- * it named and explained.
+ * of 3D-object cells and asks, reasonably, to see one. So nine models out of
+ * the 1200 are here in full — the same .glb files a teacher opens in a lesson
+ * — turned with a finger, pulled apart with a slider, with every structure in
+ * them named and explained. Every cell in the strip above that has a file
+ * behind it opens THAT file in this panel; the two that do not say so.
  *
  * Three rules shaped the markup below, in this order:
  *
- * 1. The file is 1.7 MB and NOBODY pays for it by scrolling past. Nothing is
- *    fetched — not the model, not three.js, not the loader — until the visitor
- *    presses the button, which is why the stage starts as a closed cover with
- *    the weight printed on it rather than as an empty rectangle that fills in.
+ * 1. A file is one to two megabytes and NOBODY pays for it by scrolling past.
+ *    Nothing is fetched — not the model, not three.js, not the loader — until
+ *    the visitor presses the button, which is why the stage starts as a closed
+ *    cover with that model's own weight printed on it rather than as an empty
+ *    rectangle that fills in. After the first press the question is answered,
+ *    so picking another cell loads it without asking again.
  *
  * 2. The structure list is not a control panel for the 3D — it is the content.
  *    It reads and works with no WebGL, no JavaScript module and no model: the
@@ -31,27 +35,53 @@ const { locale } = Astro.props;
  *    (`data-copy`), the same bargain EarthGlobe makes: the module gets to be
  *    about the model, and the strings stay where translators can find them.
  */
-const parts = tArray<{ node: string; label: string; desc: string }>(
-  locale,
-  'classroom_library_model_parts'
-);
+/*
+ * One entry per model with a file behind it: the copy comes from the locale
+ * data, the numbers (hotspots, travel directions, how far it opens) from
+ * models.json beside the .glb, because those are the same in every language.
+ * The two halves are married here, once, and handed to the script as one
+ * payload — the same bargain `data-copy` makes below.
+ */
+type Geometry = Record<string, { file: string; explode: unknown; parts: unknown }>;
+const geo = geometry as Geometry;
+
+const models = tArray<{
+  id: string;
+  name: string;
+  title: string;
+  meta: string;
+  weight: string;
+  parts: { node: string; label: string; desc: string }[];
+}>(locale, 'classroom_library_models')
+  .filter((m) => geo[m.id])
+  .map((m) => ({
+    ...m,
+    url: withBase(geo[m.id].file),
+    explode: geo[m.id].explode,
+    geometry: geo[m.id].parts
+  }));
+
+/* The panel opens on the first of them, written into the markup below so the
+   page is complete — and readable — before a byte of script runs. */
+const first = models[0];
+const parts = first?.parts ?? [];
+const alt = t(locale, 'classroom_library_model_alt');
 
 const copy = {
   loading: t(locale, 'classroom_library_model_loading'),
   error: t(locale, 'classroom_library_model_error'),
-  /* Read by Library3D's tab-row script, not by this file's own script — see
-     the "soon" state below. Keeping the string here instead of duplicating
-     a translation call in the other component is the same bargain the rest
-     of `copy` already makes. */
+  /* For the cells that have no file behind them yet — see the "soon" state
+     below. The strip only reports which cell was clicked; the copy for
+     what that means lives here with the rest of the panel's strings. */
   soonBadge: t(locale, 'classroom_library_soon_badge'),
   soonDesc: t(locale, 'classroom_library_soon_desc')
 };
 ---
 
 <section class="mv reveal" data-model-viewer
-         data-src={withBase('/assets/models/human-eye.glb')}
-         data-parts={JSON.stringify(parts)}
+         data-models={JSON.stringify(models)}
          data-copy={JSON.stringify(copy)}
+         data-alt={alt}
          data-nowebgl={t(locale, 'classroom_library_model_nowebgl')}>
   <!-- The controls are a SIBLING of the stage, not a child of it. On a
        desktop they float over the bottom of the picture, where a viewer's
@@ -60,16 +90,17 @@ const copy = {
        cost the model nothing, and one `position` switch moves them. -->
   <div class="mv-view">
     <div class="mv-stage" data-stage>
-      <canvas class="mv-canvas" role="img" aria-label={t(locale, 'classroom_library_model_alt')}></canvas>
+      <canvas class="mv-canvas" role="img" aria-label={`${alt} — ${first?.title ?? ''}`}></canvas>
 
-      <!-- the cover. It carries the price of pressing it, because a 1.7 MB
-           download on a school's connection is a thing to be told about, not
-           a thing to discover from a stalled progress bar. -->
+      <!-- the cover. It carries the price of pressing it, because a couple of
+           megabytes on a school's connection is a thing to be told about, not
+           a thing to discover from a stalled progress bar. Each model prints
+           its own weight there. -->
       <div class="mv-gate" data-gate>
         <button class="btn btn-primary mv-start" type="button" data-start>
           {t(locale, 'classroom_library_model_cta')}
         </button>
-        <p class="mv-weight">{t(locale, 'classroom_library_model_weight')}</p>
+        <p class="mv-weight" data-weight>{first?.weight}</p>
       </div>
 
       <div class="mv-load" data-load hidden>
@@ -84,11 +115,11 @@ const copy = {
         </button>
       </div>
 
-      {/* Shown instead of the stage's other three states when a sample tab
-          above (Library3D.astro) is clicked — none of those eight have a
-          real .glb yet, so this owns up to that rather than pretending to
+      {/* Shown instead of the stage's other three states when a cell above
+          (Library3D.astro) with no .glb behind it is picked — two of the
+          eleven — so the panel owns up to that rather than pretending to
           load one. Toggled purely by the `.mv.is-soon` class; the icon is
-          filled in by the tab-row script, not written here. */}
+          filled in by the script, not written here. */}
       <div class="mv-soon" data-soon>
         <img class="mv-soon-ic" data-soon-icon src="" width="120" height="120" alt="" />
         <p class="mv-soon-badge">{copy.soonBadge}</p>
@@ -131,12 +162,12 @@ const copy = {
 
   <div class="mv-side">
     <span class="eyebrow">{t(locale, 'classroom_library_model_eyebrow')}</span>
-    <h3 class="mv-ttl">{t(locale, 'classroom_library_model_title')}</h3>
-    <p class="mv-meta">{t(locale, 'classroom_library_model_meta')}</p>
+    <h3 class="mv-ttl">{first?.title}</h3>
+    <p class="mv-meta">{first?.meta}</p>
     <p class="mv-desc">{t(locale, 'classroom_library_model_desc')}</p>
 
     <p class="mv-parts-ttl">{t(locale, 'classroom_library_model_parts_title')}</p>
-    <ul class="mv-parts">
+    <ul class="mv-parts" data-parts-list>
       {parts.map((p, i) => (
         <li>
           <button class={`mv-part${i === 0 ? ' is-on' : ''}`} type="button"
@@ -471,18 +502,27 @@ const copy = {
     text-transform: uppercase;
     color: var(--ink);
   }
+  /*
+   * Сітка, не потік. Пігулки різної довжини, пущені врозсип, давали рвані
+   * ряди: два широких імені, третє перескакує, під ним порожня прогалина
+   * у півряда. У моделей у каталозі імена структур довгі («Вуглеводні
+   * мітки на поверхні»), тож це не виняток, а норма. Дві колонки рівної
+   * ширини — і список читається згори вниз, а не шукається очима.
+   */
   .mv-parts {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(186px, 1fr));
     gap: 6px;
     margin: 0;
     padding: 0;
     list-style: none;
   }
+  .mv-parts li { display: flex; }
   .mv-part {
+    flex: 1;
     border: 0;
-    border-radius: var(--r-pill);
-    padding: 7px 13px;
+    border-radius: var(--r-lg);
+    padding: 8px 13px;
     background: var(--surface);
     color: var(--ink-2);
     font-family: var(--font-display);
@@ -548,7 +588,25 @@ const copy = {
 </style>
 
 <script>
-  import type { PartSpec, ViewerHandle } from '../scripts/model-viewer';
+  import type {
+    ExplodeSpec,
+    PartGeometry,
+    PartSpec,
+    ViewerHandle
+  } from '../scripts/model-viewer';
+
+  /** A model with a file behind it: the copy, and the numbers beside the .glb. */
+  interface ModelSpec {
+    id: string;
+    name: string;
+    title: string;
+    meta: string;
+    weight: string;
+    url: string;
+    parts: PartSpec[];
+    geometry: Record<string, PartGeometry>;
+    explode: ExplodeSpec;
+  }
 
   function hasWebGL(): boolean {
     try {
@@ -564,12 +622,23 @@ const copy = {
   if (root) {
     const q = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
 
-    const parts = JSON.parse(root.dataset.parts || '[]') as PartSpec[];
-    const copy = JSON.parse(root.dataset.copy || '{}') as { loading: string; error: string };
+    const models = JSON.parse(root.dataset.models || '[]') as ModelSpec[];
+    const copy = JSON.parse(root.dataset.copy || '{}') as {
+      loading: string;
+      error: string;
+      soonDesc?: string;
+    };
+    const alt = root.dataset.alt || '';
 
-    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-part]'));
+    const partsList = q('[data-parts-list]');
     const partDesc = q('[data-part-desc]');
     const markerLabel = q('[data-marker-label]');
+    const ttl = q('.mv-ttl');
+    const meta = q('.mv-meta');
+    const desc = q('.mv-desc');
+    const weight = q('[data-weight]');
+    const canvas = q<HTMLCanvasElement>('.mv-canvas');
+    const soonIcon = root.querySelector<HTMLImageElement>('[data-soon-icon]');
 
     const gate = q('[data-gate]');
     const load = q('[data-load]');
@@ -580,12 +649,18 @@ const copy = {
     const hint = q('[data-hint]');
     const range = q<HTMLInputElement>('[data-explode-range]');
 
+    /* The one line of copy the "still on its way" state borrows the panel's
+       own paragraph for. Captured before anything can overwrite it. */
+    const aboutModels = desc.textContent ?? '';
+
+    const webgl = hasWebGL();
+    let active = models[0];
     let viewer: ViewerHandle | null = null;
     /* The panel ships with the first structure already chosen (see the markup
        above), so the caption the model will wear is filled in to match before
        anything can mount and ask for it. */
-    let current = parts[0]?.node ?? null;
-    markerLabel.textContent = parts[0]?.label ?? '';
+    let current = active?.parts[0]?.node ?? null;
+    markerLabel.textContent = active?.parts[0]?.label ?? '';
 
     /*
      * The list drives the panel whether or not there is ever a model: the
@@ -596,9 +671,9 @@ const copy = {
      */
     function pick(node: string | null, fromClick: boolean) {
       current = node;
-      const spec = parts.find((p) => p.node === node) ?? null;
+      const spec = active?.parts.find((p) => p.node === node) ?? null;
 
-      for (const b of buttons) {
+      for (const b of root.querySelectorAll<HTMLButtonElement>('[data-part]')) {
         const on = b.dataset.part === node;
         b.classList.toggle('is-on', on);
         b.setAttribute('aria-pressed', String(on));
@@ -617,82 +692,226 @@ const copy = {
       }
     }
 
-    for (const b of buttons) {
+    for (const b of root.querySelectorAll<HTMLButtonElement>('[data-part]')) {
       b.addEventListener('click', () => pick(b.dataset.part ?? null, true));
     }
 
-    if (!hasWebGL()) {
+    /*
+     * The structure list of whichever model the panel now holds. Written into
+     * the page for the first one (see the markup above) and rebuilt here for
+     * every one after it — same element, same handlers, different model.
+     *
+     * Rebuilt by CLONING the row the server rendered, never by
+     * `createElement`. Astro scopes this component's CSS with a
+     * `data-astro-cid-…` attribute that it stamps on the markup above at
+     * build time; an element made from scratch in the browser carries no
+     * such attribute, so not one rule of the stylesheet applies to it. The
+     * list came out as bare default buttons the moment a visitor picked a
+     * second model. A clone brings the attribute with it, and keeps
+     * bringing it if the markup ever gains another.
+     */
+    const rowTemplate = partsList.querySelector('li')?.cloneNode(true) as HTMLLIElement | undefined;
+
+    function renderParts() {
+      if (!rowTemplate) return;
+      partsList.textContent = '';
+      for (const p of active.parts) {
+        const li = rowTemplate.cloneNode(true) as HTMLLIElement;
+        const b = li.querySelector('button')!;
+        b.className = 'mv-part';
+        b.dataset.part = p.node;
+        b.setAttribute('aria-pressed', 'false');
+        b.textContent = p.label;
+        b.addEventListener('click', () => pick(p.node, true));
+        partsList.appendChild(li);
+      }
+      pick(active.parts[0]?.node ?? null, false);
+    }
+
+    function progress(fraction: number) {
+      // -1 means the server never said how big the file is; sweep instead
+      // of printing a percentage that would be a guess
+      load.classList.toggle('is-unknown', fraction < 0);
+      if (fraction < 0) {
+        loadTxt.textContent = copy.loading + '…';
+        return;
+      }
+      bar.style.width = Math.round(fraction * 100) + '%';
+      loadTxt.textContent = copy.loading + ' · ' + Math.round(fraction * 100) + '%';
+    }
+
+    /*
+     * Which model the page is currently paying for. A visitor who switches
+     * cells mid-download leaves a fetch in flight that will still resolve, so
+     * every mount is stamped and a stale one is thrown away on arrival rather
+     * than left running behind the model that replaced it.
+     */
+    let generation = 0;
+    let fetching = false;
+    /* Somebody has already chosen to download a model, so the next cell they
+       pick loads on the spot instead of asking again. */
+    let eager = false;
+
+    function fetchModel() {
+      if (!webgl || fetching || viewer || !active) return;
+      fetching = true;
+      const mine = generation;
+      gate.hidden = true;
+      fail.hidden = true;
+      load.hidden = false;
+      bar.style.width = '0%';
+      progress(-1);
+
+      /* Both the module and the model leave the network here and nowhere
+         else — three.js, the glTF loader and a megabyte or two of geometry
+         are all paid for by this one press. */
+      import('../scripts/model-viewer')
+        .then((mod) =>
+          mod.mountViewer({
+            host: q('[data-stage]'),
+            canvas,
+            marker: q('[data-marker]'),
+            caption: markerLabel,
+            url: active.url,
+            parts: active.parts,
+            geometry: active.geometry,
+            explode: active.explode,
+            onProgress: (fraction) => {
+              if (mine === generation) progress(fraction);
+            }
+          })
+        )
+        .then((handle) => {
+          if (mine !== generation) {
+            handle.destroy();
+            return;
+          }
+          viewer = handle;
+          load.hidden = true;
+          tools.hidden = false;
+          hint.hidden = false;
+          root.classList.add('is-live');
+          // reflect the selection the page already made, WITHOUT the
+          // auto-open above: nobody asked for the model to be apart yet
+          handle.select(current);
+        })
+        .catch(async (err) => {
+          if (mine !== generation) return;
+          /* Сказати В ЧОМУ річ, а не «щось пішло не так»: панель на сцені
+             однаково показує одне повідомлення, але в консолі має лишитися
+             рядок, за яким видно, чи це файл не доїхав, чи 3D не завелося
+             в цьому браузері. Перевірка дешева — один запит заголовків. */
+          let reach = 'не перевіряли';
+          try {
+            const probe = await fetch(active.url, { method: 'HEAD', cache: 'no-store' });
+            reach = 'HTTP ' + probe.status;
+          } catch (netErr) {
+            reach = 'мережа: ' + (netErr as Error).message;
+          }
+          console.error('[model] ' + active.id + ' не піднявся — ' + active.url
+            + ' (' + reach + '); причина:', err);
+          load.hidden = true;
+          fail.hidden = false;
+        })
+        .finally(() => {
+          if (mine === generation) fetching = false;
+        });
+    }
+
+    /* Everything the stage is holding, let go of — the model, the canvas
+       state and whichever of the four covers was showing. */
+    function clearStage() {
+      generation += 1;
+      fetching = false;
+      viewer?.destroy();
+      viewer = null;
+      load.hidden = true;
+      fail.hidden = true;
+      tools.hidden = true;
+      hint.hidden = true;
+      range.value = '0';
+      root.classList.remove('is-live', 'is-touched');
+    }
+
+    /** A cell with a file behind it: this panel becomes that model. */
+    function showModel(id: string) {
+      const next = models.find((m) => m.id === id);
+      if (!next) return;
+
+      const leavingSoon = root.classList.contains('is-soon');
+      root.classList.remove('is-soon');
+
+      if (next === active) {
+        // the same model, coming back from the "soon" state that borrowed its
+        // headings — the model itself was never unloaded, so nothing else here
+        if (leavingSoon) {
+          ttl.textContent = next.title;
+          meta.textContent = next.meta;
+          desc.textContent = aboutModels;
+        }
+        return;
+      }
+
+      clearStage();
+      active = next;
+      ttl.textContent = next.title;
+      meta.textContent = next.meta;
+      desc.textContent = aboutModels;
+      /* In a browser with no WebGL that line is carrying the explanation of
+         why there is no model at all — leave it alone rather than replacing
+         it with the weight of a file that will never be fetched. */
+      if (webgl) weight.textContent = next.weight;
+      canvas.setAttribute('aria-label', alt + ' — ' + next.title);
+      renderParts();
+
+      /* Somebody who has already downloaded one model has answered the only
+         question the cover asks, so the next one starts on its own. */
+      if (eager && webgl) fetchModel();
+      else gate.hidden = false;
+    }
+
+    /** A cell with no file behind it yet: say so, rather than mime a load. */
+    function showSoon(name: string, label: string, icon?: string) {
+      root.classList.add('is-soon');
+      ttl.textContent = name;
+      meta.textContent = label.toUpperCase();
+      if (copy.soonDesc) desc.textContent = copy.soonDesc;
+      if (soonIcon && icon) soonIcon.src = icon;
+    }
+
+    /* The strip above owns the cells; this panel owns what a cell means. One
+       event carries the whole of it, so neither component reaches into the
+       other's markup. */
+    root.addEventListener('mv:select', (event) => {
+      const pickEvent = event as CustomEvent<{
+        model?: string;
+        name?: string;
+        label?: string;
+        icon?: string;
+      }>;
+      const { model, name, label, icon } = pickEvent.detail ?? {};
+      if (model) showModel(model);
+      else showSoon(name ?? '', label ?? '', icon);
+    });
+
+    if (!webgl) {
       /* No 3D here. The stage cover stops being a button and becomes the
          explanation, and the structure list below carries on doing the
-         informative half of the job on its own. */
-      gate.innerHTML = '';
-      const note = document.createElement('p');
-      note.className = 'mv-weight';
-      note.textContent = root.dataset.nowebgl || '';
-      gate.appendChild(note);
+         informative half of the job on its own.
+
+         The line that was printing the model's weight is reused rather than
+         replaced: it already carries the scope attribute this component's
+         CSS is written against, and a fresh <p> would come out unstyled. */
+      q('[data-start]').remove();
+      weight.textContent = root.dataset.nowebgl || '';
     } else {
       const start = q<HTMLButtonElement>('[data-start]');
       const retry = q<HTMLButtonElement>('[data-retry]');
 
-      function progress(fraction: number) {
-        // -1 means the server never said how big the file is; sweep instead
-        // of printing a percentage that would be a guess
-        load.classList.toggle('is-unknown', fraction < 0);
-        if (fraction < 0) {
-          loadTxt.textContent = copy.loading + '…';
-          return;
-        }
-        bar.style.width = Math.round(fraction * 100) + '%';
-        loadTxt.textContent = copy.loading + ' · ' + Math.round(fraction * 100) + '%';
-      }
-
-      let fetching = false;
-
-      function fetchModel() {
-        if (fetching || viewer) return;
-        fetching = true;
-        gate.hidden = true;
-        fail.hidden = true;
-        load.hidden = false;
-        bar.style.width = '0%';
-        progress(-1);
-
-        /* Both the module and the model leave the network here and nowhere
-           else — three.js, the glTF loader and 1.7 MB of geometry are all
-           paid for by this one press. */
-        import('../scripts/model-viewer')
-          .then((mod) =>
-            mod.mountViewer({
-              host: q('[data-stage]'),
-              canvas: q<HTMLCanvasElement>('.mv-canvas'),
-              marker: q('[data-marker]'),
-              caption: markerLabel,
-              url: root.dataset.src || '',
-              parts,
-              onProgress: progress
-            })
-          )
-          .then((handle) => {
-            viewer = handle;
-            load.hidden = true;
-            tools.hidden = false;
-            hint.hidden = false;
-            root.classList.add('is-live');
-            // reflect the selection the page already made, WITHOUT the
-            // auto-open above: nobody asked for the model to be apart yet
-            handle.select(current);
-          })
-          .catch((err) => {
-            console.warn('[model] not mounted:', err);
-            load.hidden = true;
-            fail.hidden = false;
-          })
-          .finally(() => {
-            fetching = false;
-          });
-      }
-
-      start.addEventListener('click', fetchModel);
+      start.addEventListener('click', () => {
+        eager = true;
+        fetchModel();
+      });
       retry.addEventListener('click', fetchModel);
 
       range.addEventListener('input', () => {

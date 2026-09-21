@@ -1,0 +1,823 @@
+{
+  "human-eye": {
+    "file": "/assets/models/human-eye.glb",
+    "explode": {
+      "factor": 2.2
+    },
+    "parts": {
+      "Sclera": {
+        "at": [
+          -0.3,
+          -0.702,
+          -0.61
+        ],
+        "out": [
+          0.3,
+          0,
+          -0.95
+        ]
+      },
+      "Choroid": {
+        "at": [
+          -0.2,
+          -0.184,
+          -0.902
+        ],
+        "out": [
+          0.6,
+          0,
+          0.8
+        ]
+      },
+      "Retina": {
+        "at": [
+          -0.66,
+          0.055,
+          -0.628
+        ],
+        "out": [
+          0.95,
+          0,
+          -0.31
+        ]
+      },
+      "Cornea": {
+        "at": [
+          0.9,
+          0.406,
+          -0.04
+        ],
+        "out": [
+          0.95,
+          0.25,
+          0.19
+        ]
+      },
+      "AnteriorChamber": {
+        "at": [
+          0.86,
+          0.12,
+          -0.06
+        ],
+        "out": [
+          0.9,
+          -0.1,
+          -0.42
+        ]
+      },
+      "Iris": {
+        "at": [
+          0.72,
+          0.35,
+          -0.06
+        ],
+        "out": [
+          0.8,
+          0.45,
+          0.4
+        ]
+      },
+      "CiliaryBody": {
+        "at": [
+          0.68,
+          0.6,
+          -0.04
+        ],
+        "out": [
+          0.7,
+          -0.55,
+          0.45
+        ]
+      },
+      "Lens": {
+        "at": [
+          0.61,
+          0.22,
+          -0.06
+        ],
+        "out": [
+          0.85,
+          0.05,
+          -0.52
+        ]
+      },
+      "VitreousBody": {
+        "at": [
+          -0.15,
+          0.421,
+          -0.354
+        ],
+        "out": [
+          0,
+          -1,
+          0
+        ]
+      },
+      "OpticNerve": {
+        "at": [
+          -1.35,
+          0,
+          -0.08
+        ]
+      }
+    }
+  },
+  "red-blood-cell": {
+    "file": "/assets/models/red-blood-cell.glb",
+    "explode": {
+      "factor": 2.72,
+      "groups": [
+        [
+          "CellMembrane",
+          "SurfaceAntigens"
+        ]
+      ]
+    },
+    "parts": {
+      "CellMembrane": {
+        "at": [
+          -2.5,
+          1.25,
+          -1.6
+        ],
+        "out": [
+          0,
+          0.72,
+          0.69
+        ]
+      },
+      "SurfaceAntigens": {
+        "at": [
+          0.18,
+          1.62,
+          -2.46
+        ],
+        "out": [
+          0,
+          0.72,
+          0.69
+        ]
+      },
+      "MembraneSkeleton": {
+        "at": [
+          2.2,
+          1.05,
+          -1.35
+        ],
+        "out": [
+          0,
+          -0.66,
+          0.75
+        ]
+      },
+      "Cytoplasm": {
+        "at": [
+          1.55,
+          -0.85,
+          -1.05
+        ],
+        "out": [
+          -0.88,
+          0.16,
+          0.45
+        ]
+      },
+      "HemoglobinMolecules": {
+        "at": [
+          -2.25,
+          -0.72,
+          -1.61
+        ],
+        "out": [
+          0.86,
+          0.2,
+          0.47
+        ]
+      }
+    }
+  },
+  "lipid-bilayer": {
+    "file": "/assets/models/lipid-bilayer.glb",
+    "explode": {
+      "factor": 2.05,
+      "groups": [
+        [
+          "LipidCarbohydrateChains",
+          "OuterMonolayerHeads"
+        ],
+        [
+          "ProteinCarbohydrateChains",
+          "IntegralProtein"
+        ]
+      ]
+    },
+    "parts": {
+      "LipidCarbohydrateChains": {
+        "at": [
+          3.15,
+          3.3,
+          -2.2
+        ],
+        "out": [
+          0,
+          1,
+          0
+        ]
+      },
+      "OuterMonolayerHeads": {
+        "at": [
+          -2.62,
+          2.3,
+          -1.15
+        ],
+        "out": [
+          0,
+          1,
+          0
+        ]
+      },
+      "HydrophobicCore": {
+        "at": [
+          3.3,
+          0,
+          -0.3
+        ],
+        "out": [
+          0,
+          0,
+          1
+        ]
+      },
+      "InnerMonolayerHeads": {
+        "at": [
+          -2.62,
+          -2.3,
+          -0.3
+        ]
+      },
+      "PhospholipidMolecule": {
+        "at": [
+          1.575,
+          2.3,
+          -1.15
+        ],
+        "out": [
+          0.15,
+          0.72,
+          0.68
+        ]
+      },
+      "CholesterolMolecules": {
+        "at": [
+          2.1,
+          -1,
+          -0.35
+        ],
+        "out": [
+          0.6,
+          0.8,
+          0
+        ]
+      },
+      "ProteinCarbohydrateChains": {
+        "at": [
+          -1.31,
+          5,
+          -0.45
+        ],
+        "out": [
+          -0.86,
+          0.35,
+          0.37
+        ]
+      },
+      "IntegralProtein": {
+        "at": [
+          -1.31,
+          1.2,
+          -0.05
+        ],
+        "out": [
+          -0.86,
+          0.35,
+          0.37
+        ]
+      },
+      "PeripheralProtein": {
+        "at": [
+          3.05,
+          -2.6,
+          -0.62
+        ]
+      }
+    }
+  },
+  "pn-junction": {
+    "file": "/assets/models/pn-junction.glb",
+    "explode": {
+      "factor": 2,
+      "groups": [
+        [
+          "DepletionZone",
+          "BuiltInField"
+        ]
+      ]
+    },
+    "parts": {
+      "NRegion": {
+        "at": [
+          1.3,
+          0.9,
+          0.75
+        ]
+      },
+      "PRegion": {
+        "at": [
+          -1.2,
+          0.9,
+          0.75
+        ]
+      },
+      "DepletionZone": {
+        "at": [
+          0.1,
+          0.9,
+          0.75
+        ],
+        "out": [
+          0,
+          1,
+          0.3
+        ]
+      },
+      "BuiltInField": {
+        "at": [
+          0.1,
+          -0.5,
+          0.42
+        ]
+      },
+      "AnodeContact": {
+        "at": [
+          -2.33,
+          0.95,
+          0.75
+        ]
+      },
+      "CathodeContact": {
+        "at": [
+          2.33,
+          0.95,
+          0.75
+        ]
+      }
+    }
+  },
+  "lithium-ion-cell": {
+    "file": "/assets/models/lithium-ion-cell.glb",
+    "explode": {
+      "factor": 1.7
+    },
+    "parts": {
+      "SteelCan": {
+        "at": [
+          -0.865,
+          -1.6,
+          -0.15
+        ],
+        "out": [
+          0,
+          -0.15,
+          -0.99
+        ]
+      },
+      "PositiveCap": {
+        "at": [
+          0.2,
+          3.46,
+          -0.12
+        ]
+      },
+      "GasketRing": {
+        "at": [
+          -0.86,
+          3.135,
+          -0.1
+        ]
+      },
+      "NegativeBase": {
+        "at": [
+          0,
+          -3.32,
+          -0.45
+        ]
+      },
+      "JellyRoll": {
+        "at": [
+          0.42,
+          1.85,
+          -0.42
+        ],
+        "out": [
+          -0.25,
+          -0.1,
+          0.96
+        ]
+      },
+      "CentralMandrel": {
+        "at": [
+          0,
+          3.2,
+          -0.05
+        ],
+        "out": [
+          0.88,
+          0.3,
+          0.37
+        ]
+      }
+    }
+  },
+  "newtons-cradle": {
+    "file": "/assets/models/newtons-cradle.glb",
+    "explode": {
+      "factor": 1.5,
+      "groups": [
+        [
+          "Frame",
+          "Wires"
+        ]
+      ]
+    },
+    "parts": {
+      "Base": {
+        "at": [
+          1.1,
+          0.06,
+          0.3
+        ]
+      },
+      "Frame": {
+        "at": [
+          0.9,
+          1.62,
+          0.38
+        ]
+      },
+      "Wires": {
+        "at": [
+          0.556,
+          1.15,
+          0.19
+        ]
+      },
+      "ImpactBall": {
+        "at": [
+          -1.17,
+          0.744,
+          0
+        ]
+      },
+      "TransferBalls": {
+        "at": [
+          0,
+          0.55,
+          0
+        ]
+      },
+      "ReceiverBall": {
+        "at": [
+          0.62,
+          0.55,
+          0
+        ]
+      },
+      "SwingGuide": {
+        "at": [
+          -0.878,
+          0.6,
+          0
+        ]
+      }
+    }
+  },
+  "pressure-gauge": {
+    "file": "/assets/models/pressure-gauge.glb",
+    "explode": {
+      "factor": 2.05
+    },
+    "parts": {
+      "GaugeCase": {
+        "at": [
+          -0.86,
+          0.52,
+          0.1
+        ],
+        "out": [
+          0.55,
+          0.1,
+          -0.83
+        ]
+      },
+      "PressurePort": {
+        "at": [
+          0,
+          -1.34,
+          0
+        ],
+        "out": [
+          0,
+          -1,
+          0
+        ]
+      },
+      "BourdonTube": {
+        "at": [
+          0.62,
+          -0.3,
+          -0.25
+        ],
+        "out": [
+          -0.85,
+          -0.45,
+          0.28
+        ]
+      },
+      "Movement": {
+        "at": [
+          -0.34,
+          -0.38,
+          -0.17
+        ],
+        "out": [
+          -0.7,
+          0.35,
+          -0.62
+        ]
+      },
+      "DialFace": {
+        "at": [
+          -0.55,
+          0.62,
+          0.02
+        ],
+        "out": [
+          0,
+          -0.72,
+          0.69
+        ]
+      },
+      "Pointer": {
+        "at": [
+          0.3,
+          0.3,
+          0.07
+        ],
+        "out": [
+          -0.55,
+          0.45,
+          0.7
+        ]
+      },
+      "CoverGlass": {
+        "at": [
+          0.66,
+          0.52,
+          0.16
+        ],
+        "out": [
+          0.72,
+          0.3,
+          0.63
+        ]
+      },
+      "Bezel": {
+        "at": [
+          0,
+          1.01,
+          0.1
+        ],
+        "out": [
+          0.3,
+          0.86,
+          0.41
+        ]
+      }
+    }
+  },
+  "radiation-dosimeter": {
+    "file": "/assets/models/radiation-dosimeter.glb",
+    "explode": {
+      "factor": 1.95,
+      "groups": [
+        [
+          "Preamplifier",
+          "ControlBoard"
+        ]
+      ]
+    },
+    "parts": {
+      "Housing": {
+        "at": [
+          2,
+          4,
+          0.85
+        ],
+        "out": [
+          0,
+          0,
+          -1
+        ]
+      },
+      "DetectorWindow": {
+        "at": [
+          -0.8,
+          3.64,
+          0.45
+        ],
+        "out": [
+          0.78,
+          0.55,
+          0.3
+        ]
+      },
+      "SemiconductorDetector": {
+        "at": [
+          0.6,
+          3.36,
+          0.3
+        ],
+        "out": [
+          0,
+          0,
+          1
+        ]
+      },
+      "Preamplifier": {
+        "at": [
+          1.15,
+          0.5,
+          0.34
+        ],
+        "out": [
+          1,
+          0.1,
+          0.5
+        ]
+      },
+      "ControlBoard": {
+        "at": [
+          -1.55,
+          3.05,
+          0.22
+        ],
+        "out": [
+          1,
+          0.1,
+          0.5
+        ]
+      },
+      "Display": {
+        "at": [
+          1.45,
+          1.05,
+          0.68
+        ],
+        "out": [
+          -1,
+          0.3,
+          0.25
+        ]
+      },
+      "Buzzer": {
+        "at": [
+          -1.38,
+          -1.6,
+          0.32
+        ],
+        "out": [
+          -0.35,
+          -0.9,
+          0.25
+        ]
+      },
+      "Battery": {
+        "at": [
+          0,
+          -3.57,
+          0.05
+        ],
+        "out": [
+          -0.82,
+          -0.45,
+          0.35
+        ]
+      }
+    }
+  },
+  "solar-panel": {
+    "file": "/assets/models/solar-panel.glb",
+    "explode": {
+      "factor": 2.49,
+      "groups": [
+        [
+          "JunctionBox",
+          "Cable"
+        ]
+      ]
+    },
+    "parts": {
+      "Frame": {
+        "at": [
+          0.3,
+          0.02,
+          0.555
+        ],
+        "out": [
+          1,
+          0.45,
+          0
+        ]
+      },
+      "CoverGlass": {
+        "at": [
+          0.55,
+          0.018,
+          0.4
+        ],
+        "out": [
+          0,
+          1,
+          0
+        ]
+      },
+      "CellField": {
+        "at": [
+          -0.422,
+          0.001,
+          0.45
+        ],
+        "out": [
+          0,
+          0.5,
+          -0.87
+        ]
+      },
+      "Busbars": {
+        "at": [
+          0.6,
+          0.003,
+          -0.325
+        ],
+        "out": [
+          0,
+          0.8,
+          0.6
+        ]
+      },
+      "Backsheet": {
+        "at": [
+          -0.85,
+          -0.01,
+          0.1
+        ],
+        "out": [
+          0,
+          -0.8,
+          0.6
+        ]
+      },
+      "JunctionBox": {
+        "at": [
+          0,
+          -0.046,
+          0
+        ],
+        "out": [
+          0,
+          -1,
+          0
+        ]
+      },
+      "Cable": {
+        "at": [
+          -0.44,
+          -0.03,
+          -0.032
+        ]
+      },
+      "RoofBracket": {
+        "at": [
+          -0.55,
+          -0.07,
+          -0.6
+        ],
+        "out": [
+          -0.87,
+          -0.5,
+          0
+        ]
+      }
+    }
+  }
+}

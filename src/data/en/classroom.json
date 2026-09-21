@@ -8,15 +8,19 @@
   "classroom_meta_twitter_description": "Ready-made lessons, a 3D content library, testing, and per-lesson analytics. Works offline, grades 1–12.",
   "classroom_schema_name": "Eddy Classroom",
   "classroom_schema_description": "Digital platform for lesson preparation and delivery — ready-made lessons, a 3D content library, testing, and analytics",
-
   "classroom_eyebrow": "Eddy Classroom",
   "classroom_title": "Eddy <span class=\"hl\">Classroom</span>",
   "classroom_lede": "A single digital environment for preparing and running a lesson: ready-made lesson plans, a library of digital and 3D materials, testing, and per-lesson analytics.",
   "classroom_hero_cta_primary": "Leave a request",
   "classroom_hero_cta_secondary": "What's in the platform",
   "classroom_stats": [
-    { "text": "Grades 1–12" },
-    { "text": "Works offline", "offline": true }
+    {
+      "text": "Grades 1–12"
+    },
+    {
+      "text": "Works offline",
+      "offline": true
+    }
   ],
   "classroom_hero_panel_title": "Earth's structure · 6-A",
   "classroom_hero_panel_tag": "3D model",
@@ -31,17 +35,28 @@
   "classroom_hero_galaxy_title": "Galaxy",
   "classroom_hero_noise_title": "Noise meter",
   "classroom_hero_globe_layers": [
-    { "name": "Crust", "meta": "5–70 km · solid" },
-    { "name": "Mantle", "meta": "to 2900 km · solid" },
-    { "name": "Outer core", "meta": "2900–5150 km · liquid" },
-    { "name": "Inner core", "meta": "5150–6371 km · solid" }
+    {
+      "name": "Crust",
+      "meta": "5–70 km · solid"
+    },
+    {
+      "name": "Mantle",
+      "meta": "to 2900 km · solid"
+    },
+    {
+      "name": "Outer core",
+      "meta": "2900–5150 km · liquid"
+    },
+    {
+      "name": "Inner core",
+      "meta": "5150–6371 km · solid"
+    }
   ],
   "classroom_hero_globe_scale_note": "The crust is drawn thicker than life so it can be seen. In reality it is under 1% of Earth's radius.",
   "classroom_hero_globe_explode": "Take it apart",
   "classroom_hero_globe_collapse": "Put it back",
   "classroom_hero_globe_hint": "Tap it, or drag it apart",
   "classroom_hero_globe_alt": "Eddy Classroom — interactive 3D model of the Earth's interior with annotations",
-
   "classroom_why_eyebrow": "Advantages",
   "classroom_why_title": "Why schools choose <span class=\"hl\">Eddy Classroom</span>",
   "classroom_why_items": [
@@ -76,7 +91,6 @@
       "text": "The teacher's laptop and tablet, any student smartphone, the classroom's interactive panel."
     }
   ],
-
   "classroom_platform_eyebrow": "Platform",
   "classroom_platform_title": "What's in the <span class=\"hl\">Eddy Classroom</span> platform",
   "classroom_platform_items": [
@@ -125,20 +139,442 @@
   ],
   "classroom_platform_virtual_remote": "remote",
   "classroom_platform_virtual_online": "online",
-
   "classroom_library_badge": "3D objects",
   "classroom_library_count": "1200+",
   "classroom_library_count_label": "models",
   "classroom_library_desc": "A catalog of educational 3D content for every subject.",
   "classroom_library_prev": "Previous subject",
   "classroom_library_next": "Next subject",
-
   "classroom_library_model_eyebrow": "A model from the catalog",
-  "classroom_library_model_title": "The human eye, in section",
-  "classroom_library_model_meta": "Biology · years 8–9 · 10 structures",
+  "classroom_library_models": [
+    {
+      "id": "human-eye",
+      "subject": "biology",
+      "name": "The human eye, in section",
+      "title": "The human eye, in section",
+      "meta": "Biology · years 8–9 · 10 structures",
+      "weight": "1.7 MB — fetched only when you ask for it",
+      "parts": [
+        {
+          "node": "Sclera",
+          "label": "Sclera",
+          "desc": "The tough outer fibrous coat — the white of the eye. It holds the globe's shape, protects the structures inside and gives the eye muscles something to pull against; at the front it becomes the transparent cornea."
+        },
+        {
+          "node": "Choroid",
+          "label": "Choroid",
+          "desc": "The middle coat, densely packed with blood vessels. It feeds the outer layers of the retina with oxygen and nutrients, and its dark pigment soaks up stray light so it cannot scatter back inside the eye."
+        },
+        {
+          "node": "Retina",
+          "label": "Retina",
+          "desc": "The innermost light-sensitive coat — the eye's screen. Its photoreceptors turn light into nerve impulses that travel on to the optic nerve."
+        },
+        {
+          "node": "Cornea",
+          "label": "Cornea",
+          "desc": "The transparent domed window at the front of the eye. It contains no blood vessels at all, which is exactly why it stays clear; it bends light more strongly than the lens does, providing about two-thirds of the eye's focusing power."
+        },
+        {
+          "node": "AnteriorChamber",
+          "label": "Anterior chamber (aqueous humour)",
+          "desc": "The space between the cornea and the iris, filled with clear aqueous humour. The fluid is continuously renewed, feeds the vessel-free cornea and lens, and creates the internal pressure that keeps the eye firm."
+        },
+        {
+          "node": "Iris",
+          "label": "Iris",
+          "desc": "The coloured muscular diaphragm with an opening at its centre — the pupil. By changing the pupil's diameter the iris meters how much light reaches the retina: the opening narrows in bright light and widens in the dark."
+        },
+        {
+          "node": "CiliaryBody",
+          "label": "Ciliary body",
+          "desc": "A muscular ring that suspends the lens on fine fibres and changes its curvature — this is how the eye focuses. It also produces the aqueous humour that fills the anterior chamber."
+        },
+        {
+          "node": "Lens",
+          "label": "Lens",
+          "desc": "The transparent biconvex body behind the pupil. Unlike the cornea it can change shape: the ciliary body makes it rounder for near objects and flatter for distant ones."
+        },
+        {
+          "node": "VitreousBody",
+          "label": "Vitreous body",
+          "desc": "The clear gel filling almost the whole volume of the eye behind the lens. It lets light through to the retina and at the same time presses the retina against the choroid from inside, holding the globe's shape."
+        },
+        {
+          "node": "OpticNerve",
+          "label": "Optic nerve",
+          "desc": "A bundle of about a million nerve fibres leaving the back wall of the eye and carrying the image to the brain. There is not a single photoreceptor where it exits — this is the blind spot, and we never notice it."
+        }
+      ]
+    },
+    {
+      "id": "red-blood-cell",
+      "subject": "biology",
+      "name": "Red blood cell",
+      "title": "Red blood cell (erythrocyte)",
+      "meta": "Biology · 5 structures",
+      "weight": "1.9 MB — fetched only when you ask for it",
+      "parts": [
+        {
+          "node": "CellMembrane",
+          "label": "Plasma membrane",
+          "desc": "The envelope that separates the cell's contents from the blood plasma and lets oxygen and carbon dioxide pass through. It has been peeled away over the front wedge so you can see what lies beneath — that is a cutaway device, not a gap: the membrane surrounds the whole cell."
+        },
+        {
+          "node": "SurfaceAntigens",
+          "label": "Surface carbohydrate markers",
+          "desc": "Short chains of sugar molecules sticking out of the membrane. The immune system recognises a cell as \"its own\" by these, and it is the set of them that determines a person's blood group. In a real cell they are thousands of times smaller than the cell itself — they are enlarged here, or they would be invisible."
+        },
+        {
+          "node": "MembraneSkeleton",
+          "label": "Protein network beneath the membrane",
+          "desc": "A network of elastic protein filaments stretched over the whole membrane from inside. It holds the biconcave shape and at the same time lets the cell bend: a red blood cell squeezes through capillaries narrower than itself and springs back afterwards. Where the filaments meet, protein nodes hold them together."
+        },
+        {
+          "node": "Cytoplasm",
+          "label": "Cytoplasm",
+          "desc": "The cell's entire interior. In a mature human red blood cell there is no nucleus, no mitochondria and no other organelles — the whole space is given over to haemoglobin, which makes up about a third of it by mass. That is also why the cell cannot divide and lives only about 120 days."
+        },
+        {
+          "node": "HemoglobinMolecules",
+          "label": "Haemoglobin molecules",
+          "desc": "The red protein the whole cell exists for: it picks up oxygen in the lungs and releases it to the tissues. A single red blood cell holds about 270 million of these molecules — a handful is shown here, each enlarged, or it would be smaller than a dot."
+        }
+      ]
+    },
+    {
+      "id": "lipid-bilayer",
+      "subject": "biology",
+      "name": "Lipid bilayer",
+      "title": "Membrane lipid bilayer",
+      "meta": "Biology · 9 structures",
+      "weight": "2.0 MB — fetched only when you ask for it",
+      "parts": [
+        {
+          "node": "LipidCarbohydrateChains",
+          "label": "Carbohydrate chains on lipids",
+          "desc": "Short branched chains of sugar molecules sticking straight out of lipid heads, with no protein underneath. They occur on ONE side of the membrane only. Cells recognise one another by touch through chains like these."
+        },
+        {
+          "node": "OuterMonolayerHeads",
+          "label": "Heads of the outer monolayer",
+          "desc": "Rows of round heads facing outward. A head likes water — it is hydrophilic, meaning \"water-loving\", which is why it faces the water. Together with the tails hanging inward from them, these heads form the outer monolayer — one of the membrane's two halves."
+        },
+        {
+          "node": "HydrophobicCore",
+          "label": "Hydrophobic core",
+          "desc": "The thickness made of the tails of both monolayers: they face each other and meet in the middle with no gap at all. Tails cannot stand water — they are hydrophobic, meaning \"water-fearing\", so they hide inside, away from it. This continuous oily thickness is the barrier that water-soluble substances cannot cross on their own."
+        },
+        {
+          "node": "InnerMonolayerHeads",
+          "label": "Heads of the inner monolayer",
+          "desc": "The same rows of heads on the opposite side of the membrane, facing their own way — there is water there too. Together with their tails they form the inner monolayer, the membrane's second half. There are no carbohydrate chains on this side: they occur on one side only."
+        },
+        {
+          "node": "PhospholipidMolecule",
+          "label": "Phospholipid molecule",
+          "desc": "One highlighted molecule — the brick both layers are built from: a head with two tails on it. One tail is straight, the other has a kink in the middle. It is these kinked tails that keep the molecules from packing tightly, so the membrane stays soft and mobile."
+        },
+        {
+          "node": "CholesterolMolecules",
+          "label": "Cholesterol molecules",
+          "desc": "Short rigid molecules wedged between the tails. They are shorter than a phospholipid and do not reach the middle of the core. Cholesterol keeps the membrane from becoming either too runny or too stiff."
+        },
+        {
+          "node": "ProteinCarbohydrateChains",
+          "label": "Carbohydrate chains on the protein",
+          "desc": "The same sugar chains, but attached to the protein itself rather than to a lipid — to the part of it that protrudes above the surface. A protein with them is called a glycoprotein. They too stick out from one side of the membrane only."
+        },
+        {
+          "node": "IntegralProtein",
+          "label": "Integral protein",
+          "desc": "A protein that pierces the membrane right through: it crosses both layers, and it protrudes much further on one side than on the other. A channel is visible inside it — the passage through which things that could not cross the oily core on their own get in. A real membrane holds far more proteins; fewer are shown here so that the lipids themselves stay visible."
+        },
+        {
+          "node": "PeripheralProtein",
+          "label": "Peripheral protein",
+          "desc": "A protein that merely lies on the surface of one side of the membrane and does not enter its thickness. Compare it with the integral protein: that one goes right through, this one just holds on top."
+        }
+      ]
+    },
+    {
+      "id": "pn-junction",
+      "subject": "chemistry",
+      "name": "p-n junction",
+      "title": "p-n junction in a silicon crystal",
+      "meta": "Chemistry · 6 structures",
+      "weight": "601 KB — fetched only when you ask for it",
+      "parts": [
+        {
+          "node": "NRegion",
+          "label": "n-type region",
+          "desc": "Silicon doped with a donor impurity: each dopant atom gives the crystal one extra electron, so the majority carriers here are free electrons and holes are the minority carriers. The region as a whole is electrically neutral — the free electrons' charge is balanced by positive donor ions locked into lattice sites. Click to see a single doped silicon atom up close."
+        },
+        {
+          "node": "PRegion",
+          "label": "p-type region",
+          "desc": "Silicon doped with an acceptor impurity: each dopant atom takes an electron from a neighbouring covalent bond and leaves a hole behind, so the majority carriers here are holes. The anode is attached to this region. The thermometer rests on this junction: at a constant forward current the voltage drop is ≈0.6–0.7 V at 25 °C and falls by roughly 2 mV for every degree of heating — that voltage is exactly what a thermostat's sensor reads."
+        },
+        {
+          "node": "DepletionZone",
+          "label": "Depletion region",
+          "desc": "A narrow layer either side of the boundary from which diffusion has swept the mobile carriers: all that is left are the IMMOBILE ionised dopant cores — positive donor ions on the n side, negative acceptor ions on the p side. These are not free charges: they are locked into lattice sites and cannot move, so there are essentially no free electrons or holes inside the layer (the university name for the same region is «depletion region»). In reality it is only 0.1–1 µm wide against a crystal hundreds of micrometres across, so this scene exaggerates it by a factor of hundreds to thousands — otherwise it would be invisible; it also reaches further into the more lightly doped n side."
+        },
+        {
+          "node": "BuiltInField",
+          "label": "Built-in electric field",
+          "desc": "The arrows of the depletion region's built-in electric field. The field points FROM the n-type region TO the p-type region — from the positively charged donor ions toward the negatively charged acceptor ions, so the arrow tails stand on the n side and the heads land in p. This field is what creates the contact potential difference (≈0.6–0.8 V for silicon): it balances the diffusion of majority carriers against the drift of minority carriers, so at equilibrium the net current through the junction is zero."
+        },
+        {
+          "node": "AnodeContact",
+          "label": "Anode contact",
+          "desc": "The metallised ohmic contact to the p-type region — the diode's anode. «Ohmic» means there is virtually no barrier at the metal–semiconductor interface and the terminal conducts equally in both directions: it is the p-n junction that rectifies, not the contact. In forward bias the supply's positive terminal goes to the anode."
+        },
+        {
+          "node": "CathodeContact",
+          "label": "Cathode contact",
+          "desc": "The metallised ohmic contact to the n-type region — the diode's cathode. The anode–cathode pair sets the device's polarity: positive on the anode (p) is forward bias, the depletion region narrows and the junction conducts; positive on the cathode (n) is reverse bias, the depletion region widens and the current all but vanishes."
+        }
+      ]
+    },
+    {
+      "id": "lithium-ion-cell",
+      "subject": "chemistry",
+      "name": "Lithium-ion cell",
+      "title": "Lithium-ion cell",
+      "meta": "Chemistry · 6 structures",
+      "weight": "2.2 MB — fetched only when you ask for it",
+      "parts": [
+        {
+          "node": "SteelCan",
+          "label": "Steel can",
+          "desc": "A thin-walled nickel-plated steel cup that holds the electrode roll and seals the electrolyte inside. The can is bonded to the negative electrode, so the whole body — base included — is the cell's minus terminal."
+        },
+        {
+          "node": "PositiveCap",
+          "label": "Positive cap with vent",
+          "desc": "The top cap with a raised button — the cell's plus terminal. It carries the slots of a safety vent: if the internal pressure rises sharply, they open and release the gas instead of letting the can burst."
+        },
+        {
+          "node": "GasketRing",
+          "label": "Gasket ring",
+          "desc": "A polymer ring between the cap and the rim of the can. It does two jobs at once: it seals the cell and it electrically insulates the plus cap from the minus can, keeping them from shorting."
+        },
+        {
+          "node": "NegativeBase",
+          "label": "Negative base terminal",
+          "desc": "The flat bottom of the can — the cell's minus terminal. The anode's copper foil is welded to it from the inside, so electrons leave the cell through the base."
+        },
+        {
+          "node": "JellyRoll",
+          "label": "Wound electrode roll",
+          "desc": "A long ribbon of two electrodes and a separator wound into a tight spiral — the \"jelly roll\". All the chemistry happens here: winding packs an enormous electrode area into a tiny volume."
+        },
+        {
+          "node": "CentralMandrel",
+          "label": "Central core cavity",
+          "desc": "A hollow channel along the cell's axis — the trace of the mandrel the roll was wound on. It is left open and helps carry heat away and even out the pressure inside the can."
+        }
+      ]
+    },
+    {
+      "id": "newtons-cradle",
+      "subject": "physics",
+      "name": "Newton's cradle",
+      "title": "Newton's cradle",
+      "meta": "Physics · 7 structures",
+      "weight": "683 KB — fetched only when you ask for it",
+      "parts": [
+        {
+          "node": "Base",
+          "label": "Base",
+          "desc": "A heavy dark rectangular base. It keeps the frame steady and damps vibrations so the balls swing evenly along a single line."
+        },
+        {
+          "node": "Frame",
+          "label": "Frame",
+          "desc": "A polished metal frame: four vertical posts and two top crossbars that the suspension wires attach to. The frame height sets the pendulum length."
+        },
+        {
+          "node": "Wires",
+          "label": "Suspension wires",
+          "desc": "Thin wires holding each ball with a V-pair from both crossbars. The double suspension stops sideways wobble, so impacts pass strictly along the row."
+        },
+        {
+          "node": "ImpactBall",
+          "label": "Impact ball",
+          "desc": "The leftmost ball, drawn aside and frozen just before release. Its potential energy will convert to kinetic energy and pass through the row of balls."
+        },
+        {
+          "node": "TransferBalls",
+          "label": "Transfer balls",
+          "desc": "The three middle balls hanging at rest, touching tightly. During an impact they barely move — momentum and energy pass through them as a compression wave."
+        },
+        {
+          "node": "ReceiverBall",
+          "label": "Receiver ball",
+          "desc": "The rightmost ball, which flies out after the impact, receiving the momentum of the whole row. It is made of steel — an iron-based alloy."
+        },
+        {
+          "node": "SwingGuide",
+          "label": "Swing path and impulse transfer",
+          "desc": "The dashed arc shows the impact ball's path, and the arrow shows the direction in which momentum leaves the row through the receiver ball."
+        }
+      ]
+    },
+    {
+      "id": "pressure-gauge",
+      "subject": "physics",
+      "name": "Pressure gauge",
+      "title": "Bourdon-tube pressure gauge",
+      "meta": "Physics · 8 structures",
+      "weight": "1.8 MB — fetched only when you ask for it",
+      "parts": [
+        {
+          "node": "GaugeCase",
+          "label": "Case",
+          "desc": "The round body of the instrument: it holds the tube and the movement in a fixed relationship to each other and shields them from knocks, dust and moisture. Every bearing is mounted on it, so the case sets the geometry the readings depend on."
+        },
+        {
+          "node": "PressurePort",
+          "label": "Threaded pressure port",
+          "desc": "Where pressure enters the instrument: through its bore the medium from the pipe passes straight into the inside of the Bourdon tube. The thread both mounts the gauge and seals the joint, so the full measured pressure reaches the elastic element."
+        },
+        {
+          "node": "BourdonTube",
+          "label": "Bourdon tube",
+          "desc": "The gauge's elastic element: a tube of flattened-oval section bent into an arc and sealed at its free end. Under pressure it tries to straighten, and that movement of a fraction of a millimetre is the only \"signal\" the movement has to work with."
+        },
+        {
+          "node": "Movement",
+          "label": "Transmission movement",
+          "desc": "The assembly that turns the tube tip's tiny movement into a pointer sweep across nearly half the dial: link, toothed sector, pinion, hairspring and plate."
+        },
+        {
+          "node": "DialFace",
+          "label": "Dial face with scale",
+          "desc": "The 0–10 bar scale that turns the pointer's position into a number. The dial also covers the movement from the front — which is why an intact gauge shows you only the result of the measurement, never the way it was obtained."
+        },
+        {
+          "node": "Pointer",
+          "label": "Pointer",
+          "desc": "It displays the result: fixed on the pinion's shaft, it copies the shaft's rotation. The needle's long arm turns a modest shaft angle into an easily visible sweep of its tip along the scale."
+        },
+        {
+          "node": "CoverGlass",
+          "label": "Cover glass",
+          "desc": "A clear window that keeps dust and moisture off the dial and the pointer without getting in the way of the reading. It also puts the pointer out of reach — any contact with it would upset the instrument's setting."
+        },
+        {
+          "node": "Bezel",
+          "label": "Bezel ring",
+          "desc": "The ring that presses the glass against the rim of the case and holds its seal. It is what closes the case into a sealed box, keeping the movement inside dry and clean."
+        }
+      ]
+    },
+    {
+      "id": "radiation-dosimeter",
+      "subject": "physics",
+      "name": "Radiation dosimeter",
+      "title": "Radiation dosimeter",
+      "meta": "Physics · 8 structures",
+      "weight": "178 KB — fetched only when you ask for it",
+      "parts": [
+        {
+          "node": "Housing",
+          "label": "Housing",
+          "desc": "A shock-resistant plastic case in two halves — the instrument is carried in a pocket and used in the field. The front half is cut away here so the interior is visible; the back wall, sides and front rim remain. The case is not only a holder: for soft beta radiation it is itself a barrier, which is why a separate window is cut in it opposite the detector."
+        },
+        {
+          "node": "DetectorWindow",
+          "label": "Detector window",
+          "desc": "A thin metal membrane in the shield frame, letting beta radiation reach the silicon wafer: the plastic case alone would stop it. Gamma quanta pass through the case as well, so the window exists specifically for beta. The shield also keeps light off the wafer — a photodiode responds to light just as readily as to radiation."
+        },
+        {
+          "node": "SemiconductorDetector",
+          "label": "Semiconductor detector",
+          "desc": "A silicon wafer with a p-n junction — where radiation becomes electricity. A particle entering the junction's depletion region ionises silicon atoms: one electron-hole pair per 3.6 eV of energy deposited, and the junction's field sweeps them to the contacts. The number of pairs is proportional to the particle's energy, so the instrument measures not only how often it clicked but how much energy arrived. A real wafer is about 300 µm thick; the scene exaggerates it several times over, or it would be invisible. Click to step inside the junction."
+        },
+        {
+          "node": "Preamplifier",
+          "label": "Charge preamplifier",
+          "desc": "The chip without which there is simply no signal. A single particle creates about 3·10⁴ pairs in the wafer — a charge of a few femtocoulombs, millions of times smaller than digital logic can count. The preamplifier collects that charge and turns it into a pulse of usable shape and height; the pulse height carries the particle's energy."
+        },
+        {
+          "node": "ControlBoard",
+          "label": "Counter board",
+          "desc": "A printed circuit board with the counter and microcontroller — what turns pulses into a dose. The circuit counts pulses over an interval, weights them by energy and divides by time: that is how separate events become the dose rate on the display. The same circuit accumulates the total — the dose collected since power-on."
+        },
+        {
+          "node": "Display",
+          "label": "Display",
+          "desc": "A liquid-crystal indicator showing 0.12 µSv/h — ordinary natural background, which in Ukraine falls between 0.05 and 0.15 µSv/h. Note the \"per hour\": the instrument shows the dose RATE, the speed at which dose accumulates, not the dose itself. Household instruments also offer µR/h — but the roentgen measures ionisation of air and the sievert measures the effect on tissue, and the two must not be confused. Click to see how dose differs from dose rate."
+        },
+        {
+          "node": "Buzzer",
+          "label": "Piezo buzzer",
+          "desc": "The familiar click on every registered quantum. The sound is not decoration: it gives what the number on the display cannot — the tempo of events in real time. The display averages over seconds, while the clicks are heard at once, so approaching a source is audible before it is visible."
+        },
+        {
+          "node": "Battery",
+          "label": "Battery",
+          "desc": "The instrument's power source — from a few days to a few months of operation depending on the model. A household dosimeter is frugal precisely because most of the time nothing happens: in natural background the events are sparse, and the circuit mostly waits."
+        }
+      ]
+    },
+    {
+      "id": "solar-panel",
+      "subject": "physics",
+      "name": "Solar panel",
+      "title": "Residential solar panel",
+      "meta": "Physics · 8 structures",
+      "weight": "371 KB — fetched only when you ask for it",
+      "parts": [
+        {
+          "node": "Frame",
+          "label": "Aluminium frame",
+          "desc": "An anodised aluminium profile around the perimeter: its groove grips the edge of the laminate and carries the whole panel on its brackets. Without the frame the glass and films would flex under wind and snow loads and crack."
+        },
+        {
+          "node": "CoverGlass",
+          "label": "Tempered cover glass",
+          "desc": "The panel's top layer: high-transmission tempered glass, the thickest body in the stack at about 70 % of its total thickness. It takes the hail, wind and snow while letting light through to the cells."
+        },
+        {
+          "node": "CellField",
+          "label": "Solar cell array",
+          "desc": "108 half-cut silicon cells in 6 columns of 18 rows. The panel is split across the middle: the upper and lower halves work as two independent sets, so shade along one edge does not switch the whole panel off."
+        },
+        {
+          "node": "Busbars",
+          "label": "Busbars and interconnect ribbons",
+          "desc": "Thin silver strips screen-printed on the cells plus the soldered ribbons that string the cells together. They collect electrons from the whole area of each cell and carry the current to the collector bar across the middle of the panel."
+        },
+        {
+          "node": "Backsheet",
+          "label": "Backsheet",
+          "desc": "A white polymer sheet on the back of the panel — a moisture and dust barrier and an electrical insulator. It shows through as the pale gaps between the dark cells when the panel is seen from the front."
+        },
+        {
+          "node": "JunctionBox",
+          "label": "Junction box",
+          "desc": "A sealed box in the middle of the back — in the middle precisely because that is where the panel's two halves meet. Inside sit three bypass diodes: when a group of cells is shaded, a diode routes the current around it, so the panel loses about a third of its output instead of overheating."
+        },
+        {
+          "node": "Cable",
+          "label": "Output cables with connectors",
+          "desc": "Two cables — positive and negative — leave the junction box for the inverter or the next panel in the string. The connectors on their ends latch shut and stay sealed in the rain."
+        },
+        {
+          "node": "RoofBracket",
+          "label": "Roof mounting bracket",
+          "desc": "Two aluminium rails with clamps that fasten the panel to the roof. The clamp always grips the frame, never the glass, which would crack under a point load."
+        }
+      ]
+    }
+  ],
   "classroom_library_model_desc": "Not a render and not a screenshot: the same file a teacher opens in class. Turn it, pull the structures apart, read what each one does.",
   "classroom_library_model_cta": "Turn the model",
-  "classroom_library_model_weight": "1.7 MB — fetched only when you ask for it",
   "classroom_library_model_loading": "Loading the model",
   "classroom_library_model_error": "The model could not be loaded.",
   "classroom_library_model_retry": "Try again",
@@ -149,51 +585,141 @@
   "classroom_library_model_zoom_in": "Zoom in",
   "classroom_library_model_zoom_out": "Zoom out",
   "classroom_library_model_parts_title": "Structures",
-  "classroom_library_model_alt": "Interactive 3D model of the human eye in cross-section",
-  "classroom_library_model_parts": [
-    { "node": "Sclera", "label": "Sclera", "desc": "The tough outer fibrous coat — the white of the eye. It holds the globe's shape, protects the structures inside and gives the eye muscles something to pull against; at the front it becomes the transparent cornea." },
-    { "node": "Choroid", "label": "Choroid", "desc": "The middle coat, densely packed with blood vessels. It feeds the outer layers of the retina with oxygen and nutrients, and its dark pigment soaks up stray light so it cannot scatter back inside the eye." },
-    { "node": "Retina", "label": "Retina", "desc": "The innermost light-sensitive coat — the eye's screen. Its photoreceptors turn light into nerve impulses that travel on to the optic nerve." },
-    { "node": "Cornea", "label": "Cornea", "desc": "The transparent domed window at the front of the eye. It contains no blood vessels at all, which is exactly why it stays clear; it bends light more strongly than the lens does, providing about two-thirds of the eye's focusing power." },
-    { "node": "AnteriorChamber", "label": "Anterior chamber (aqueous humour)", "desc": "The space between the cornea and the iris, filled with clear aqueous humour. The fluid is continuously renewed, feeds the vessel-free cornea and lens, and creates the internal pressure that keeps the eye firm." },
-    { "node": "Iris", "label": "Iris", "desc": "The coloured muscular diaphragm with an opening at its centre — the pupil. By changing the pupil's diameter the iris meters how much light reaches the retina: the opening narrows in bright light and widens in the dark." },
-    { "node": "CiliaryBody", "label": "Ciliary body", "desc": "A muscular ring that suspends the lens on fine fibres and changes its curvature — this is how the eye focuses. It also produces the aqueous humour that fills the anterior chamber." },
-    { "node": "Lens", "label": "Lens", "desc": "The transparent biconvex body behind the pupil. Unlike the cornea it can change shape: the ciliary body makes it rounder for near objects and flatter for distant ones." },
-    { "node": "VitreousBody", "label": "Vitreous body", "desc": "The clear gel filling almost the whole volume of the eye behind the lens. It lets light through to the retina and at the same time presses the retina against the choroid from inside, holding the globe's shape." },
-    { "node": "OpticNerve", "label": "Optic nerve", "desc": "A bundle of about a million nerve fibres leaving the back wall of the eye and carrying the image to the brain. There is not a single photoreceptor where it exits — this is the blind spot, and we never notice it." }
-  ],
-
+  "classroom_library_model_alt": "Interactive 3D model from the Eddy Classroom library",
   "classroom_library_soon_badge": "Coming soon",
   "classroom_library_soon_desc": "The real 3D model for this example is still on its way — it will appear here once it lands in the library.",
-
   "classroom_library_cards": [
-    { "subject": "biology", "label": "Biology", "name": "Cell structure", "glyph": "cell" },
-    { "subject": "chemistry", "label": "Chemistry", "name": "Periodic table of elements", "glyph": "periodic" },
-    { "subject": "physics", "label": "Physics", "name": "Thermodynamics", "glyph": "thermo" },
-    { "subject": "geography", "label": "Geography", "name": "Volcano cross-section", "glyph": "volcano" },
-    { "subject": "biology", "label": "Biology", "name": "Circulatory system", "glyph": "heart" },
-    { "subject": "geography", "label": "Geography", "name": "Tectonic plates", "glyph": "crust" },
-    { "subject": "physics", "label": "Physics", "name": "V8 engine", "glyph": "gear" },
-    { "subject": "chemistry", "label": "Chemistry", "name": "DNA molecule", "glyph": "dna" },
-    { "subject": "biology", "label": "Biology", "name": "The human eye, in section", "glyph": "eye", "real": true }
+    {
+      "subject": "biology",
+      "label": "Biology",
+      "name": "The human eye, in section",
+      "model": "human-eye",
+      "glyph": "eye"
+    },
+    {
+      "subject": "biology",
+      "label": "Biology",
+      "name": "Red blood cell",
+      "model": "red-blood-cell"
+    },
+    {
+      "subject": "biology",
+      "label": "Biology",
+      "name": "Lipid bilayer",
+      "model": "lipid-bilayer"
+    },
+    {
+      "subject": "chemistry",
+      "label": "Chemistry",
+      "name": "p-n junction",
+      "model": "pn-junction"
+    },
+    {
+      "subject": "chemistry",
+      "label": "Chemistry",
+      "name": "Lithium-ion cell",
+      "model": "lithium-ion-cell"
+    },
+    {
+      "subject": "physics",
+      "label": "Physics",
+      "name": "Newton's cradle",
+      "model": "newtons-cradle"
+    },
+    {
+      "subject": "physics",
+      "label": "Physics",
+      "name": "Pressure gauge",
+      "model": "pressure-gauge"
+    },
+    {
+      "subject": "physics",
+      "label": "Physics",
+      "name": "Radiation dosimeter",
+      "model": "radiation-dosimeter"
+    },
+    {
+      "subject": "physics",
+      "label": "Physics",
+      "name": "Solar panel",
+      "model": "solar-panel"
+    },
+    {
+      "subject": "geography",
+      "label": "Geography",
+      "name": "Volcano cross-section",
+      "glyph": "volcano"
+    },
+    {
+      "subject": "geography",
+      "label": "Geography",
+      "name": "Tectonic plates",
+      "glyph": "crust"
+    }
   ],
   "classroom_form_headline": "Try Eddy Classroom",
   "classroom_form_lede": "Leave a request — our manager will help connect your school, choose a plan, and run a platform demo for your staff.",
   "classroom_form_title": "Request for Eddy Classroom",
   "classroom_form_fields": [
-    { "name": "name", "label": "Full name", "type": "text", "required": true, "placeholder": "Olena Kovalchuk" },
-    { "name": "org", "label": "School / organization name", "type": "text", "required": false, "placeholder": "Lyceum No. 5, Dnipro" },
-    { "name": "students", "label": "Approximate number of students or classes", "type": "text", "required": false, "placeholder": "12 classes / 320 students" },
-    { "name": "phone", "label": "Contact phone", "type": "tel", "required": false, "placeholder": "+380 __ ___ __ __" },
-    { "name": "email", "label": "Email", "type": "email", "required": true, "placeholder": "you@school.ua" },
-    { "name": "comment", "label": "Comment", "type": "textarea", "required": false, "placeholder": "\"Interested in the 15-license School plan\" or \"Need a demo for the staff meeting\"", "rows": 2 }
+    {
+      "name": "name",
+      "label": "Full name",
+      "type": "text",
+      "required": true,
+      "placeholder": "Olena Kovalchuk"
+    },
+    {
+      "name": "org",
+      "label": "School / organization name",
+      "type": "text",
+      "required": false,
+      "placeholder": "Lyceum No. 5, Dnipro"
+    },
+    {
+      "name": "students",
+      "label": "Approximate number of students or classes",
+      "type": "text",
+      "required": false,
+      "placeholder": "12 classes / 320 students"
+    },
+    {
+      "name": "phone",
+      "label": "Contact phone",
+      "type": "tel",
+      "required": false,
+      "placeholder": "+380 __ ___ __ __"
+    },
+    {
+      "name": "email",
+      "label": "Email",
+      "type": "email",
+      "required": true,
+      "placeholder": "you@school.ua"
+    },
+    {
+      "name": "comment",
+      "label": "Comment",
+      "type": "textarea",
+      "required": false,
+      "placeholder": "\"Interested in the 15-license School plan\" or \"Need a demo for the staff meeting\"",
+      "rows": 2
+    }
   ],
   "classroom_form_role_label": "Role",
   "classroom_form_role_placeholder": "Select a role",
   "classroom_form_role_options": [
-    { "value": "teacher", "label": "Teacher" },
-    { "value": "admin", "label": "Administration representative" },
-    { "value": "other", "label": "Other" }
+    {
+      "value": "teacher",
+      "label": "Teacher"
+    },
+    {
+      "value": "admin",
+      "label": "Administration representative"
+    },
+    {
+      "value": "other",
+      "label": "Other"
+    }
   ],
   "classroom_form_submit": "Send request",
   "classroom_form_sending": "Sending...",

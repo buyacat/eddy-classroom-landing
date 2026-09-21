@@ -18,103 +18,101 @@
     that does not survive being shrunk to 88px — two rounded rectangles of
     different sizes read as two of the same thing.
 
-    THE PLINTH is the "підложка" the client asked for, built into the object
-    instead of parked behind it. A tinted plate under the icon would break
-    the rule this whole system is designed around (style.css: objects break
-    out of their card, they do not sit in plates), and a plate under only
-    the three colour cards would read as an accident. A surface the devices
-    STAND on is not a plate — it is part of the thing being drawn, it works
-    on a card of any colour, and it gives the silhouette the light base it
-    needs against #4050FF. The tablet and phone keep their cream halos on
-    top of that, which is what separates them from the laptop behind.
+    NO GLASS. Both screens used to carry a hard diagonal streak — a white
+    path at 0.9 opacity with NO blur on it at all — and the phone shell a
+    third at 0.85. That is a window reflection, and nothing in the bought
+    pack has one: their share of hard near-white pixels runs 0.00%–1.66%,
+    this object read 8.38%, and it was the first thing the client saw. The
+    screens are lit by their own gradient now, the way the pack's folder is.
+    scripts/check-icons.mjs holds the budget.
+
+    NO PLINTH. The surface the devices used to stand on was the other half
+    of the complaint — "менша інших". It was never really a size problem:
+    a floor drawn in near-white ate a third of the frame, and what was left
+    for the devices themselves was 183px of the 256 box, so inside `.obj`'s
+    square 88px they drew 63px tall against the folder's 73 and the bulb's
+    85. Removing the floor and spreading the cluster vertically instead puts
+    the object at 234, inside the range the bought ones occupy (212–248).
+    What the floor was really for — keeping the silhouette off #4050FF —
+    is now done the way the tablet and phone already did it, with a cream
+    rim, which costs no height and works on a card of any colour.
+
+    MASS, NOT INVENTORY. Side by side at the size they actually render, the
+    bought objects are one chunky body in one saturated colour with a small
+    cream detail — the folder is blue with a sliver of paper, the tick is a
+    green disc. This one was the other way round: big pale screens inside
+    thin frames, so at 88px it read as fiddly next to them even after it
+    stopped being pale. The bezels are thicker and the screens smaller for
+    that reason, the bodies are deep enough to hold a silhouette against
+    #4050FF, and the app tiles are large enough to survive the size the
+    card draws them at. The phone stays the one saturated body: it was
+    already the part of this object that read first.
+
+    Depth is read from the baselines: the laptop is furthest and sits
+    highest, the phone is nearest and sits lowest. Each keeps the faint
+    contact shadow that rocket/dino/wheel use — a shadow implies the ground
+    without anyone having to draw it.
   -->
   <defs>
     <linearGradient id="dvBody" x1="0.15" y1="0" x2="0.85" y2="1">
-      <stop offset="0%" stop-color="#525B7C"/>
-      <stop offset="45%" stop-color="#2E3550"/>
-      <stop offset="100%" stop-color="#14192A"/>
+      <stop offset="0%" stop-color="#606B92"/>
+      <stop offset="45%" stop-color="#3E4568"/>
+      <stop offset="100%" stop-color="#2A3049"/>
     </linearGradient>
     <linearGradient id="dvDeck" x1="0.2" y1="0" x2="0.8" y2="1">
-      <stop offset="0%" stop-color="#7D86A6"/>
-      <stop offset="50%" stop-color="#454D6B"/>
-      <stop offset="100%" stop-color="#1E2337"/>
+      <stop offset="0%" stop-color="#7C87A8"/>
+      <stop offset="50%" stop-color="#4A5374"/>
+      <stop offset="100%" stop-color="#333B58"/>
     </linearGradient>
-    <linearGradient id="dvPhone" x1="0.1" y1="0" x2="0.9" y2="1">
-      <stop offset="0%" stop-color="#B6F7DC"/>
-      <stop offset="42%" stop-color="#5AE3A8"/>
-      <stop offset="100%" stop-color="#169B6A"/>
-    </linearGradient>
+    <!-- Warm, like the cream the rest of the set uses for detail; the old
+         one ran to a cool #CED4E2 and read as a different material. Kept
+         off pure white on purpose: with the plinth gone the screens are the
+         biggest surfaces here, and at #FFFEF8 they made the object read as
+         a pale blob on #4050FF — 38% of its pixels sat at the white point,
+         where the bought objects hold 0–28%. Paper, not backlight. -->
     <linearGradient id="dvScreen" x1="0.1" y1="0" x2="0.9" y2="1">
-      <stop offset="0%" stop-color="#FFFFFA"/>
-      <stop offset="50%" stop-color="#F2F4F0"/>
-      <stop offset="100%" stop-color="#CED4E2"/>
+      <stop offset="0%" stop-color="#F3EFE2"/>
+      <stop offset="52%" stop-color="#E4DFCE"/>
+      <stop offset="100%" stop-color="#CCC7B4"/>
     </linearGradient>
     <linearGradient id="dvApp" x1="0.15" y1="0" x2="0.85" y2="1">
       <stop offset="0%" stop-color="#FFF0A6"/>
       <stop offset="45%" stop-color="#F7DE52"/>
       <stop offset="100%" stop-color="#CFA511"/>
     </linearGradient>
-    <linearGradient id="dvPlinth" x1="0.2" y1="0" x2="0.8" y2="1">
-      <stop offset="0%" stop-color="#FFFFFB"/>
-      <stop offset="45%" stop-color="#EDF0F6"/>
-      <stop offset="100%" stop-color="#BCC4D6"/>
-    </linearGradient>
-    <filter id="dvb2" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="2"/></filter>
-    <filter id="dvb5" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="5"/></filter>
+    <filter id="dvb4" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="4"/></filter>
+    <filter id="dvb7" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="7"/></filter>
     <filter id="dvb10" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="10"/></filter>
   </defs>
 
-  <g transform="translate(2 2)">
-
-    <!-- the surface, drawn first: everything standing on it overlaps it -->
-    <path d="M44 168 L212 168 Q226 168 230 180 L242 202 Q246 212 234 212 L22 212 Q10 212 14 202 L26 180 Q30 168 44 168 Z" fill="url(#dvPlinth)"/>
-    <path d="M44 168 L212 168 Q226 168 229 178 L38 178 Q30 178 26 180 Q30 168 44 168 Z" fill="#FFFFFF" opacity=".85" filter="url(#dvb2)"/>
-    <path d="M232 196 L242 202 Q246 212 234 212 L150 212 Z" fill="#8F99B2" opacity=".4" filter="url(#dvb5)"/>
-
-    <!-- laptop: furthest back, so it stands on the plinth's back edge -->
-    <g>
-      <ellipse cx="96" cy="172" rx="86" ry="11" fill="#0E1330" opacity=".26" filter="url(#dvb10)"/>
-      <rect x="28" y="40" width="132" height="96" rx="10" fill="url(#dvBody)"/>
-      <rect x="36" y="48" width="116" height="80" rx="6" fill="url(#dvScreen)"/>
-      <rect x="78" y="72" width="32" height="32" rx="9" fill="url(#dvApp)"/>
-      <!-- one hot streak on the glass, not a sheen over the whole panel -->
-      <path d="M36 112 L84 48 L100 48 L44 124 L36 124 Z" fill="#FFFFFF" opacity=".92"/>
-      <path d="M36 124 L92 48 L100 48 L44 128 L36 128 Z" fill="#A9B2C8" opacity=".28"/>
-      <!-- top bezel catches the key light -->
-      <path d="M34 44 L154 44 L152 49 L36 49 Z" fill="#FFFFFF" opacity=".4" filter="url(#dvb2)"/>
-      <path d="M18 136 L170 136 L182 162 Q185 168 178 168 L10 168 Q3 168 6 162 Z" fill="url(#dvDeck)"/>
-      <rect x="74" y="138" width="48" height="8" rx="4" fill="#0D1120" opacity=".5"/>
-      <path d="M18 136 L170 136 L168 141 L20 141 Z" fill="#FFFFFF" opacity=".5" filter="url(#dvb2)"/>
+  <!-- tablet: back, landscape, and the one that carries the mark -->
+  <g>
+    <ellipse cx="141" cy="180" rx="100" ry="10" fill="#0E1330" opacity=".2" filter="url(#dvb10)"/>
+    <rect x="34" y="18" width="214" height="162" rx="26" fill="#FFFFFF"/>
+    <rect x="39" y="23" width="204" height="152" rx="22" fill="url(#dvBody)"/>
+    <rect x="52" y="36" width="178" height="126" rx="12" fill="url(#dvScreen)"/>
+    <g transform="translate(109 67) scale(2)">
+      <polygon points="16,3.52 26.81,9.76 26.81,22.24 16,28.48 5.19,22.24 5.19,9.76"
+               fill="#4050FF" stroke="#4050FF" stroke-width="6.1" stroke-linejoin="round"/>
+      <path d="M20.11 11.3 A6.4 6.4 0 1 0 20.11 21.1"
+            fill="none" stroke="#fff" stroke-width="4.4" stroke-linecap="round"/>
     </g>
+    <circle cx="45.5" cy="99" r="3" fill="#8A93AD"/>
+    <path d="M46 30 L236 30 L233 39 L49 39 Z" fill="#FFFFFF" opacity=".24" filter="url(#dvb4)"/>
+  </g>
 
-    <!-- tablet: landscape, wide bezels, a camera dot on the short side -->
-    <g>
-      <ellipse cx="192" cy="174" rx="52" ry="12" fill="#0E1330" opacity=".28" filter="url(#dvb10)"/>
-      <rect x="135" y="95" width="114" height="82" rx="17" fill="#FFFDF3"/>
-      <rect x="140" y="100" width="104" height="72" rx="13" fill="url(#dvBody)"/>
-      <rect x="148" y="108" width="88" height="56" rx="8" fill="url(#dvScreen)"/>
-      <rect x="176" y="122" width="28" height="28" rx="8" fill="url(#dvApp)"/>
-      <circle cx="144" cy="136" r="2.6" fill="#8A93AD"/>
-      <path d="M148 156 L182 108 L194 108 L156 164 L148 164 Z" fill="#FFFFFF" opacity=".9"/>
-      <path d="M148 164 L190 108 L194 108 L158 164 Z" fill="#A9B2C8" opacity=".26"/>
-      <path d="M146 104 L238 104 L236 109 L148 109 Z" fill="#FFFFFF" opacity=".36" filter="url(#dvb2)"/>
-    </g>
-
-    <!-- phone: portrait at 1:2, nearest the viewer, and the only saturated
-         body — the eye lands on the pupil's device first, which is the one
-         the card's promise is really about -->
-    <g>
-      <ellipse cx="70" cy="208" rx="34" ry="11" fill="#0E1330" opacity=".3" filter="url(#dvb10)"/>
-      <rect x="43" y="111" width="54" height="100" rx="17" fill="#FFFDF3"/>
-      <rect x="48" y="116" width="44" height="90" rx="13" fill="url(#dvPhone)"/>
-      <rect x="54" y="128" width="32" height="58" rx="7" fill="url(#dvScreen)"/>
-      <rect x="59" y="146" width="22" height="22" rx="6.5" fill="url(#dvApp)"/>
-      <rect x="62" y="120" width="16" height="3.6" rx="1.8" fill="#0D1120" opacity=".32"/>
-      <rect x="62" y="192" width="16" height="3" rx="1.5" fill="#0D1120" opacity=".26"/>
-      <path d="M54 172 L74 128 L82 128 L58 186 L54 186 Z" fill="#FFFFFF" opacity=".9"/>
-      <!-- specular on the green shell: tight, near-white, upper left only -->
-      <path d="M50 132 C50 123 55 118 62 117 L62 122 C56 123 54 127 54 133 Z" fill="#FFFFFF" opacity=".85" filter="url(#dvb2)"/>
-      <path d="M88 140 L88 190 C88 198 84 202 77 203 L77 198 C83 197 85 194 85 188 L85 140 Z" fill="#0A6647" opacity=".38" filter="url(#dvb2)"/>
-    </g>
+  <!-- Телефон: спереду і нижче. Корпус тут був зелений - його задумували як
+       "пристрій учня", але зелених телефонів не буває, і на 88px це читалося
+       не смисловою міткою, а помилкою. Обидва корпуси тепер одного кольору;
+       розрізняє їх силует і біле обведення, а не фарба. -->
+  <g>
+    <ellipse cx="47" cy="250" rx="42" ry="10" fill="#0E1330" opacity=".22" filter="url(#dvb10)"/>
+    <rect x="8" y="112" width="78" height="140" rx="27" fill="#FFFFFF"/>
+    <rect x="13" y="117" width="68" height="130" rx="23" fill="url(#dvBody)"/>
+    <rect x="21" y="134" width="52" height="96" rx="10" fill="url(#dvScreen)"/>
+    <rect x="38" y="124" width="18" height="4" rx="2" fill="#0D1120" opacity=".26"/>
+    <rect x="38" y="236" width="18" height="3.5" rx="1.75" fill="#0D1120" opacity=".22"/>
+    <path d="M15 142 C15 128 21 122 31 120 L31 127 C23 129 20 134 20 145 Z" fill="#FFFFFF" opacity=".3" filter="url(#dvb4)"/>
+    <path d="M79 144 L79 228 C79 240 73 245 63 247 L63 240 C72 238 75 234 75 225 L75 144 Z" fill="#141828" opacity=".34" filter="url(#dvb7)"/>
   </g>
 </svg>

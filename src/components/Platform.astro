@@ -161,6 +161,17 @@ const roster = [
         );
       })}
     </div>
+
+    {/* The phone pager. It exists only below 760px, where the grid turns into
+        a swipe strip (see the media query) — above that it is display:none and
+        the grid is a grid. One dot per card, labelled with the card's own
+        title, so it is a list of destinations to a screen reader rather than
+        seven anonymous circles. */}
+    <div class="plat-dots" data-plat-dots>
+      {items.map((it, i) => (
+        <button class="plat-dot" type="button" data-plat-dot={i} aria-label={it.title}></button>
+      ))}
+    </div>
   </div>
 </section>
 
@@ -509,9 +520,52 @@ const roster = [
        was cut off after the 22 */
     .plat-roster .t2 { white-space: normal; }
   }
+  /* the pager is a phone control; above 760px the grid is a grid */
+  .plat-dots { display: none; }
+
+  /* ---- phones: a swipe strip, not seven stacked slabs ----
+     Stacked one per row, this band was ~5800px tall on a 390px phone: seven
+     cards, five of them carrying a browser window, all full width. That is
+     six screens of scrolling for a feature list, and the two-up treatment
+     that works for "why us" does not work here — a product screenshot at
+     169px wide is a grey smear, so shrinking the cards would cost exactly the
+     proof the band exists to give.
+
+     So the cards keep their size and the band gives up its height instead:
+     one card per screen, swiped sideways with scroll-snap, a pager
+     underneath. The strip bleeds to both viewport edges (negative margin,
+     matching padding) so the next card peeks in at the right — without that
+     peek a snapping carousel reads as a single static card. */
   @media (max-width: 760px) {
-    .plat-grid { grid-template-columns: 1fr; }
-    .plat-card, .plat-card.is-wide, .plat-card.is-half, .plat-card.is-analytics { grid-column: span 1; }
+    .plat-grid {
+      display: flex;
+      grid-template-columns: none;
+      gap: 12px;
+      margin-inline: calc(var(--gutter) * -1);
+      padding: 4px var(--gutter) 10px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--gutter);
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .plat-grid::-webkit-scrollbar { display: none; }
+
+    .plat-card,
+    .plat-card.is-wide,
+    .plat-card.is-half,
+    .plat-card.is-analytics {
+      grid-column: auto;
+      flex: 0 0 min(86%, 360px);
+      scroll-snap-align: start;
+    }
+    /* Inside a horizontal scroller the reveal's 20px drop never resolves for
+       the cards still off to the right, and a card that is 20px lower than
+       its neighbours makes the strip's height wobble as you swipe. The band
+       head still reveals; the cards arrive with the swipe instead. */
+    .plat-grid .reveal { transform: none; }
+    /* every card the same height, so the pager underneath does not jump */
     .plat-card:not(.is-wide) h3 { min-height: 0; }
     .win-view, .plat-card.is-wide .win-view { height: 168px; }
     .plat-card.is-analytics .win-view img { width: var(--zoom); }
@@ -519,5 +573,92 @@ const roster = [
     .plat-tool .obj, .plat-tool .tool-ic { width: 44px; height: 44px; }
     .plat-roster { gap: 10px; padding: 10px 12px 10px 10px; }
     .plat-roster .t2 { white-space: normal; }
+
+    .plat-dots {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    /* 7px of ink inside a 26px tap target: the dot is what you see, the
+       padding is what you hit. */
+    .plat-dot {
+      width: 26px; height: 26px;
+      border: 0;
+      padding: 0;
+      background: none;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+    .plat-dot::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: var(--r-pill);
+      background: var(--line);
+      transition: background 160ms linear, width 240ms var(--ease-spring);
+    }
+    .plat-dot.is-active::before { width: 20px; background: var(--ink); }
+    .plat-dot:focus { outline: none; }
+    .plat-dot:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--r-pill); }
   }
 </style>
+
+<script>
+  /*
+   * The pager under the platform strip. Below 760px the grid is a
+   * scroll-snap carousel (see the media query); this keeps the dots and the
+   * scroll position agreeing in both directions, and does nothing at all on
+   * a desktop, where the dots are display:none and the grid never scrolls.
+   *
+   * The active card is the one whose centre is nearest the strip's centre,
+   * rather than one computed from a card width — the cards are min(86%,
+   * 360px) wide, which is a different number on every phone, and the last
+   * card can never reach the left edge because the strip runs out of scroll
+   * before it gets there.
+   */
+  const strip = document.querySelector<HTMLElement>('.plat-grid');
+  const dots = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-plat-dot]'));
+  const cards = strip ? Array.from(strip.children) as HTMLElement[] : [];
+
+  if (strip && dots.length && cards.length) {
+    let raf = 0;
+
+    function active() {
+      const mid = strip!.scrollLeft + strip!.clientWidth / 2;
+      let best = 0;
+      let bestGap = Infinity;
+      cards.forEach((c, i) => {
+        const gap = Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid);
+        if (gap < bestGap) { bestGap = gap; best = i; }
+      });
+      return best;
+    }
+
+    function sync() {
+      const i = active();
+      dots.forEach((d, n) => d.classList.toggle('is-active', n === i));
+    }
+
+    strip.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; sync(); });
+    }, { passive: true });
+
+    dots.forEach((d, i) => {
+      d.addEventListener('click', () => {
+        const card = cards[i];
+        if (!card) return;
+        const pad = parseFloat(getComputedStyle(strip!).paddingLeft) || 0;
+        strip!.scrollTo({
+          left: card.offsetLeft - pad,
+          behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+        });
+      });
+    });
+
+    sync();
+    window.addEventListener('resize', sync);
+  }
+</script>

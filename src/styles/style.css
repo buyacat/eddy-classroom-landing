@@ -465,6 +465,18 @@ body {
 .shot-live.is-down { background: var(--ink-block); color: var(--ink-inv); letter-spacing: .02em; }
 .shot-live.is-down i { background: var(--ink-inv); animation: none; }
 
+/* The body while the mobile sheet is open. position: fixed is the only lock
+   iOS Safari honours — overflow: hidden there still lets the page scroll
+   under the sheet. `top` is set inline by app.js to the parked offset, so
+   the page does not visibly jump to zero while it is locked. */
+body.menu-open {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
 /* ==========================================================================
    cards + the 3D object system
    ========================================================================== */

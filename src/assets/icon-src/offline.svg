@@ -36,44 +36,63 @@
     a cream specular on the lit flank and a dark line on the shaded one. A
     flat bar next to modelled ribs is the other half of why the old one
     looked pasted on.
+
+    THE RIBS ARE LIT, NOT POLISHED. This file used to say the opposite —
+    that the bought objects "put one hot streak on the lit face" and that a
+    soft sheen was what made this set read matte next to them. That was
+    never true of the pack, and the claim outlived this file: the glass cube
+    and the reflections on the laptop and tablet screens were both drawn to
+    it, and the client saw all three at once. Measured, each rib was dumping
+    ~550 of undiffused white (scripts/check-icons.mjs explains the number)
+    against the 198 of the brightest object the client accepted. The light
+    is broad and weak now, and the budget is checked instead of asserted.
+
+    THE BAR RUNS CORNER TO CORNER, which is where the height came from. The
+    fan is a wide, shallow shape — 197 × 139 as drawn — and `.obj` renders
+    into a SQUARE 88px box, so a short bar left the object drawing 58px tall
+    next to an 85px neighbour. The line is unchanged (y = x + 32, still
+    through the fan's centre, still cutting every rib 25° in from its end);
+    only its ends are longer, which adds height and width in equal measure
+    and squares the silhouette up. It is also what the standard glyph does.
   -->
   <defs>
     <linearGradient id="ofArc" x1="0.1" y1="0" x2="0.9" y2="1">
       <stop offset="0%" stop-color="#A7B1FF"/>
-      <stop offset="42%" stop-color="#4E5EFF"/>
-      <stop offset="100%" stop-color="#2830BC"/>
+      <stop offset="42%" stop-color="#5D6BFF"/>
+      <stop offset="100%" stop-color="#4650D8"/>
     </linearGradient>
     <linearGradient id="ofBar" gradientUnits="userSpaceOnUse" x1="118.3" y1="134.7" x2="102.7" y2="150.3">
-      <stop offset="0%" stop-color="#6D7695"/>
+      <stop offset="0%" stop-color="#5C6484"/>
       <stop offset="42%" stop-color="#333A54"/>
-      <stop offset="100%" stop-color="#141827"/>
+      <stop offset="100%" stop-color="#1C2236"/>
     </linearGradient>
     <radialGradient id="ofDot" cx="30%" cy="24%" r="88%">
       <stop offset="0%" stop-color="#C3CAFF"/>
       <stop offset="46%" stop-color="#4E5EFF"/>
-      <stop offset="100%" stop-color="#242CB0"/>
+      <stop offset="100%" stop-color="#4450D0"/>
     </radialGradient>
     <filter id="ofb2" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="2"/></filter>
     <filter id="ofb4" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="4"/></filter>
     <filter id="ofb7" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="7"/></filter>
+    <filter id="ofb8" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="8"/></filter>
 
     <!-- the groove. Coordinates are the icon's own, so this mask has to be
          referenced from INSIDE the scaling wrapper, not outside it. -->
     <mask id="ofCut" maskUnits="userSpaceOnUse" x="-40" y="-40" width="340" height="340">
       <rect x="-40" y="-40" width="340" height="340" fill="#FFFFFF"/>
-      <path d="M55 87 L167 199" fill="none" stroke="#000000" stroke-width="16" stroke-linecap="butt"/>
+      <path d="M44 76 L179.2 211.2" fill="none" stroke="#000000" stroke-width="11" stroke-linecap="butt"/>
     </mask>
   </defs>
 
   <!-- Scaled to fill the 256 box the way the bought objects do: they run
        246px corner to corner, and an icon drawn to 195 sits visibly
        smaller than its neighbours on the same row. -->
-  <g transform="translate(128 128) scale(1.22) translate(-128 -136)">
+  <g transform="translate(128 128) scale(1.26) translate(-128 -145.5)">
 
     <g mask="url(#ofCut)">
       <!-- three ribs and the base dot, drawn outside-in so the near ones
            overlap the far ones the way stacked plastic would -->
-      <g fill="none" stroke="url(#ofArc)" stroke-width="24" stroke-linecap="round">
+      <g fill="none" stroke="url(#ofArc)" stroke-width="31" stroke-linecap="round">
         <path d="M41.6 136.5 A92 92 0 0 1 214.4 136.5"/>
         <path d="M66 145.4 A66 66 0 0 1 190 145.4"/>
         <path d="M90.4 154.3 A40 40 0 0 1 165.6 154.3"/>
@@ -83,26 +102,24 @@
            put one hot streak on the lit face and leave the rest of the
            surface alone; a soft sheen spread over the whole rib is what
            made this set read matte next to them. -->
-      <g fill="none" stroke="#FFFFFF" stroke-linecap="round" filter="url(#ofb2)">
-        <path d="M82 88.3 A92 92 0 0 1 136 76.4" stroke-opacity=".8" stroke-width="6"/>
-        <path d="M95 110.8 A66 66 0 0 1 130.3 102" stroke-opacity=".7" stroke-width="5"/>
-        <path d="M108 133.4 A40 40 0 0 1 128 128" stroke-opacity=".6" stroke-width="4"/>
+      <g fill="none" stroke="#FFFFFF" stroke-linecap="round" filter="url(#ofb8)">
+        <path d="M82 88.3 A92 92 0 0 1 136 76.4" stroke-opacity=".3" stroke-width="7"/>
+        <path d="M95 110.8 A66 66 0 0 1 130.3 102" stroke-opacity=".26" stroke-width="6"/>
+        <path d="M108 133.4 A40 40 0 0 1 128 128" stroke-opacity=".22" stroke-width="5"/>
       </g>
       <!-- and the shaded flank, where each rib turns away from the light -->
-      <g fill="none" stroke="#141C86" stroke-opacity=".38" stroke-width="9" stroke-linecap="round" filter="url(#ofb4)">
+      <g fill="none" stroke="#3742A8" stroke-opacity=".3" stroke-width="9" stroke-linecap="round" filter="url(#ofb4)">
         <path d="M187.2 97.5 A92 92 0 0 1 207.7 122"/>
         <path d="M170.4 117.4 A66 66 0 0 1 185.2 135"/>
       </g>
 
-      <circle cx="128" cy="168" r="17" fill="url(#ofDot)"/>
-      <ellipse cx="121.5" cy="161.5" rx="6.5" ry="4.2" transform="rotate(-32 121.5 161.5)" fill="#FFFFFF" opacity=".85"/>
+      <circle cx="128" cy="168" r="21" fill="url(#ofDot)"/>
+      <ellipse cx="121.5" cy="161.5" rx="7.5" ry="5" transform="rotate(-32 121.5 161.5)" fill="#FFFFFF" opacity=".38" filter="url(#ofb2)"/>
     </g>
 
     <!-- the bar casts into its own groove; kept weak so the daylight in the
          gap stays daylight -->
-    <path d="M55 87 L167 199" fill="none" stroke="#0B0E1A" stroke-opacity=".14" stroke-width="13" stroke-linecap="butt" filter="url(#ofb4)"/>
-    <path d="M55 87 L167 199" fill="none" stroke="url(#ofBar)" stroke-width="10" stroke-linecap="butt"/>
-    <path d="M83 103 L144 176" fill="none" stroke="#FFFFFF" stroke-opacity=".5" stroke-width="2.5" stroke-linecap="butt" filter="url(#ofb2)"/>
-    <path d="M78 109 L139 182" fill="none" stroke="#000000" stroke-opacity=".3" stroke-width="2.5" stroke-linecap="butt" filter="url(#ofb2)"/>
+    <path d="M44 76 L179.2 211.2" fill="none" stroke="url(#ofBar)" stroke-width="6" stroke-linecap="butt"/>
+    <path d="M81 97 L161.5 193.5" fill="none" stroke="#FFFFFF" stroke-opacity=".42" stroke-width="2.5" stroke-linecap="butt" filter="url(#ofb2)"/>
   </g>
 </svg>

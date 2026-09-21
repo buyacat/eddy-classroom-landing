@@ -7,7 +7,9 @@
     "build": "astro build",
     "preview": "astro preview --port=5178",
     "check": "node scripts/check-earth-layout.mjs",
-    "build:pages": "node scripts/build-pages.mjs"
+    "build:pages": "node scripts/build-pages.mjs",
+    "icons": "node scripts/render-icons.mjs",
+    "check:icons": "node scripts/check-icons.mjs"
   },
   "dependencies": {
     "astro": "^5.0.0",

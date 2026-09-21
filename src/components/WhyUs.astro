@@ -20,7 +20,15 @@ const items = tArray<{ icon: string; title: string; text: string }>(locale, 'cla
  * multi-device (that is a phone call), an open book for 3D content (that is
  * a library of text) — so those three are drawn for this site instead, in
  * the pack's clay language. Sources in src/assets/icon-src/, rendered to
- * 256px PNGs next to the bought objects.
+ * 256px PNGs next to the bought objects with `npm run icons`.
+ *
+ * Sitting next to the bought objects is a claim, and it is checked rather
+ * than asserted: `npm run check:icons` measures the drawn ones against the
+ * pack and fails on the two ways this row has actually gone wrong — a white
+ * highlight bright and tight enough to read as glass, and an object drawn
+ * too short for the square 88px box, which is what made the devices one
+ * look smaller than its neighbours. That script's header says what each
+ * number means and what it deliberately leaves to the eye.
  *
  *   allInOne  folder   — a container holding many things is literally
  *                        "все в одному місці"
@@ -105,7 +113,43 @@ const blocks = ['', 'is-green', '', 'is-yellow', '', 'is-blue'];
      body copy — Ukrainian card titles wrap unpredictably */
   .why-grid h3 { min-height: calc(2 * 1.22em); }
 
+  /* ---- phones: two up, not one ----
+     Six full-width cards ran the band to ~3000px of scroll, which is three
+     screens of the same shape before the reader reaches anything new. Paired,
+     the band is one and a bit — and six short claims read better as a grid of
+     tiles than as a column of paragraphs anyway.
+
+     Everything in the card comes down together: the hanging object from 88px
+     to 56, the title to 15px, the body to 13px, and the padding from 22px to
+     16 — a 173px card with 22px of padding each side leaves 129px of text
+     column, which is not enough for a Ukrainian compound word. The object
+     keeps its overhang, because that overhang is the style. */
   @media (max-width: 700px) {
-    .why-grid h3 { min-height: 0; }
+    .why-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 38px;
+    }
+    .why-grid .card { padding: 16px 14px 18px; border-radius: var(--r-lg); }
+    .why-grid .obj { --obj: 56px; }
+    .why-grid h3 {
+      font-size: .9375rem;
+      line-height: 1.2;
+      margin-bottom: 7px;
+      /* Two lines, which is what five of the six titles take at this size.
+         Three was the honest maximum and it was the wrong number: reserving
+         for the one long title put a dead line of air under every other one,
+         which reads as a mistake on five cards to spare a step on one. */
+      min-height: calc(2 * 1.2em);
+    }
+    .why-grid p { font-size: .8125rem; line-height: 1.45; }
+  }
+
+  /* Under ~345px two columns stop being a layout and start being two
+     columns of hyphens, so the stack comes back — at the compact sizes,
+     not at the desktop ones. */
+  @media (max-width: 344px) {
+    .why-grid { grid-template-columns: minmax(0, 1fr); }
+    .why-grid h3 { min-height: 0; font-size: 1rem; }
   }
 </style>

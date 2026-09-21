@@ -61,7 +61,8 @@ const alt = altPath(locale);
     <div class="gnav-actions">
       <a href={alt} class="gnav-lang" aria-label={t(locale, 'nav_lang_aria')}>{t(locale, 'nav_lang_label')}</a>
       <button class="gnav-burger" id="nav-burger" type="button"
-              aria-label={t(locale, 'nav_menu_open')} aria-expanded="false" aria-controls="mobile-menu">
+              aria-label={t(locale, 'nav_menu_open')} data-label-close={t(locale, 'nav_menu_close')}
+              aria-expanded="false" aria-controls="mobile-menu">
         <span></span><span></span><span></span>
       </button>
      </div>
@@ -77,10 +78,57 @@ const alt = altPath(locale);
   </div>
 </header>
 
-<div class="mobile-menu" id="mobile-menu">
-  <div class="mobile-menu-inner">
-    {links.map((l) => <a href={l.href} class="mm-link" target="_blank" rel="noopener">{l.label}</a>)}
-    <a href={alt} class="mm-link">{t(locale, 'nav_lang_label')}</a>
+<!-- The mobile menu is a full-screen sheet, not a dropdown card.
+     Six destinations at finger size do not fit in a 300px panel hanging off
+     the bar, and the old one proved it: a cramped list of 14px uppercase rows
+     with no hierarchy, no way back to this page's own goal, and a hamburger
+     that folded into a chevron instead of an X.
+
+     The pattern is the one a marketing site with a flat, wide menu should
+     use (UXPin / Webstacks / DesignStudio all land in the same place): take
+     the whole screen, set the links large enough to be the page, and put the
+     things a thumb actually reaches — the CTA and the language switch — at
+     the BOTTOM, inside the natural thumb zone. The header bar stays visible
+     above the sheet so the brand and the close control never move. -->
+<div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true"
+     aria-label={t(locale, 'nav_menu_open')}>
+  <div class="mm-scroll">
+    <span class="mm-kicker">{t(locale, 'nav_menu_sites')}</span>
+
+    <nav class="mm-nav" aria-label="Eddy Group">
+      {links.map((l, i) => (
+        <a href={l.href} class="mm-link" style={`--i:${i}`} target="_blank" rel="noopener">
+          <span class="mm-idx" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+          <span class="mm-label">{l.label}</span>
+          <svg class="mm-arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M5 12h13M12.5 6l6 6-6 6" fill="none" stroke="currentColor"
+                  stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+      ))}
+    </nav>
+
+    <!-- The foot is the part a thumb can reach without moving the phone, so
+         it carries the one action this page wants and the language switch —
+         the two controls that were previously buried at the end of a list of
+         six outbound links. -->
+    <div class="mm-foot" style={`--i:${links.length}`}>
+      <a href="#demo" class="btn btn-primary mm-cta">{t(locale, 'classroom_hero_cta_primary')}</a>
+
+      <div class="mm-row">
+        <span class="mm-row-lbl">{t(locale, 'nav_menu_lang')}</span>
+        <a href={alt} class="mm-lang" aria-label={t(locale, 'nav_lang_aria')}>
+          <b>{locale === 'uk' ? 'UA' : 'EN'}</b>
+          <i aria-hidden="true"></i>
+          <span>{t(locale, 'nav_lang_label')}</span>
+        </a>
+      </div>
+
+      <div class="mm-contacts">
+        <a href={`mailto:${t(locale, 'footer_email')}`}>{t(locale, 'footer_email')}</a>
+        <a href={`tel:${t(locale, 'footer_phone').replace(/[^+\d]/g, '')}`}>{t(locale, 'footer_phone')}</a>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -192,7 +240,14 @@ const alt = altPath(locale);
   }
 
   .gnav-brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
-  .gnav-group, .gnav-product { display: flex; }
+  /* min-width on the brand alone was not enough: its two children are flex
+     items carrying images, and a flex item's floor is its content size
+     unless it is told otherwise — so the lockup kept its full width, spilled
+     out of its column and lay on top of the burger. Playwright caught it
+     before a thumb did: the click on #nav-burger was intercepted by
+     .gnav-brand. */
+  .gnav-group, .gnav-product { display: flex; min-width: 0; }
+  .gnav-group img, .gnav-product img { object-fit: contain; object-position: left center; }
   /* The group mark is the taller of the two on purpose: it is the constant,
      and the product name reads as its subordinate rather than its twin. */
   .gnav-eddy { height: 26px; width: auto; display: block; }
@@ -216,7 +271,9 @@ const alt = altPath(locale);
   }
   .gnav-link:hover { color: var(--blue); }
 
-  .gnav-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+  /* flex: none — the actions column is the one that must never be squeezed:
+     it holds the only two controls in the bar. */
+  .gnav-actions { display: flex; flex: none; align-items: center; justify-content: flex-end; gap: 8px; }
 
   .gnav-lang {
     display: grid; place-items: center;
@@ -233,6 +290,17 @@ const alt = altPath(locale);
   }
   .gnav-lang:hover { border-color: var(--ink); background: var(--ink); color: #fff; }
 
+  /* The icon has to be measured, not guessed, or the open state is not an X.
+     It was not: the button is a grid, `place-items` sets align-ITEMS and says
+     nothing about align-CONTENT, so the three auto rows stretched to fill the
+     36px button and the bars ended up 12px apart while the open state moved
+     them 7. Two bars crossing 5px off centre draw a chevron — the ">" the
+     screenshots kept showing where an X belonged.
+
+     `place-content: center` stops the rows stretching and `gap` states the
+     spacing outright, so the distance between two bar centres is a number
+     this file owns (2px bar + 4px gap = 6px) instead of a number the button's
+     height happens to produce. */
   .gnav-burger {
     display: none;
     width: 44px; height: 36px;
@@ -241,60 +309,191 @@ const alt = altPath(locale);
     background: #fff;
     cursor: pointer;
     padding: 0;
-    place-items: center;
+    place-content: center;
+    justify-items: center;
+    gap: 4px;
   }
   .gnav-burger span {
     display: block;
-    width: 17px; height: 2.5px;
+    width: 18px; height: 2px;
     border-radius: 2px;
     background: var(--ink);
-    margin: 2.5px auto;
     transition: transform var(--t-hover) var(--ease-out), opacity var(--t-micro) var(--ease-out);
   }
-  .gnav-burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-  .gnav-burger.open span:nth-child(2) { opacity: 0; }
-  .gnav-burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .gnav-burger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .gnav-burger.open span:nth-child(2) { opacity: 0; transform: scaleX(.2); }
+  .gnav-burger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+  .gnav-burger.open { border-color: var(--ink); }
 
+  /* ---------- the mobile sheet ----------
+     Full screen below the bar, not a floating card. dvh rather than vh:
+     on mobile Safari 100vh is the height WITHOUT the address bar, which is
+     exactly the strip a bottom-anchored CTA would be hidden behind. The
+     sheet scrolls internally if a small phone needs it, and the body is
+     locked while it is open (app.js), so the page behind never moves. */
   .mobile-menu {
     position: fixed;
-    inset: calc(var(--nav-h) + 6px) var(--gutter) auto;
+    inset: var(--nav-h) 0 0;
     z-index: 55;
-    max-width: calc(var(--maxw) - var(--gutter) * 2);
-    margin-inline: auto;
     background: #fff;
-    border-radius: var(--r-xl);
-    box-shadow: var(--e4);
-    transform: translateY(-12px);
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
-    transition: opacity var(--t-hover) var(--ease-out), transform var(--t-hover) var(--ease-out);
+    /* the sheet wipes up from under the bar rather than fading in place —
+       the same "a stack lands on a desk" gesture the header plays */
+    clip-path: inset(0 0 100% 0);
+    transition:
+      clip-path 420ms var(--ease-glide),
+      opacity 200ms var(--ease-out),
+      visibility 0s linear 420ms;
   }
-  /* A phone on its side is ~375px tall: six links at 50px each ran past
-     the bottom of it, and a menu that has no scroller of its own simply
-     loses the last ones. dvh, not vh — on mobile Safari 100vh is the height
-     WITHOUT the address bar, which is exactly the strip that would be cut. */
-  .mobile-menu {
-    max-height: calc(100dvh - var(--nav-h) - 18px);
+  .mobile-menu.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    clip-path: inset(0 0 0 0);
+    transition:
+      clip-path 460ms var(--ease-glide),
+      opacity 160ms var(--ease-out),
+      visibility 0s linear 0s;
+  }
+
+  .mm-scroll {
+    height: 100%;
+    /* The sheet is full-bleed but its CONTENTS are not: at the 1000px end of
+       this breakpoint a full-width row left 700px of blank between "TRADE"
+       and its arrow, which reads as a broken table rather than as a menu.
+       A measure, centred — the same thing the page does with its own column. */
+    width: 100%;
+    max-width: 620px;
+    margin-inline: auto;
     overflow-y: auto;
-  }
-  .mobile-menu.open { opacity: 1; transform: none; pointer-events: auto; }
-  .mobile-menu-inner {
-    padding: 14px 18px 22px;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    padding: clamp(18px, 5vw, 28px) var(--gutter) calc(clamp(20px, 5vw, 32px) + env(safe-area-inset-bottom));
   }
-  .mm-link {
-    padding: 14px 6px;
+
+  .mm-kicker {
+    display: block;
     font-family: var(--font-group);
     font-weight: 800;
-    font-size: 1rem;
-    letter-spacing: .03em;
+    font-size: .6875rem;
+    letter-spacing: .12em;
     text-transform: uppercase;
-    color: #1f2c2e;
-    border-bottom: 1px solid var(--line);
+    color: var(--ink-4);
   }
-  .mm-link:last-child { border-bottom: 0; }
+
+  .mm-nav { margin-top: 10px; }
+
+  /* Each row is index / label / arrow. The index is what turns six equal
+     outbound links into a list with a beginning and an end; the arrow says
+     the link leaves this site, which every one of them does. */
+  .mm-link {
+    display: grid;
+    grid-template-columns: 26px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 2px;
+    border-bottom: 1px solid var(--line);
+    color: #1f2c2e;
+  }
+  .mm-idx {
+    font-family: var(--font-group);
+    font-weight: 800;
+    font-size: .6875rem;
+    color: var(--ink-4);
+    font-variant-numeric: tabular-nums;
+    transition: color var(--t-micro) var(--ease-out);
+  }
+  .mm-label {
+    font-family: var(--font-group);
+    font-weight: 800;
+    font-size: clamp(1.375rem, 1.1rem + 2.2vw, 1.875rem);
+    line-height: 1.1;
+    letter-spacing: -.01em;
+    text-transform: uppercase;
+  }
+  .mm-arrow {
+    width: 22px; height: 22px;
+    color: var(--ink-4);
+    transition: transform var(--t-hover) var(--ease-out), color var(--t-micro) var(--ease-out);
+  }
+  .mm-link:active .mm-label { color: var(--blue); }
+  .mm-link:active .mm-arrow { color: var(--blue); transform: translateX(4px); }
+  .mm-link:active .mm-idx { color: var(--blue); }
+
+  /* ---- the foot: what a thumb can reach ---- */
+  .mm-foot { margin-top: auto; padding-top: clamp(22px, 6vw, 34px); }
+  .mm-cta { width: 100%; justify-content: center; }
+
+  .mm-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 18px;
+  }
+  .mm-row-lbl {
+    font-family: var(--font-group);
+    font-weight: 800;
+    font-size: .6875rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+  }
+  /* A switch that shows both sides, so it reads as a choice rather than as
+     a two-letter link somebody left at the bottom of the list. The bold half
+     is where you are; the plain half is where the tap goes. */
+  .mm-lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    border-radius: var(--r-pill);
+    border: 2px solid var(--line);
+    font-family: var(--font-group);
+    font-size: .8125rem;
+    letter-spacing: .04em;
+    color: var(--ink-3);
+  }
+  .mm-lang b { font-weight: 800; color: #1f2c2e; }
+  .mm-lang span { font-weight: 700; }
+  .mm-lang i { width: 1px; height: 14px; background: var(--line); }
+  .mm-lang:active { border-color: var(--ink); }
+
+  .mm-contacts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-top: 20px;
+  }
+  .mm-contacts a {
+    font-size: .875rem;
+    font-weight: 700;
+    color: var(--ink-3);
+  }
+  .mm-contacts a:active { color: var(--blue); }
+
+  /* Rows arrive one after another once the wipe is under way — staggered off
+     the row's own index, so the list reads top to bottom the way it is
+     meant to be read. */
+  .mobile-menu .mm-link,
+  .mobile-menu .mm-foot { opacity: 0; transform: translateY(14px); }
+  .mobile-menu.open .mm-link,
+  .mobile-menu.open .mm-foot {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 320ms var(--ease-out) calc(90ms + var(--i, 0) * 45ms),
+      transform 380ms var(--ease-out) calc(90ms + var(--i, 0) * 45ms);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-menu, .mobile-menu .mm-link, .mobile-menu .mm-foot { transition: none; }
+    .mobile-menu { clip-path: none; }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .sheet { transition: none; }
@@ -307,9 +506,12 @@ const alt = altPath(locale);
     .gnav-lang { height: 40px; }
   }
   @media (max-width: 1000px) {
-    .gnav-inner { grid-template-columns: 1fr auto; }
+    .gnav-inner { grid-template-columns: minmax(0, 1fr) auto; }
     .gnav-links { display: none; }
     .gnav-burger { display: grid; }
+    /* the sheet covers the page but never the bar: the brand stays put and
+       the burger stays where the thumb last touched it, now as the close */
+    .gnav { z-index: 60; }
     /* the two controls left in the bar are now tapped, not clicked —
        36px was under the 40px a thumb needs */
     .gnav-lang, .gnav-burger { height: 40px; }

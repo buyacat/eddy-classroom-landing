@@ -11,11 +11,12 @@
  * and that is the point being made.
  *
  * What this module is not: a general glTF viewer. It knows the scene is a
- * flat list of named nodes, that a part's caption lives in the translated
- * content next to its node name, and that the table below (where a caption
- * hangs, which way a part travels when the model opens) belongs to this one
- * model. A second model would bring its own table, not a second copy of the
- * loop.
+ * flat list of named nodes and that a part's caption lives in the translated
+ * content next to its node name. Everything that is a fact about ONE model —
+ * where a caption hangs, which way a part travels when the model opens, how
+ * far apart the parts end up, which of them travel as one piece — is handed
+ * in by the caller (src/data/models.json), because the band now carries nine
+ * of them and they differ in every one of those numbers.
  *
  * Scene graph:
  *
@@ -55,43 +56,43 @@ export interface PartSpec {
 
 /**
  * Where a part's caption points, and which way the part travels when the
- * model comes apart. Both are facts about THIS model in its own coordinates,
- * so they live in code beside it rather than in the translated content — a
- * Ukrainian hotspot and an English one are the same three numbers.
+ * model comes apart. Both are facts about one model in its own coordinates,
+ * not about a language — a Ukrainian hotspot and an English one are the same
+ * three numbers — so they are shipped alongside the file in models.json and
+ * handed to `mountViewer` rather than translated.
  *
- * `out` is missing for the optic nerve alone: it is the one part that already
- * sits well off centre, so the direction it should leave in is the direction
- * it is already in, which the fallback below works out for itself.
+ * `out` may be missing: a part that already sits well off centre leaves in
+ * the direction it is already in, which the fallback below works out for
+ * itself. So may `at`, and then the caption hangs on the part's own middle.
  */
-interface PartGeometry {
+export interface PartGeometry {
   /** the point the caption points at, in model space */
-  at: [number, number, number];
+  at?: [number, number, number];
   /** direction the part travels when the model opens; normalised on use */
   out?: [number, number, number];
 }
 
-const GEOMETRY: Record<string, PartGeometry> = {
-  Sclera: { at: [-0.3, -0.702, -0.61], out: [0.3, 0, -0.95] },
-  Choroid: { at: [-0.2, -0.184, -0.902], out: [0.6, 0, 0.8] },
-  Retina: { at: [-0.66, 0.055, -0.628], out: [0.95, 0, -0.31] },
-  Cornea: { at: [0.9, 0.406, -0.04], out: [0.95, 0.25, 0.19] },
-  AnteriorChamber: { at: [0.86, 0.12, -0.06], out: [0.9, -0.1, -0.42] },
-  Iris: { at: [0.72, 0.35, -0.06], out: [0.8, 0.45, 0.4] },
-  CiliaryBody: { at: [0.68, 0.6, -0.04], out: [0.7, -0.55, 0.45] },
-  Lens: { at: [0.61, 0.22, -0.06], out: [0.85, 0.05, -0.52] },
-  VitreousBody: { at: [-0.15, 0.421, -0.354], out: [0, -1, 0] },
-  OpticNerve: { at: [-1.35, 0, -0.08] }
-};
-
 /**
- * How far apart the parts end up, as a multiple of the model's own size.
+ * How far apart the parts of one model end up, as a multiple of its own size,
+ * and which of them have to travel together.
  *
- * This is the factor the model was authored with, and the spacing rule below
- * is the one the source viewer applies, kept term for term on purpose: the
- * directions in the table were tuned against it, and a tidier formula would
- * send two of them through each other.
+ * Every model was authored against a factor of its own — an eye opens to 2.2,
+ * a Newton's cradle to 1.5 — and the spacing rule below is the one the source
+ * viewer applies, kept term for term on purpose: the directions were tuned
+ * against it, and a tidier formula would send two of them through each other.
+ *
+ * A group is a set of parts that must not come apart from each other: the
+ * membrane and the sugar chains standing on it, a frame and the wires hanging
+ * from it. They are offset as one body — one direction, one distance, solved
+ * on the box around all of them — so what is drawn on one stays on it.
  */
-const EXPLODE_FACTOR = 2.2;
+export interface ExplodeSpec {
+  factor: number;
+  groups?: string[][];
+}
+
+/** The factor to use when a model's data leaves it out. */
+const EXPLODE_FALLBACK = 2;
 
 /** How fast the slider's value catches up with the model. */
 const EXPLODE_EASE = 6;
@@ -221,6 +222,10 @@ export interface MountOptions {
   caption: HTMLElement;
   url: string;
   parts: PartSpec[];
+  /** the model's own hotspots and travel directions, keyed by node name */
+  geometry?: Record<string, PartGeometry>;
+  /** how far it opens, and what travels together */
+  explode?: ExplodeSpec;
   /** 0..1 while the file is on the wire, or -1 when its size is unknown */
   onProgress?: (fraction: number) => void;
 }
@@ -275,7 +280,8 @@ export async function mountViewer(opts: MountOptions): Promise<ViewerHandle> {
   const whole = new Box3().setFromObject(model);
   const centre = whole.getCenter(new Vector3());
   const span = whole.getSize(new Vector3()).length() / 2 || 1;
-  const travelScale = Math.max(0, EXPLODE_FACTOR - 1);
+  const geometry = opts.geometry ?? {};
+  const travelScale = Math.max(0, (opts.explode?.factor ?? EXPLODE_FALLBACK) - 1);
 
   const scratch = new Vector3();
   const partSphere = new Sphere();
@@ -283,29 +289,57 @@ export async function mountViewer(opts: MountOptions): Promise<ViewerHandle> {
   const shutSpheres: { at: Vector3; r: number }[] = [];
   const openSpheres: { at: Vector3; r: number }[] = [];
 
+  /*
+   * Where a part goes when the model opens.
+   *
+   * The travel grows with how far out the part already sits. The shells that
+   * wrap the whole eye barely move — they only have to clear each other —
+   * while the lens and the iris start bunched at one pole and have to come
+   * right out before there is anything to see.
+   */
+  function travelFrom(middle: Vector3, out?: [number, number, number]) {
+    const distance = middle.length();
+    const direction = out
+      ? new Vector3(...out).normalize()
+      : distance > 1e-4
+        ? middle.clone().normalize()
+        : new Vector3(0, 1, 0);
+    const travel = span * travelScale * (0.6 + 0.8 * Math.min(1, distance / span));
+    return direction.multiplyScalar(travel);
+  }
+
+  /*
+   * Grouped parts are solved before anything else, on the box around the
+   * whole group and in the direction of its first member, so that each of
+   * them is handed the SAME offset below. Solved one by one they would fan
+   * out from their own centres, and the sugar chains would walk off the
+   * membrane they are drawn standing on.
+   */
+  const grouped = new Map<string, Vector3>();
+  for (const group of opts.explode?.groups ?? []) {
+    const nodes = group
+      .map((name) => model.getObjectByName(name))
+      .filter((node): node is Object3D => !!node);
+    if (nodes.length < 2) continue;
+
+    const box = new Box3();
+    for (const node of nodes) box.union(new Box3().setFromObject(node));
+    const offset = travelFrom(box.getCenter(new Vector3()), geometry[group[0]]?.out);
+    for (const name of group) grouped.set(name, offset);
+  }
+
   const parts: Part[] = [];
   for (const spec of opts.parts) {
     const node = model.getObjectByName(spec.node);
     if (!node) continue;
 
     tightSphere(node, partSphere);
-    const distance = partSphere.center.length();
 
-    const geometry = GEOMETRY[spec.node];
-    const direction = geometry?.out
-      ? new Vector3(...geometry.out).normalize()
-      : distance > 1e-4
-        ? partSphere.center.clone().normalize()
-        : new Vector3(0, 1, 0);
+    const own = geometry[spec.node];
+    const offset = grouped.get(spec.node)?.clone()
+      ?? travelFrom(partSphere.center.clone(), own?.out);
 
-    /* The travel grows with how far out a part already sits. The shells that
-       wrap the whole eye barely move — they only have to clear each other —
-       while the lens and the iris start bunched at one pole and have to come
-       right out before there is anything to see. */
-    const travel = span * travelScale * (0.6 + 0.8 * Math.min(1, distance / span));
-    const offset = direction.multiplyScalar(travel);
-
-    const at = new Vector3(...(geometry?.at ?? partSphere.center.toArray()));
+    const at = new Vector3(...(own?.at ?? partSphere.center.toArray()));
     const anchor = new Object3D();
     anchor.position.copy(at);
     model.add(anchor);
@@ -325,7 +359,7 @@ export async function mountViewer(opts: MountOptions): Promise<ViewerHandle> {
   scene.add(root);
 
   /*
-   * The open state is not the shut one grown outwards: this model throws nine
+   * The open state is not the shut one grown outwards: the eye throws nine
    * parts toward the cornea and the optic nerve the other way entirely, so the
    * cloud's centre is a long way from the eyeball's. Framed on the shut centre
    * the open view drifted into the right half of the stage and shrank to fit

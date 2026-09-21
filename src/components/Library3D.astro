@@ -3,32 +3,35 @@ import { t, tArray } from '../utils/i18n';
 import type { Locale } from '../utils/i18n';
 import { withBase } from '../utils/url';
 import ModelViewer from './ModelViewer.astro';
+import LibGlyph from './LibGlyph.astro';
 
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 
-const rawCards = tArray<{ subject: string; label: string; name: string; glyph: string; real?: boolean }>(
-  locale,
-  'classroom_library_cards'
-);
-
 /*
- * Grouped by subject rather than the JSON's arbitrary order, so the strip
- * reads as one flow left to right: biology leads, then chemistry, physics,
- * geography follow in a block each. Within biology, the eye goes first —
- * it is the one card of the nine with a real model behind it, so it is
- * also the first thing a visitor can actually open, not just admire.
+ * Written subject by subject, so the strip reads as one flow left to right:
+ * biology leads, then chemistry, physics, geography follow in a block each.
+ * Within biology the eye goes first — it is the model the panel opens on.
+ *
+ * `model` is the id of a file in src/data/models.json; a card without one is
+ * a subject the library has not shipped a model for yet, and picking it puts
+ * the panel into the state that says exactly that.
  */
-const order = [8, 0, 4, 1, 7, 2, 6, 3, 5];
-const cards = order.map((i) => rawCards[i]);
+const cards = tArray<{
+  subject: string;
+  label: string;
+  name: string;
+  glyph?: string;
+  model?: string;
+}>(locale, 'classroom_library_cards');
 
 /*
  * The strip is paged by subject rather than scrolled freely: one page per
  * subject, so picking "Біологія" shows biology and nothing else instead
  * of biology bleeding into the chemistry cell sitting right after it in
- * one long scroller. `order` above already keeps each subject's cards
- * contiguous, so slicing on where each subject starts is enough to cut
- * exact, non-overlapping pages — no per-card group tag needed.
+ * one long scroller. The data keeps each subject's cards contiguous, so
+ * slicing on where each subject starts is enough to cut exact,
+ * non-overlapping pages — no per-card group tag needed.
  */
 const SUBJECT_ORDER = ['biology', 'chemistry', 'physics', 'geography'] as const;
 const starts = SUBJECT_ORDER
@@ -39,23 +42,26 @@ const groups = starts.map((start, i) => ({
   label: cards[start].label
 }));
 
+/* The strip is cut to the busiest subject rather than to a number written
+   into the CSS: physics carries four models and biology three, and a
+   viewport sized for three let the fourth cell bleed onto the next page. */
+const widest = Math.max(...groups.map((g) => g.items.length), 1);
+
 /*
- * A horizontally scrollable strip of nine sample cards sitting above the
+ * A horizontally scrollable strip of sample cards sitting above the
  * model panel: picking one is what drives the panel, so the picking and
  * the panel read as one mechanism, and the strip stays a single row that
  * scrolls rather than a grid competing with the panel for width — the
  * panel is the thing being sold, and it needs to be full size.
  *
- * The clay artwork and its hover business (the lava throw, the heart's
- * pulse trace, the periodic table's travelling highlight, DNA's turn) are
- * the same ones the old honeycomb carried — narrowing the cell was not a
- * reason to drop them, so every glyph below is the original markup, just
- * living in a smaller cell.
+ * Every cell wears a drawn object, the way the pack has always worked:
+ * one solid body, two or three forms, broad soft light, and a movement on
+ * hover that says what the thing DOES. The objects for the nine models
+ * live in LibGlyph.astro; the two cells still waiting for a file keep the
+ * clay PNGs the old honeycomb carried.
  *
- * The ninth card is new: "Око людини в розрізі" names the exact model the
- * panel already shows by default, and its `real: true` flag is read by the
- * script at the bottom — clicking it restores that live demo instead of
- * dropping the panel into the "still on its way" state the other eight use.
+ * `data-model` is what the panel is handed on a click; a cell without one
+ * drops it into the "still on its way" state instead.
  */
 const subjectBlock: Record<string, string> = {
   biology: 'is-green',
@@ -77,7 +83,8 @@ const subjectBlock: Record<string, string> = {
         <p class="lib-desc">{t(locale, 'classroom_library_desc')}</p>
       </div>
 
-      <nav class="lib-comb reveal" style="--i:1" aria-label={t(locale, 'classroom_library_badge')}>
+      <nav class="lib-comb reveal" style={`--i:1; --comb-count:${widest}`}
+           aria-label={t(locale, 'classroom_library_badge')}>
       <div class="lib-comb-row">
         <button class="lib-comb-arrow" type="button" data-comb-prev aria-label={t(locale, 'classroom_library_prev')}>
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
@@ -90,14 +97,10 @@ const subjectBlock: Record<string, string> = {
             {g.items.map((c) => (
               <li>
               <button class={`hex ${subjectBlock[c.subject] || 'is-blue'}`} type="button"
-                      data-name={c.name} data-label={c.label} data-real={c.real ? 'true' : 'false'}>
+                      data-name={c.name} data-label={c.label} data-model={c.model}>
                 <span class="hex-shadow">
                   <span class="hex-face">
                     <span class="hex-art">
-                  {c.glyph === 'thermo' && (
-                    <img class="hex-rod" src={withBase('/assets/icons/lib/thermo-rod.png')}
-                         width="256" height="256" alt="" loading="lazy" decoding="async" />
-                  )}
                   {c.glyph === 'eye' ? (
                     /*
                      * Єдиний glyph паку, що не PNG. Анімація тут рухає саму
@@ -106,6 +109,12 @@ const subjectBlock: Record<string, string> = {
                      * пластики та сама: одне суцільне глянцеве тіло, світло з
                      * верхнього лівого, темний термінатор праворуч-донизу,
                      * відбите підсвічування знизу, гарячий блік і супутник.
+                     *
+                     * Блік на рогівці — тверде біле без розмиття, і так і має
+                     * бути: рогівка мокра, це відблиск на склі, а не полірована
+                     * глина. Бюджет матеріалу паку його не пропускає, тому файл
+                     * заявляє виняток сам, щоб він лишався видимим у звіті:
+                     * check-icons: glass-ok — вологий блиск рогівки, не полірування глини
                      */
                     <svg class="hex-obj hex-eye" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
                       <defs>
@@ -169,48 +178,17 @@ const subjectBlock: Record<string, string> = {
                       <ellipse cx="152" cy="180" rx="14" ry="8" fill="#FFFFFF" opacity=".3"
                                filter="url(#eye-b3)" transform="rotate(-20 152 180)" />
                     </svg>
-                  ) : (
-                    <img class={`hex-obj ic-${c.glyph}${c.glyph === 'dna' ? ' is-spin' : ''}${c.glyph === 'gear' ? ' is-turn' : ''}`}
+                  ) : c.glyph ? (
+                    <img class={`hex-obj ic-${c.glyph}`}
                          src={withBase(`/assets/icons/lib/${c.glyph}.png`)}
                          width="256" height="256" alt="" loading="lazy" decoding="async" />
+                  ) : (
+                    <LibGlyph id={c.model ?? ''} />
                   )}
 
-                  {c.glyph === 'cell' && (
-                    <svg class="hex-fx fx-cell" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
-                      <circle class="r1" cx="94.6" cy="114.8" r="34" />
-                      <circle class="r2" cx="94.6" cy="114.8" r="34" />
-                    </svg>
-                  )}
-                  {c.glyph === 'periodic' && (
-                    <svg class="hex-fx fx-grid" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
-                      <rect class="c1" x="33" y="60" width="47" height="47" rx="13" />
-                      <rect class="c2" x="89" y="114" width="47" height="47" rx="13" />
-                      <rect class="c3" x="146" y="170" width="47" height="47" rx="13" />
-                    </svg>
-                  )}
-                  {c.glyph === 'thermo' && (
-                    <svg class="hex-fx fx-heat" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
-                      <defs>
-                        <radialGradient id="fx-heat-g" cx=".5" cy=".55" r=".5">
-                          <stop offset="0" stop-color="#FF7A2F" stop-opacity=".95" />
-                          <stop offset=".65" stop-color="#FF5A1F" stop-opacity=".45" />
-                          <stop offset="1" stop-color="#FF5A1F" stop-opacity="0" />
-                        </radialGradient>
-                      </defs>
-                      <ellipse cx="129" cy="142" rx="74" ry="86" fill="url(#fx-heat-g)" />
-                    </svg>
-                  )}
                   {c.glyph === 'crust' && (
                     <svg class="hex-fx fx-seam" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
                       <path d="M107 118.6 L145.3 76.8" />
-                    </svg>
-                  )}
-                  {c.glyph === 'heart' && (
-                    <svg class="hex-spark" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
-                      <g transform="translate(-40.39 -44.15) scale(3.5083)">
-                        <path class="s-glow" pathLength="100" d="M20 50h10.5l4.5-9 6.5 18 5.5-11 4 6H76" />
-                        <path class="s-core" pathLength="100" d="M20 50h10.5l4.5-9 6.5 18 5.5-11 4 6H76" />
-                      </g>
                     </svg>
                   )}
                   {c.glyph === 'volcano' && (
@@ -325,10 +303,13 @@ const subjectBlock: Record<string, string> = {
     --hex-w: 64px;
     --hex-h: calc(var(--hex-w) * 1.1547);
     --hex-cell: calc(var(--hex-w) + 22px);
-    /* the widest page is three cells (biology) — the viewport below is
-       fixed to fit exactly that many, so the strip has one compact size
-       instead of stretching to whatever room a 1fr column handed it. */
-    --comb-w: calc(3 * var(--hex-cell) + 2 * 8px);
+    /* the viewport fits the busiest subject exactly — `--comb-count` is
+       counted off the data in the frontmatter — so the strip has one
+       compact size instead of stretching to whatever room a 1fr column
+       handed it, and no page can spill onto the one beside it. */
+    --comb-count: 3;
+    /* + 4px for the page's own side padding, which is inside this width */
+    --comb-w: calc(var(--comb-count) * var(--hex-cell) + (var(--comb-count) - 1) * 8px + 4px);
     min-width: 0;
   }
   .lib-comb-row { display: flex; align-items: center; gap: 18px; }
@@ -464,11 +445,11 @@ const subjectBlock: Record<string, string> = {
   .hex.is-yellow .hex-face { background: var(--yellow); }
   .hex.is-ink .hex-face { background: var(--ink-block); }
 
-  /* a bright ring for the picked cell — an outline, not a second mask, so
-     it cannot fall into the trap a masked pseudo-ring did elsewhere on this
-     page under software rendering. It sits on the unmasked shadow box, not
-     the masked face, for the same reason the shadow does. */
-  .hex.is-active .hex-shadow { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 4px; }
+  /* Обрану комірку показують підняття, притемнене тло під нею, глибша
+     тінь і чорна підпис — цього досить. Прямокутної рамки тут більше
+     немає: обрис лягав на неспотворену коробку, тобто квадратом навколо
+     шестикутника, і читався не як вибір, а як системна рамка фокуса, що
+     її забули прибрати. */
 
   .hex-art {
     position: relative;
@@ -484,29 +465,18 @@ const subjectBlock: Record<string, string> = {
 
   /*
    * Each clay render was shot with its own amount of empty canvas around
-   * it — gear.png fills nearly all of its 256x256 frame while thermo.png
-   * and the eye's SVG circle sit well inside theirs — so at one fixed
-   * width they read as noticeably different sizes (dna and the eye were
-   * the two the client actually flagged). Measured the opaque pixels'
-   * own bounding box per asset and scaled each so its visual diagonal
-   * comes out to roughly the same fraction of the cell; gear and heart
-   * scale down a little rather than everything else scaling up to
-   * match them, so nothing risks crowding the hex mask.
+   * it, so at one fixed width they read as noticeably different sizes.
+   * Measured the opaque pixels' own bounding box per asset and scaled
+   * each so its visual diagonal comes out to roughly the same fraction
+   * of the cell.
+   *
+   * The model stills need no entry here: they are trimmed to their own
+   * silhouette and scaled to one height when they are rendered, so they
+   * arrive at the same visual size as each other already.
    */
-  .hex-obj.ic-cell { transform: scale(1.09); }
   .hex-obj.ic-crust { transform: scale(1.02); }
-  .hex-obj.ic-dna { transform: scale(1.09); }
-  .hex-obj.ic-gear { transform: scale(.86); }
-  .hex-obj.ic-heart { transform: scale(0.94); }
-  .hex-obj.ic-periodic { transform: scale(0.97); }
-  .hex-obj.ic-thermo { transform: scale(1.25); }
   .hex-obj.ic-volcano { transform: scale(1.02); }
   .hex-eye { transform: scale(1.13); }
-
-  .hex:hover .hex-obj.is-spin { animation: dna-spin var(--glyph-t) var(--glyph-e); }
-  @keyframes dna-spin { to { transform: scale(1.09) rotateY(360deg); } }
-  .hex:hover .hex-obj.is-turn { animation: fx-turn calc(var(--glyph-t) * 4) linear infinite; }
-  @keyframes fx-turn { to { transform: scale(.86) rotate(360deg); } }
 
   /* The eye is the one glyph that is markup rather than a PNG, so its hover
      business lives inside the object instead of over it: the iris group looks
@@ -529,7 +499,7 @@ const subjectBlock: Record<string, string> = {
   }
 
   /* ---- the hover overlays: unchanged from the honeycomb these replaced ---- */
-  .hex-lava, .hex-fx, .hex-spark {
+  .hex-lava, .hex-fx {
     position: absolute; inset: 0; width: 100%; height: 100%;
     overflow: visible; pointer-events: none;
   }
@@ -547,42 +517,6 @@ const subjectBlock: Record<string, string> = {
     100% { transform: translateY(var(--h, -70px)) scale(.5); opacity: 0; }
   }
 
-  .fx-cell circle {
-    fill: none; stroke: #FFF3C4; stroke-width: 7; opacity: 0;
-    transform-box: fill-box; transform-origin: 50% 50%;
-  }
-  .hex:hover .fx-cell .r1 { animation: fx-ripple calc(var(--glyph-t) * 1.3) ease-out; }
-  .hex:hover .fx-cell .r2 { animation: fx-ripple calc(var(--glyph-t) * 1.3) ease-out 260ms; }
-  @keyframes fx-ripple {
-    0%   { transform: scale(.34); opacity: 0; }
-    18%  { opacity: .95; }
-    100% { transform: scale(2.9); opacity: 0; }
-  }
-
-  .fx-grid rect { fill: rgba(255, 214, 92, .28); stroke: #FFD75C; stroke-width: 7; opacity: 0; }
-  .hex:hover .fx-grid .c1 { animation: fx-flash 340ms ease-out; }
-  .hex:hover .fx-grid .c2 { animation: fx-flash 340ms ease-out 190ms; }
-  .hex:hover .fx-grid .c3 { animation: fx-flash 340ms ease-out 380ms; }
-  @keyframes fx-flash { 0%, 100% { opacity: 0; } 40% { opacity: 1; } }
-
-  .hex-rod {
-    position: absolute; inset: 0; width: 100%; height: auto;
-    /* scaled to match thermo.png's own 1.25x below, so the rod stays in
-       proportion to the flask it dips into instead of reading as a
-       normal-sized rod poking out of a suddenly bigger vessel */
-    transform: scale(1.25);
-    filter: drop-shadow(0 6px 9px rgba(0, 0, 0, .26));
-  }
-  .hex:hover .hex-rod { animation: fx-stroke var(--glyph-t) cubic-bezier(.36, 0, .28, 1); }
-  @keyframes fx-stroke {
-    0%   { transform: scale(1.25) translate(0, 0); }
-    38%  { transform: scale(1.25) translate(2.2%, 13.9%); }
-    100% { transform: scale(1.25) translate(0, 0); }
-  }
-  .fx-heat ellipse { opacity: 0; mix-blend-mode: screen; }
-  .hex:hover .fx-heat ellipse { animation: fx-flush var(--glyph-t) ease-out; }
-  @keyframes fx-flush { 0%, 100% { opacity: 0; } 38% { opacity: .85; } 62% { opacity: .5; } }
-
   .fx-seam path {
     fill: none; stroke: #FFA53A; stroke-width: 15; stroke-linecap: round; opacity: 0;
     filter: drop-shadow(0 0 7px rgba(255, 140, 40, .95));
@@ -597,19 +531,6 @@ const subjectBlock: Record<string, string> = {
     72% { transform: translate(1px, .6px); }
   }
 
-  .hex-spark path {
-    fill: none; stroke-linecap: round; stroke-linejoin: round;
-    stroke-dasharray: 24 100; stroke-dashoffset: 24; opacity: 0;
-  }
-  .hex-spark .s-glow { stroke: #FFC33A; stroke-width: 8.4; filter: drop-shadow(0 0 5px rgba(255, 186, 40, .95)); }
-  /* one pass, not two: the thin inner core used to run the same sweep at
-     a different dash length, and since both shared one duration but
-     covered different distances, they drifted out of step — reading as
-     a second, smaller pass trailing the first instead of one clean beat. */
-  .hex-spark .s-core { display: none; }
-  .hex:hover .hex-spark .s-glow { animation: hex-whoosh var(--glyph-t) var(--glyph-e); }
-  @keyframes hex-whoosh { 0% { stroke-dashoffset: 24; opacity: 0; } 9% { opacity: 1; } 76% { opacity: 1; } 100% { stroke-dashoffset: -110; opacity: 0; } }
-
   /* beside the shape now, not under it — a nav label reads left to right
      next to its icon, the way every other menu item on the page does */
   .hex .nm {
@@ -623,79 +544,121 @@ const subjectBlock: Record<string, string> = {
   }
   .hex:hover .nm, .hex.is-active .nm { color: var(--ink); }
 
+  /*
+   * Фокус лишається видимим для клавіатури й зникає з-під миші.
+   *
+   * Браузери розходяться в тому, чи вважати клік «видимим фокусом»: у
+   * частині з них кожне натискання по комірці лишало по собі прямокутну
+   * рамку системного кольору — на соті вона читалась як помилка верстки.
+   * Тож рамку знімаємо на :focus і малюємо свою на :focus-visible, який
+   * лишається тільки для Tab.
+   */
+  .hex:focus, .lib-comb-arrow:focus, .lib-comb-dot:focus { outline: none; }
+  .hex:focus-visible, .lib-comb-arrow:focus-visible, .lib-comb-dot:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: var(--r-lg);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .hex { transition: none; }
-    .hex:hover .hex-spark path, .hex:hover .hex-lava .gob,
-    .hex:hover .hex-obj.is-spin, .hex:hover .hex-obj.is-turn,
+    .hex:hover .hex-lava .gob,
     .hex:hover .hex-eye .eye-gaze, .hex:hover .hex-eye .eye-pupil,
-    .hex:hover .hex-fx, .hex:hover .hex-fx path, .hex:hover .hex-fx rect,
-    .hex:hover .hex-fx circle, .hex:hover .hex-fx ellipse,
-    .hex:hover .hex-rod { animation: none; }
+    .hex:hover .hex-fx, .hex:hover .hex-fx path { animation: none; }
   }
 
   /* the strip scrolls sideways at any width, so phones need no layout
      switch — just tighter padding, since the edge-to-edge card gutter
      is narrower there. */
-  /* the title and the strip only share a row where there is a row's
-     worth of width to share; below that they stack, title first */
-  @media (max-width: 700px) {
-    .lib-top { grid-template-columns: 1fr; gap: 16px; }
+  /* The title and the strip only share a row where there is a row's worth of
+     width to share — and 700px was not where that stops being true. The
+     strip's own width is fixed by the busiest subject: four cells at 86px
+     plus their gaps is 372px, and beside a headline column and a 44px gutter
+     that needs ~900px of page. Between 700 and 900 it did not have it, so the
+     strip ran off the right edge of the tablet and took its subject dots with
+     it — two hexagons visible out of four, and no way to reach the rest.
+     Below 900 they stack, title first, and the strip centres in the full
+     width it then has. */
+  @media (max-width: 900px) {
+    .lib-top { grid-template-columns: 1fr; gap: 16px; justify-items: center; }
+    .lib-head-l { justify-self: stretch; }
+    .lib-comb-row { justify-content: center; }
     /* stacked full-width here, the number was reading as heavier than the
        nav and demo below it were given credit for — a notch smaller keeps
        it the loudest thing on the page without it being the only thing */
     .lib-count .stat-num { font-size: clamp(2.25rem, 1.4rem + 5vw, 3rem); }
   }
 
+  /* ---- phones: one subject, one row ----
+     The strip used to wrap to two columns here, which is how biology's three
+     models came out as 2 + 1 with the odd one hanging under a gap. The
+     arithmetic says why: the row is arrows + viewport + arrows, and two 34px
+     arrows with their 18px gaps take 104px off a 358px phone. What is left
+     cannot hold four 86px cells however the cells are sized — at four across
+     each one would have to come down to 58px, and the hexagon inside it to
+     36px, which is smaller than the label under it.
+
+     So the arrows go, and the width they were using goes to the strip. The
+     dots below already carry the subject NAMES — "Біологія · Хімія · Фізика
+     · Географія" — which on a phone is a better control than two anonymous
+     chevrons: it is one tap to any subject instead of up to three, and it
+     says where each tap leads. The strip swipes as well (see the script), so
+     the gesture a carousel invites is answered too.
+
+     The cell is then sized off the viewport so the busiest subject — physics,
+     four models — fits one row at every width down to 320px: 14vw per hexagon
+     plus 22px of label gutter, times four, plus three 6px gaps, stays inside
+     the page's own column. */
   @media (max-width: 560px) {
-    .lib-comb-page { gap: 6px; padding: 4px 2px; }
+    .lib-comb {
+      /* Sized off the page's own arithmetic rather than by eye: the gutter
+         is 16px a side below 400px, the page holds four cells and three 6px
+         gaps, and a cell is the hexagon plus 22px of label gutter. Solve that
+         for the hexagon and you get 25vw - 34.5px; the extra 4.5px of slack
+         is for a desktop window narrowed under 560px, where 100vw counts the
+         scrollbar the strip does not get to use. */
+      --hex-w: clamp(40px, calc(25vw - 39px), 64px);
+      --comb-w: 100%;
+      width: 100%;
+    }
+    .lib-comb-row { gap: 0; }
+    .lib-comb-arrow { display: none; }
+    .lib-comb-viewport { flex: 1 1 auto; width: auto; min-width: 0; }
+    .lib-comb-page { flex-wrap: nowrap; gap: 6px; padding: 4px 2px; }
     .hex { padding: 5px 3px; }
+    .hex .nm { font-size: .625rem; }
+    /* the dots are the nav now, so they get a real tap target and sit far
+       enough from the strip to read as a separate control */
+    .lib-comb-dots { gap: clamp(10px, 4vw, 26px); margin-top: 14px; }
+    .lib-comb-dot { padding: 6px 4px; }
+    .lib-comb-dot .dot-lbl { font-size: .75rem; }
   }
 </style>
 
 <script>
   /*
    * The only interaction this band owns: click a sample cell, and the model
-   * panel picks up its name and subject. Eight of the nine have no real
-   * file behind them yet, so they switch the panel into the "soon" state
-   * ModelViewer.astro declares. The ninth — the eye — IS the panel's own
-   * default demo, so picking it instead restores exactly the copy the page
-   * shipped with, captured once below before anything is overwritten.
+   * panel becomes that model — nine of the eleven have a .glb behind them,
+   * and the other two say so instead. Which of the two happens is the
+   * panel's business, not the strip's: this hands over the cell's id, its
+   * name and its artwork in one event and stops there.
    */
   const cells = document.querySelectorAll<HTMLButtonElement>('.hex');
   const panel = document.querySelector<HTMLElement>('.mv');
 
   if (panel && cells.length) {
-    const ttl = panel.querySelector<HTMLElement>('.mv-ttl');
-    const meta = panel.querySelector<HTMLElement>('.mv-meta');
-    const desc = panel.querySelector<HTMLElement>('.mv-desc');
-    const soonIcon = panel.querySelector<HTMLImageElement>('[data-soon-icon]');
-    const copy = JSON.parse(panel.dataset.copy || '{}') as { soonDesc?: string };
-
-    const original = {
-      ttl: ttl?.textContent ?? '',
-      meta: meta?.textContent ?? '',
-      desc: desc?.textContent ?? ''
-    };
-
     cells.forEach((btn) => {
       btn.addEventListener('click', () => {
         cells.forEach((b) => b.classList.toggle('is-active', b === btn));
 
-        if (btn.dataset.real === 'true') {
-          panel.classList.remove('is-soon');
-          if (ttl) ttl.textContent = original.ttl;
-          if (meta) meta.textContent = original.meta;
-          if (desc) desc.textContent = original.desc;
-          return;
-        }
-
-        panel.classList.add('is-soon');
-        if (ttl) ttl.textContent = btn.dataset.name ?? '';
-        if (meta) meta.textContent = (btn.dataset.label ?? '').toUpperCase();
-        if (desc && copy.soonDesc) desc.textContent = copy.soonDesc;
-
-        const objImg = btn.querySelector<HTMLImageElement>('.hex-obj');
-        if (soonIcon && objImg) soonIcon.src = objImg.src;
+        panel.dispatchEvent(new CustomEvent('mv:select', {
+          detail: {
+            model: btn.dataset.model,
+            name: btn.dataset.name,
+            label: btn.dataset.label,
+            icon: btn.querySelector<HTMLImageElement>('.hex-obj')?.src
+          }
+        }));
       });
     });
   }
@@ -729,6 +692,41 @@ const subjectBlock: Record<string, string> = {
     dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
     prevBtn?.addEventListener('click', () => goTo(page - 1));
     nextBtn?.addEventListener('click', () => goTo(page + 1));
+
+    /*
+     * Swipe. Below 560px the arrows are gone (the dots carry their subject
+     * names there and are the better control), so the strip has to answer
+     * the gesture a row of cards invites.
+     *
+     * The track is transform-driven rather than a scroller, so there is no
+     * native swipe to inherit: a horizontal drag past 42px pages, and a drag
+     * that is mostly vertical is left alone — releasing the touch to the page
+     * is what keeps a horizontal widget from eating the page's own scroll.
+     */
+    let x0 = 0;
+    let y0 = 0;
+    let axis: '' | 'x' | 'y' = '';
+
+    track.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      x0 = t.clientX;
+      y0 = t.clientY;
+      axis = '';
+    }, { passive: true });
+
+    track.addEventListener('touchmove', (e) => {
+      if (axis) return;
+      const t = e.touches[0];
+      const dx = Math.abs(t.clientX - x0);
+      const dy = Math.abs(t.clientY - y0);
+      if (dx > 10 || dy > 10) axis = dx > dy ? 'x' : 'y';
+    }, { passive: true });
+
+    track.addEventListener('touchend', (e) => {
+      if (axis !== 'x') return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 42) goTo(page + (dx < 0 ? 1 : -1));
+    }, { passive: true });
 
     render();
   }

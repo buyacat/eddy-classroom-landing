@@ -12,22 +12,30 @@
 
     Light comes from the upper left, same as every other object in this set:
     top face lightest, left face the brand blue, right face in shadow.
+
+    THE LIGHT IS BROAD, NOT A HOTSPOT. The bought objects have no specular
+    at all — their share of hard near-white pixels runs 0.00%–1.66%
+    (scripts/check-icons.mjs prints it). This cube used to answer with a
+    tight 0.95-opacity ellipse under a 3px blur, which is glass, not clay,
+    and it read as 3.84% — the thing the client pointed at. Every
+    highlight here is now wide and weak enough to stay inside the pack's
+    own budget.
   -->
   <defs>
     <linearGradient id="c3Top" x1="0.1" y1="0" x2="0.85" y2="1">
-      <stop offset="0%" stop-color="#D5DAFF"/>
-      <stop offset="50%" stop-color="#9AA6FF"/>
-      <stop offset="100%" stop-color="#6473F5"/>
+      <stop offset="0%" stop-color="#B4BDF0"/>
+      <stop offset="50%" stop-color="#94A0F2"/>
+      <stop offset="100%" stop-color="#7280EC"/>
     </linearGradient>
     <linearGradient id="c3Left" x1="0" y1="0" x2="0.6" y2="1">
-      <stop offset="0%" stop-color="#7B89FF"/>
-      <stop offset="40%" stop-color="#4A5AFF"/>
-      <stop offset="100%" stop-color="#2A37C6"/>
+      <stop offset="0%" stop-color="#7684F2"/>
+      <stop offset="40%" stop-color="#5666EE"/>
+      <stop offset="100%" stop-color="#4450CE"/>
     </linearGradient>
     <linearGradient id="c3Right" x1="0" y1="0" x2="0.7" y2="1">
-      <stop offset="0%" stop-color="#3543D6"/>
-      <stop offset="50%" stop-color="#232C9C"/>
-      <stop offset="100%" stop-color="#121865"/>
+      <stop offset="0%" stop-color="#4E5AD6"/>
+      <stop offset="50%" stop-color="#3F49B4"/>
+      <stop offset="100%" stop-color="#333C96"/>
     </linearGradient>
     <filter id="c3b6" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="6"/></filter>
     <filter id="c3b12" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="12"/></filter>
@@ -47,7 +55,7 @@
   <!-- Scaled to fill the 256 box the way the bought objects do: they run
        246px corner to corner, and an icon drawn to 160 sits visibly
        smaller than its neighbours on the same row. -->
-  <g transform="translate(128 128) scale(1.42) translate(-127.5 -123.5)">
+  <g transform="translate(128 128) scale(1.51) translate(-127.5 -123.5)">
 
   <g clip-path="url(#c3Hex)">
     <!-- three faces, sharing exact edges so no seam shows between them -->
@@ -57,26 +65,26 @@
 
     <!-- key light on the top face, and the shadow it leaves on the far side -->
     <g clip-path="url(#c3TopClip)">
-      <ellipse cx="102" cy="63" rx="30" ry="12" transform="rotate(30 102 63)" fill="#FFFFFF" opacity=".55" filter="url(#c3b12)"/>
-      <ellipse cx="92" cy="60" rx="17" ry="6" transform="rotate(30 92 60)" fill="#FFFFFF" opacity=".95" filter="url(#c3b3)"/>
-      <ellipse cx="182" cy="100" rx="32" ry="17" transform="rotate(-30 182 100)" fill="#2730AE" opacity=".42" filter="url(#c3b12)"/>
+      <ellipse cx="102" cy="63" rx="32" ry="13" transform="rotate(30 102 63)" fill="#FFFFFF" opacity=".42" filter="url(#c3b12)"/>
+      <ellipse cx="92" cy="60" rx="20" ry="8" transform="rotate(30 92 60)" fill="#FFFFFF" opacity=".34" filter="url(#c3b6)"/>
+      <ellipse cx="182" cy="100" rx="32" ry="17" transform="rotate(-30 182 100)" fill="#3B45B8" opacity=".3" filter="url(#c3b12)"/>
     </g>
     <!-- the lit flank: highlight down the leading edge, occlusion at the foot -->
     <g clip-path="url(#c3LeftClip)">
-      <ellipse cx="68" cy="112" rx="10" ry="28" fill="#FFFFFF" opacity=".42" filter="url(#c3b12)"/>
-      <ellipse cx="66" cy="104" rx="5" ry="15" fill="#FFFFFF" opacity=".85" filter="url(#c3b3)"/>
-      <ellipse cx="110" cy="208" rx="46" ry="22" fill="#141A70" opacity=".58" filter="url(#c3b12)"/>
+      <ellipse cx="68" cy="112" rx="11" ry="30" fill="#FFFFFF" opacity=".34" filter="url(#c3b12)"/>
+      <ellipse cx="66" cy="104" rx="7" ry="18" fill="#FFFFFF" opacity=".28" filter="url(#c3b6)"/>
+      <ellipse cx="110" cy="208" rx="46" ry="22" fill="#3A44A8" opacity=".34" filter="url(#c3b12)"/>
     </g>
     <!-- the shaded flank gets a rim light, or it goes flat black at 96px -->
     <g clip-path="url(#c3RightClip)">
       <ellipse cx="201" cy="112" rx="7" ry="32" fill="#C2C9FF" opacity=".42" filter="url(#c3b6)"/>
-      <ellipse cx="152" cy="202" rx="42" ry="24" fill="#080B3A" opacity=".5" filter="url(#c3b12)"/>
+      <ellipse cx="152" cy="202" rx="42" ry="24" fill="#2E3794" opacity=".3" filter="url(#c3b12)"/>
     </g>
 
     <!-- bevel: a cream hairline along the two top edges is what makes clay
          objects look moulded rather than printed -->
-      <path d="M128 40 L200 81 M128 40 L56 81" fill="none" stroke="#FFFFFF" stroke-opacity=".8" stroke-width="3" stroke-linecap="round" filter="url(#c3b3)"/>
-    <path d="M128 126 L128 208" fill="none" stroke="#101764" stroke-opacity=".35" stroke-width="4" stroke-linecap="round" filter="url(#c3b3)"/>
+      <path d="M128 40 L200 81 M128 40 L56 81" fill="none" stroke="#FFFFFF" stroke-opacity=".4" stroke-width="4" stroke-linecap="round" filter="url(#c3b6)"/>
+    <path d="M128 126 L128 208" fill="none" stroke="#2A3390" stroke-opacity=".28" stroke-width="4" stroke-linecap="round" filter="url(#c3b3)"/>
   </g>
 
   <!--
@@ -86,7 +94,7 @@
     exists to say. The matrix lays the glyphs flat on the left face
     (x along the face's own +0.579 slope), then centres them on it.
   -->
-  <g transform="matrix(1 0.5789 0 1 52 80) translate(8.3 26) scale(0.9)" fill="#FFF7E2">
+  <g transform="matrix(1 0.5789 0 1 52 80) translate(8.3 26) scale(0.9)" fill="#F2EBD6">
     <path d="M2.5 3.2 C6.5 1 10.6 0 15.2 0 C23.4 0 29.4 4.6 29.4 11.2 C29.4 15.6 27 18.9 23 20.2
              C27.6 21.3 30 24.8 30 29.2 C30 36.1 23.6 40.6 14.6 40.6 C9.4 40.6 4.4 39.3 0.6 36.9
              L4.1 29.3 C7 31.2 10.7 32.2 14 32.2 C18.3 32.2 20.8 30.6 20.8 28 C20.8 25.5 18.8 24.1 14.7 24.1

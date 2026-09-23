@@ -109,10 +109,8 @@ const stats = tArray<{ text: string; offline?: boolean }>(locale, 'classroom_sta
      background is gone so the ambient plane shows through. */
   .cta-band {
     position: relative;
-    /* the footer adds no top pool of its own (see Footer.astro), so this side alone
-       covers the gap; 1.5x lands it at the same ~170px as the other block gaps
-       (2x read as the page ending before the footer) */
-    padding-block: var(--pad-band) calc(var(--pad-band) * 1.5);
+    /* the footer has no padding of its own on top, so the bottom side carries the whole gap */
+    padding-block: calc(var(--gap-block) / 2) var(--gap-block);
   }
 
   /* -14% bottom overhang bridges the grey gap to the footer's ink block; only safe because

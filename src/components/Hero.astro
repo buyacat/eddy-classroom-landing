@@ -90,7 +90,8 @@ const tools = [
 <style>
   .hero {
     position: relative;
-    padding: calc(var(--nav-h) + clamp(32px, 5vw, 72px)) 0 clamp(28px, 3.4vw, 56px);
+    /* bottom is half the block gap; the next band's top half completes it (see .band) */
+    padding: calc(var(--nav-h) + clamp(32px, 5vw, 72px)) 0 calc(var(--gap-block) / 2);
     /* overflow-x: clip (not hidden) — clips only the X axis so the Y-bleeding blobs aren't affected */
     overflow-x: clip;
   }
@@ -294,6 +295,8 @@ const tools = [
     .badge-tool { right: -10px; }
   }
   @media (max-width: 700px) {
+    /* the chip row carries 20px of its own air below on phones; take it back so this gap matches the rest */
+    .hero { padding-bottom: calc(var(--gap-block) / 2 - 20px); }
     .badge-model { top: 4%; left: -2%; padding: 8px 12px 8px 9px; }
     .badge-model .t1 { font-size: 12px; }
     .badge-tool { width: 58px; height: calc(58px * var(--hex-ratio)); right: -8px; padding: 0; }

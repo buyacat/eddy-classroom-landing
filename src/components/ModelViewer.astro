@@ -9,8 +9,9 @@ const { locale } = Astro.props;
 
 /**
  * Lazy-loaded 3D model panel: nothing (model, three.js, loader) is fetched
- * until the visitor presses the start button. The structure list works
- * without WebGL/JS — it's plain HTML content, not a control panel for the 3D.
+ * until the panel scrolls near the viewport; then the first model loads on
+ * its own, with no button to press. The structure list works without
+ * WebGL/JS — it's plain HTML content, not a control panel for the 3D.
  * Runtime copy is passed as one `data-copy` payload so strings stay
  * translatable and the module stays copy-agnostic.
  */
@@ -61,17 +62,15 @@ const copy = {
     <div class="mv-stage" data-stage>
       <canvas class="mv-canvas" role="img" aria-label={`${alt} — ${first?.title ?? ''}`}></canvas>
 
-      <!-- Cover shows the model's file weight before the visitor commits to loading it. -->
-      <div class="mv-gate" data-gate>
-        <button class="btn btn-primary mv-start" type="button" data-start>
-          {t(locale, 'classroom_library_model_cta')}
-        </button>
+      <!-- Only shown without WebGL: the weight line carries the explanation then. -->
+      <div class="mv-gate" data-gate hidden>
         <p class="mv-weight" data-weight>{first?.weight}</p>
       </div>
 
-      <div class="mv-load" data-load hidden>
+      <!-- Visible from the server render: the model starts fetching as soon as the panel nears the viewport. -->
+      <div class="mv-load is-unknown" data-load>
         <span class="mv-track"><i data-bar></i></span>
-        <p class="mv-load-txt" data-load-txt>{copy.loading}</p>
+        <p class="mv-load-txt" data-load-txt>{copy.loading}… · {first?.weight}</p>
       </div>
 
       <div class="mv-fail" data-fail hidden>
@@ -625,20 +624,17 @@ const copy = {
       // of printing a percentage that would be a guess
       load.classList.toggle('is-unknown', fraction < 0);
       if (fraction < 0) {
-        loadTxt.textContent = copy.loading + '…';
+        loadTxt.textContent = copy.loading + '… · ' + active.weight;
         return;
       }
       bar.style.width = Math.round(fraction * 100) + '%';
-      loadTxt.textContent = copy.loading + ' · ' + Math.round(fraction * 100) + '%';
+      loadTxt.textContent = copy.loading + ' · ' + Math.round(fraction * 100) + '% · ' + active.weight;
     }
 
     /* Stamps each mount so a stale in-flight fetch (switched cells mid-download)
        is discarded on arrival instead of replacing the current model. */
     let generation = 0;
     let fetching = false;
-    /* Once a model's been downloaded, later picks load immediately without re-asking. */
-    let eager = false;
-
     function fetchModel() {
       if (!webgl || fetching || viewer || !active) return;
       fetching = true;
@@ -649,7 +645,7 @@ const copy = {
       bar.style.width = '0%';
       progress(-1);
 
-      /* three.js, the loader and the model file are all fetched from this one press. */
+      /* three.js, the loader and the model file are all fetched from here. */
       import('../scripts/model-viewer')
         .then((mod) =>
           mod.mountViewer({
@@ -743,9 +739,8 @@ const copy = {
       canvas.setAttribute('aria-label', alt + ' — ' + next.title);
       renderParts();
 
-      /* Skips the cover once a model's already been downloaded once (`eager`). */
-      if (eager && webgl) fetchModel();
-      else gate.hidden = false;
+      /* A pick from the strip is as good as a scroll-in: it downloads at once. */
+      if (webgl) fetchModel();
     }
 
     /** A cell with no file behind it yet: say so, rather than mime a load. */
@@ -773,17 +768,22 @@ const copy = {
     if (!webgl) {
       /* Weight line reused for the no-WebGL explanation — a fresh <p> would
          lack the scoped-CSS attribute and render unstyled. */
-      q('[data-start]').remove();
+      load.hidden = true;
       weight.textContent = root.dataset.nowebgl || '';
+      gate.hidden = false;
     } else {
-      const start = q<HTMLButtonElement>('[data-start]');
       const retry = q<HTMLButtonElement>('[data-retry]');
-
-      start.addEventListener('click', () => {
-        eager = true;
-        fetchModel();
-      });
       retry.addEventListener('click', fetchModel);
+
+      /* The model starts downloading ~600px before the panel enters the
+         viewport, so by the time the visitor scrolls to it the eye is
+         already turning. One-shot: once triggered the observer is dropped. */
+      const near = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        near.disconnect();
+        fetchModel();
+      }, { rootMargin: '600px 0px' });
+      near.observe(root);
 
       range.addEventListener('input', () => {
         viewer?.setExplode(Number(range.value) / 100);

@@ -10,7 +10,7 @@
   "classroom_schema_description": "Digital platform for lesson preparation and delivery — ready-made lessons, a 3D content library, testing, and analytics",
   "classroom_eyebrow": "Eddy Classroom",
   "classroom_title": "Eddy <span class=\"hl\">Classroom</span>",
-  "classroom_lede": "A single digital environment for preparing and running a lesson: ready-made lesson plans, a library of digital and 3D materials, testing, and per-lesson analytics.",
+  "classroom_lede": "An environment with everything your lesson needs. From ready-made lesson plans and tests to a library of digital and 3D materials.",
   "classroom_hero_cta_primary": "Leave a request",
   "classroom_hero_cta_secondary": "What's in the platform",
   "classroom_stats": [
@@ -63,32 +63,32 @@
     {
       "icon": "allInOne",
       "title": "Everything for the lesson in one place",
-      "text": "Lessons, a material library, tests — no more juggling a dozen separate apps and websites."
-    },
-    {
-      "icon": "journal",
-      "title": "Instant answer log",
-      "text": "The teacher sees who's making mistakes and where, right during the lesson — no waiting to grade notebooks."
+      "text": "No more piecing a lesson together from different sources."
     },
     {
       "icon": "library",
       "title": "3D content library",
-      "text": "Material that makes the lesson up to 100% more effective and adds interactivity."
+      "text": "Materials that make the lesson up to 100% more effective and add interactivity."
     },
     {
-      "icon": "ai",
-      "title": "AI assistant for teachers",
-      "text": "A resource that helps organize and build a lesson faster."
+      "icon": "devices",
+      "title": "Works with interactive panels",
+      "text": "Available on every device. Runs on any panel model, including 1‑Vision."
     },
     {
       "icon": "offline",
       "title": "Works without a stable internet connection",
-      "text": "Lesson materials are downloaded in advance and open offline."
+      "text": "Download lesson materials in advance and open them offline."
     },
     {
-      "icon": "devices",
-      "title": "One app for every device",
-      "text": "The teacher's laptop and tablet, any student smartphone, the classroom's interactive panel."
+      "icon": "ai",
+      "title": "AI assistant for teachers",
+      "text": "Helps you organize and build a lesson faster."
+    },
+    {
+      "icon": "journal",
+      "title": "Instant answer log",
+      "text": "Right during the lesson, the teacher sees who is making mistakes and where."
     }
   ],
   "classroom_platform_eyebrow": "Platform",
@@ -96,45 +96,37 @@
   "classroom_platform_items": [
     {
       "icon": "web",
-      "title": "Web version for teachers and administrators",
-      "text": "Course and lesson prep, working with the library, a test and quiz builder with different question types, viewing results and the session log.",
-      "shot_alt": "Eddy Classroom materials library",
-      "wide": true
-    },
-    {
-      "icon": "session",
-      "title": "The whole group takes the test together",
-      "text": "The class answers at the same time and the teacher watches a live table: who is on which question, who got it wrong, and what they scored. One button ends the test.",
-      "shot_alt": "A shared test session: the class answer table beside the question and its options",
-      "wide": true
+      "title": "Teacher's workspace",
+      "text": "Prepare lesson plans, lessons and tests, enrol students into them and manage the class in one place.",
+      "shot_alt": "Teacher's workspace: the class roster and lesson materials"
     },
     {
       "icon": "student",
-      "title": "Easy student access",
-      "text": "Once joined to a course, a student can easily browse its materials, complete assignments, and take tests.",
-      "shot_alt": "Answer options in a quiz"
+      "title": "Student's workspace",
+      "text": "A safe space with only the materials the teacher has shared, for focused learning.",
+      "shot_alt": "Student's workspace: only the materials the teacher has shared"
+    },
+    {
+      "icon": "session",
+      "title": "Real-time testing",
+      "text": "Students answer at the same time, and the teacher sees their answers right away.",
+      "shot_alt": "A shared test: every student's answer to every question, live"
     },
     {
       "icon": "panel",
-      "title": "Interactive panel and whiteboard",
-      "text": "Front-of-class display of presentations, video, documents, 3D models and simulations; draw and annotate directly over the material in real time.",
-      "shot_alt": "Annotations over a 3D model"
-    },
-    {
-      "icon": "analytics",
-      "title": "Analytics and a lesson-effectiveness dashboard",
-      "text": "A clear overview of class engagement and material mastery, with recommendations for the teacher based on session results.",
-      "shot_alt": "Session results table"
+      "title": "Interactive panel",
+      "text": "Present materials and interact with them right on the screen: draw, write, flip pages by touch.",
+      "shot_alt": "Marker notes over a geometry problem on the interactive panel"
     },
     {
       "icon": "games",
       "title": "In-lesson game tools",
-      "text": "A wheel of names for random student selection, a timer, and a noise meter — simple tools that add dynamics to the lesson."
+      "text": "A wheel of names, a timer and a noise meter add variety to your lessons."
     },
     {
       "icon": "virtual",
       "title": "Virtual classroom",
-      "text": "Connect students to the class remotely: browsing materials and communicating even outside the classroom."
+      "text": "Run lessons with students outside the classroom."
     }
   ],
   "classroom_platform_virtual_remote": "remote",
@@ -153,7 +145,7 @@
       "name": "The human eye, in section",
       "title": "The human eye, in section",
       "meta": "Biology · years 8–9 · 10 structures",
-      "weight": "1.7 MB — fetched only when you ask for it",
+      "weight": "1.7 MB",
       "parts": [
         {
           "node": "Sclera",
@@ -213,7 +205,7 @@
       "name": "Red blood cell",
       "title": "Red blood cell (erythrocyte)",
       "meta": "Biology · 5 structures",
-      "weight": "1.9 MB — fetched only when you ask for it",
+      "weight": "1.9 MB",
       "parts": [
         {
           "node": "CellMembrane",
@@ -248,7 +240,7 @@
       "name": "Lipid bilayer",
       "title": "Membrane lipid bilayer",
       "meta": "Biology · 9 structures",
-      "weight": "2.0 MB — fetched only when you ask for it",
+      "weight": "2.0 MB",
       "parts": [
         {
           "node": "LipidCarbohydrateChains",
@@ -303,7 +295,7 @@
       "name": "p-n junction",
       "title": "p-n junction in a silicon crystal",
       "meta": "Chemistry · 6 structures",
-      "weight": "601 KB — fetched only when you ask for it",
+      "weight": "601 KB",
       "parts": [
         {
           "node": "NRegion",
@@ -343,7 +335,7 @@
       "name": "Lithium-ion cell",
       "title": "Lithium-ion cell",
       "meta": "Chemistry · 6 structures",
-      "weight": "2.2 MB — fetched only when you ask for it",
+      "weight": "2.2 MB",
       "parts": [
         {
           "node": "SteelCan",
@@ -383,7 +375,7 @@
       "name": "Newton's cradle",
       "title": "Newton's cradle",
       "meta": "Physics · 7 structures",
-      "weight": "683 KB — fetched only when you ask for it",
+      "weight": "683 KB",
       "parts": [
         {
           "node": "Base",
@@ -428,7 +420,7 @@
       "name": "Pressure gauge",
       "title": "Bourdon-tube pressure gauge",
       "meta": "Physics · 8 structures",
-      "weight": "1.8 MB — fetched only when you ask for it",
+      "weight": "1.8 MB",
       "parts": [
         {
           "node": "GaugeCase",
@@ -478,7 +470,7 @@
       "name": "Radiation dosimeter",
       "title": "Radiation dosimeter",
       "meta": "Physics · 8 structures",
-      "weight": "178 KB — fetched only when you ask for it",
+      "weight": "178 KB",
       "parts": [
         {
           "node": "Housing",
@@ -528,7 +520,7 @@
       "name": "Solar panel",
       "title": "Residential solar panel",
       "meta": "Physics · 8 structures",
-      "weight": "371 KB — fetched only when you ask for it",
+      "weight": "371 KB",
       "parts": [
         {
           "node": "Frame",
@@ -574,7 +566,6 @@
     }
   ],
   "classroom_library_model_desc": "Not a render and not a screenshot: the same file a teacher opens in class. Turn it, pull the structures apart, read what each one does.",
-  "classroom_library_model_cta": "Turn the model",
   "classroom_library_model_loading": "Loading the model",
   "classroom_library_model_error": "The model could not be loaded.",
   "classroom_library_model_retry": "Try again",
@@ -726,5 +717,119 @@
   "classroom_form_error": "Send request",
   "classroom_form_error_hint": "Sending error. Please try again or contact us directly.",
   "classroom_form_thanks": "Thanks for your request!",
-  "classroom_form_thanks_sub": "An Eddy Classroom manager will contact you soon."
+  "classroom_form_thanks_sub": "An Eddy Classroom manager will contact you soon.",
+  "classroom_platform_mock": {
+    "nav": [
+      "Courses",
+      "Library",
+      "Tests",
+      "Results"
+    ],
+    "class_title": "Biology · 8-A",
+    "class_count": "24 students",
+    "students_title": "Students",
+    "students": [
+      {
+        "ini": "ON",
+        "name": "Oleksii Nykytchuk",
+        "status": "in class"
+      },
+      {
+        "ini": "YA",
+        "name": "Yevhenii Avalenko",
+        "status": "in class"
+      },
+      {
+        "ini": "TB",
+        "name": "Tetiana Borodai",
+        "status": "remote"
+      },
+      {
+        "ini": "OV",
+        "name": "Olena Vitkova",
+        "status": "in class"
+      }
+    ],
+    "materials_title": "Lesson materials",
+    "materials": [
+      {
+        "name": "Structure of the Earth — 3D model",
+        "type": "3D scene"
+      },
+      {
+        "name": "The Earth's interior",
+        "type": "Lesson"
+      },
+      {
+        "name": "Tectonic plates",
+        "type": "Test"
+      }
+    ],
+    "student_hello": "Hi, Olena!",
+    "student_class": "8-A",
+    "student_from": "Shared by your teacher",
+    "student_items": [
+      {
+        "icon": "cube3d",
+        "name": "Structure of the Earth",
+        "type": "3D model",
+        "state": "open"
+      },
+      {
+        "icon": "document",
+        "name": "Arthur Conan Doyle. The Speckled Band",
+        "type": "Lesson",
+        "state": "open"
+      },
+      {
+        "icon": "check",
+        "name": "Tectonic plates",
+        "type": "Test",
+        "state": "locked"
+      }
+    ],
+    "student_open": "Open",
+    "student_locked": "from 2 pm",
+    "session_toggle": "Group session",
+    "session_students": "Students:",
+    "session_rows": [
+      {
+        "name": "Oleksii Nykytchuk",
+        "answers": "BCCCBADA",
+        "ok": "11111111",
+        "score": "90",
+        "medal": "trophy"
+      },
+      {
+        "name": "Yevhenii Avalenko",
+        "answers": "BBCCCACD",
+        "ok": "11111001",
+        "score": "80",
+        "medal": "medal"
+      },
+      {
+        "name": "Tetiana Borodai",
+        "answers": "ACBBABAD",
+        "ok": "00000111",
+        "score": "50"
+      },
+      {
+        "name": "Olena Vitkova",
+        "answers": "BDCCCBBC",
+        "ok": "10111100",
+        "score": "50"
+      }
+    ],
+    "session_finish": "finish test",
+    "session_show": "Show answers 4/4",
+    "panel_title": "Geometry · 8-A",
+    "panel_page": "3 / 12",
+    "panel_question": "Why are △ABC and △DEF similar?",
+    "panel_note": "two angles!",
+    "panel_tools": [
+      "Pen",
+      "Marker",
+      "Eraser"
+    ]
+  }
 }

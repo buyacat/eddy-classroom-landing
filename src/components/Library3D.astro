@@ -198,6 +198,10 @@ const subjectBlock: Record<string, string> = {
         rgba(var(--amb-blue), 0) var(--amb-fade));
   }
 
+  /* the platform band's last row of cards and this strip are one reading beat apart:
+     a full band gap here read as the page ending, so the top padding is trimmed */
+  .lib { padding-top: calc(var(--pad-band) * .6); }
+
   /* title and strip share a row; description gets its own full-width line below */
   .lib-top {
     display: grid;
@@ -502,21 +506,41 @@ const subjectBlock: Record<string, string> = {
   const cells = document.querySelectorAll<HTMLButtonElement>('.hex');
   const panel = document.querySelector<HTMLElement>('.mv');
 
-  if (panel && cells.length) {
-    cells.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        cells.forEach((b) => b.classList.toggle('is-active', b === btn));
-
-        panel.dispatchEvent(new CustomEvent('mv:select', {
-          detail: {
-            model: btn.dataset.model,
-            name: btn.dataset.name,
-            label: btn.dataset.label,
-            icon: btn.querySelector<HTMLImageElement>('.hex-obj')?.src
-          }
-        }));
-      });
+  /* The panel sits a screen below the strip. A pick that leaves the viewer
+     out of view reads as "nothing happened", so the page rolls down to it —
+     unless most of it is already on screen (then a scroll would only jitter). */
+  function revealPanel() {
+    if (!panel) return;
+    const r = panel.getBoundingClientRect();
+    const seen = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0);
+    if (seen >= Math.min(r.height, window.innerHeight) * .7) return;
+    panel.scrollIntoView({
+      block: 'start',
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
     });
+  }
+
+  function pickCell(btn: HTMLButtonElement) {
+    cells.forEach((b) => b.classList.toggle('is-active', b === btn));
+    panel?.dispatchEvent(new CustomEvent('mv:select', {
+      detail: {
+        model: btn.dataset.model,
+        name: btn.dataset.name,
+        label: btn.dataset.label,
+        icon: btn.querySelector<HTMLImageElement>('.hex-obj')?.src
+      }
+    }));
+    revealPanel();
+  }
+
+  if (panel && cells.length) {
+    cells.forEach((btn) => btn.addEventListener('click', () => pickCell(btn)));
+
+    // the panel opens on its first model; the matching cell is lit from the start
+    try {
+      const firstId = (JSON.parse(panel.dataset.models || '[]') as { id: string }[])[0]?.id;
+      cells.forEach((b) => b.classList.toggle('is-active', !!firstId && b.dataset.model === firstId));
+    } catch { /* no models: nothing to light */ }
   }
 
   const track = document.querySelector<HTMLElement>('[data-comb-track]');
@@ -540,7 +564,13 @@ const subjectBlock: Record<string, string> = {
       render();
     }
 
-    dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
+    /* A subject is a destination, not a page marker: picking one opens that
+       subject's first model in the panel and rolls down to it. */
+    dots.forEach((d, i) => d.addEventListener('click', () => {
+      goTo(i);
+      const lead = (track!.children[i] as HTMLElement | undefined)?.querySelector<HTMLButtonElement>('.hex');
+      if (lead) pickCell(lead);
+    }));
     prevBtn?.addEventListener('click', () => goTo(page - 1));
     nextBtn?.addEventListener('click', () => goTo(page + 1));
 

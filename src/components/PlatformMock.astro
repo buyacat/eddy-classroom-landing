@@ -1,176 +1,308 @@
 ---
-// Abstract, on-brand sketch of what each screen is FOR (not a real product screenshot),
-// built only from the site's own palette/shapes so it needs no upkeep when the app's UI changes.
+// Drawn product windows: the real screens' structure (roster, shared materials, answer
+// table, board) rebuilt from the site's own palette and type, so each one reads as
+// "this is the teacher's workspace" / "this is a test in progress" without carrying a
+// screenshot that goes stale with every UI release. Session and board follow the
+// Figma "Classrom" file (Frame 5 group session, Frame 6 test editor).
+import { getLocaleData } from '../utils/i18n';
+import type { Locale } from '../utils/i18n';
+import { withBase } from '../utils/url';
+
 export interface Props {
-  variant: 'web' | 'session' | 'student' | 'panel' | 'analytics';
+  variant: 'web' | 'session' | 'student' | 'panel';
+  locale: Locale;
 }
-const { variant } = Astro.props;
+const { variant, locale } = Astro.props;
+
+interface Mock {
+  nav: string[];
+  class_title: string;
+  class_count: string;
+  students_title: string;
+  students: { ini: string; name: string; status: string }[];
+  materials_title: string;
+  materials: { name: string; type: string }[];
+  student_hello: string;
+  student_class: string;
+  student_from: string;
+  student_items: { icon: string; name: string; type: string; state: 'open' | 'locked' }[];
+  student_open: string;
+  student_locked: string;
+  session_toggle: string;
+  session_students: string;
+  session_rows: { name: string; answers: string; ok: string; score: string; medal?: string }[];
+  session_finish: string;
+  session_show: string;
+  panel_title: string;
+  panel_page: string;
+  panel_question: string;
+  panel_note: string;
+  panel_tools: string[];
+}
+const m = getLocaleData(locale).classroom_platform_mock as Mock;
+
+const avatarTints = ['var(--blue)', 'var(--yellow)', 'var(--green)', 'var(--ink)'];
+const avatarInk = ['#fff', '#000', '#000', '#fff'];
+const tagTints: Record<number, string> = { 0: 'is-blue', 1: 'is-green', 2: 'is-yellow' };
+const tileTints = ['is-blue', 'is-green', 'is-yellow'];
+const icon = (name: string) => withBase(`/assets/icons/${name}.png`);
 ---
 
-<div class="mock" aria-hidden="true">
+<div class={`mock is-${variant}`} aria-hidden="true">
   {variant === 'web' && (
-    <span class="lib">
-      <span class="lib-nav">
-        <i class="nav-dot"></i>
-        <i class="nav-ln"></i>
-        <i class="nav-ln w-60"></i>
-        <i class="nav-ln w-40"></i>
-      </span>
-      <span class="lib-grid">
-        <i class="tile is-blue"></i>
-        <i class="tile is-yellow"></i>
-        <i class="tile is-green"></i>
-        <i class="tile is-yellow"></i>
-        <i class="tile is-blue"></i>
-        <i class="tile is-ink"></i>
-      </span>
-    </span>
-  )}
-
-  {variant === 'session' && (
-    <span class="ses">
-      <span class="ses-q">
-        <i class="q-ln"></i>
-        <i class="q-opt is-pick"></i>
-        <i class="q-opt"></i>
-        <i class="q-opt"></i>
-      </span>
-      <span class="ses-roster">
-        <span class="r-row"><i class="r-av is-blue"></i><i class="r-bar"></i><i class="r-ok"></i></span>
-        <span class="r-row"><i class="r-av is-yellow"></i><i class="r-bar"></i><i class="r-ok"></i></span>
-        <span class="r-row"><i class="r-av is-green"></i><i class="r-bar w-60"></i></span>
-        <span class="r-row"><i class="r-av is-ink"></i><i class="r-bar w-40"></i></span>
-      </span>
-    </span>
+    <>
+      <aside class="side">
+        <i class="brand"></i>
+        {m.nav.map((label, i) => (
+          <span class={`side-it${i === 0 ? ' is-on' : ''}`}>{label}</span>
+        ))}
+      </aside>
+      <div class="main">
+        <header class="hd">
+          <b>{m.class_title}</b>
+          <span class="pill">{m.class_count}</span>
+        </header>
+        <div class="cols">
+          <section class="col">
+            <span class="col-t">{m.students_title}</span>
+            <ul class="rows">
+              {m.students.map((s, i) => (
+                <li>
+                  <i class="av" style={`background:${avatarTints[i % 4]};color:${avatarInk[i % 4]}`}>{s.ini}</i>
+                  <span class="nm">{s.name}</span>
+                  <span class={`st${s.status === m.students[2].status ? ' is-far' : ''}`}>{s.status}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+          <section class="col">
+            <span class="col-t">{m.materials_title}</span>
+            <ul class="rows">
+              {m.materials.map((mat, i) => (
+                <li>
+                  <i class={`ic ${tagTints[i] ?? ''}`}></i>
+                  <span class="nm">{mat.name}</span>
+                  <span class={`tag ${tagTints[i] ?? ''}`}>{mat.type}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      </div>
+    </>
   )}
 
   {variant === 'student' && (
-    <span class="stu">
-      <i class="q-ln"></i>
-      <i class="q-opt"></i>
-      <i class="q-opt is-pick"></i>
-      <i class="q-opt"></i>
-    </span>
+    <>
+      <header class="hd">
+        <span>{m.student_hello}</span>
+        <span class="pill">{m.student_class}</span>
+      </header>
+      <span class="col-t">{m.student_from}</span>
+      <ul class="tiles">
+        {m.student_items.map((it, i) => (
+          <li class={`tile ${tileTints[i % 3]}${it.state === 'locked' ? ' is-locked' : ''}`}>
+            <img src={icon(it.icon)} width="256" height="256" alt="" loading="lazy" decoding="async" />
+            <b>{it.name}</b>
+            <span class="tile-ft">
+              <span class={`tag ${tagTints[i] ?? ''}`}>{it.type}</span>
+              {it.state === 'locked'
+                ? (
+                  <span class="lock">
+                    <svg viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7.5" rx="2" fill="currentColor" /><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.4 0V7" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
+                    {m.student_locked}
+                  </span>
+                )
+                : <span class="go">{m.student_open} →</span>}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </>
+  )}
+
+  {variant === 'session' && (
+    <>
+      <header class="hd">
+        <span class="muted is-dark">{m.session_toggle}</span>
+        <i class="tgl"></i>
+        <svg class="eye" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8" />
+          <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8" />
+        </svg>
+      </header>
+      <div class="tbl">
+        <span class="tr is-head">
+          <span class="td-nm">{m.session_students}</span>
+          {m.session_rows[0].answers.split('').map((_, i) => <i class="td">{i + 1}</i>)}
+          <i class="td-md"></i>
+          <i class="td-sc"></i>
+        </span>
+        {m.session_rows.map((r) => (
+          <span class="tr">
+            <span class="td-nm">{r.name}</span>
+            {r.answers.split('').map((a, i) => (
+              <i class={`td td-a${r.ok[i] === '1' ? ' is-ok' : ''}`}>{a}</i>
+            ))}
+            <i class="td-md">
+              {r.medal && <img src={icon(r.medal)} width="256" height="256" alt="" loading="lazy" decoding="async" />}
+            </i>
+            <i class={`td-sc${Number(r.score) >= 80 ? ' is-ok' : ''}`}>{r.score}</i>
+          </span>
+        ))}
+      </div>
+      <footer class="ft is-split">
+        <span class="cta">{m.session_show}</span>
+        <span class="ghost">{m.session_finish} →</span>
+      </footer>
+    </>
   )}
 
   {variant === 'panel' && (
-    <span class="pan">
-      <span class="pan-obj"></span>
-      <i class="pan-mark m1"></i>
-      <i class="pan-mark m2"></i>
-      <span class="pan-tools">
-        <i class="is-blue"></i><i class="is-yellow"></i><i class="is-green"></i>
-      </span>
-    </span>
-  )}
-
-  {variant === 'analytics' && (
-    <span class="an">
-      <span class="an-bars">
-        <i style="--h:34%"></i><i style="--h:58%"></i><i style="--h:46%"></i>
-        <i style="--h:74%" class="is-peak"></i><i style="--h:52%"></i>
-      </span>
-      <span class="an-rows">
-        <span class="an-row"><i class="dot is-blue"></i><i class="bar"></i></span>
-        <span class="an-row"><i class="dot is-yellow"></i><i class="bar w-70"></i></span>
-        <span class="an-row"><i class="dot is-green"></i><i class="bar w-50"></i></span>
-      </span>
-    </span>
+    <>
+      <header class="hd">
+        <span>{m.panel_title}</span>
+        <span class="muted">{m.panel_page}</span>
+      </header>
+      <div class="board">
+        <span class="bq">{m.panel_question}</span>
+        {/* Figma Frame 6's two triangles, redrawn; the marker strokes are the "teacher at the board" layer */}
+        <svg class="tri" viewBox="0 0 260 96" aria-hidden="true">
+          <g fill="none" stroke-linejoin="round">
+            <path d="M14 84 L50 28 L92 84 Z" stroke="#4050ff" stroke-width="2" />
+            <path d="M132 84 L176 10 L240 84 Z" stroke="#1ccf8e" stroke-width="2" />
+            <path d="M26 84 A12 12 0 0 1 21 74" stroke="#e23b3b" stroke-width="1.5" />
+            <path d="M80 84 A12 12 0 0 0 85 74" stroke="#e23b3b" stroke-width="1.5" />
+            <path d="M146 84 A14 14 0 0 1 140 71" stroke="#e23b3b" stroke-width="1.5" />
+            <path d="M226 84 A14 14 0 0 0 231 73" stroke="#e23b3b" stroke-width="1.5" />
+          </g>
+          <g font-family="Manrope, sans-serif" font-size="9" font-weight="800" fill="#000">
+            <text x="4" y="93">A</text><text x="47" y="23">C</text><text x="94" y="93">B</text>
+            <text x="121" y="93">D</text><text x="173" y="7">F</text><text x="243" y="93">E</text>
+          </g>
+          <g font-family="Manrope, sans-serif" font-size="7.5" font-weight="700" fill="#e23b3b">
+            <text x="28" y="79">50°</text><text x="64" y="79">70°</text>
+            <text x="150" y="79">50°</text><text x="208" y="79">70°</text>
+          </g>
+          {/* marker: loops round both 50° angles and a dotted stroke joining them */}
+          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <ellipse cx="30" cy="77" rx="17" ry="11" stroke="#f7de52" stroke-width="4" opacity=".9" />
+            <ellipse cx="153" cy="76" rx="18" ry="11" stroke="#f7de52" stroke-width="4" opacity=".9" />
+            <path d="M48 70 Q92 52 134 68" stroke="#f7de52" stroke-width="3.5" stroke-dasharray="1 7" />
+          </g>
+        </svg>
+        <span class="note">{m.panel_note}</span>
+        <svg class="hand" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" fill="#4050ff" opacity=".18" />
+          <circle cx="12" cy="12" r="5" fill="#4050ff" opacity=".45" />
+        </svg>
+      </div>
+      <footer class="tools">
+        {m.panel_tools.map((tool, i) => (
+          <span class={`tool${i === 1 ? ' is-on' : ''}`}><i class={`sw sw-${i}`}></i>{tool}</span>
+        ))}
+      </footer>
+    </>
   )}
 </div>
 
 <style>
+  /* One type scale for every window: 10.5px body, 11px display for titles. Every text
+     node is nowrap + ellipsis, so a narrow card trims a name instead of wrapping the UI. */
   .mock {
+    --mk-line: #e6e8f0;
+    --mk-soft: #f3f4f8;
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    padding: 16px 18px;
-    display: flex;
-  }
-  .mock i, .mock b { display: block; }
-  .w-60 { flex-basis: 60% !important; width: 60%; }
-  .w-40 { flex-basis: 40% !important; width: 40%; }
-  .w-70 { flex-basis: 70% !important; width: 70%; }
-  .w-50 { flex-basis: 50% !important; width: 50%; }
-
-  /* ---- web / library ---- */
-  .lib { display: flex; gap: 14px; width: 100%; }
-  .lib-nav { flex: 0 0 44px; display: flex; flex-direction: column; gap: 9px; padding-top: 3px; }
-  .nav-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--blue); flex: none; }
-  .nav-ln { height: 6px; border-radius: 4px; background: #eceef4; }
-  .lib-grid {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 8px;
-  }
-  .tile { border-radius: 10px; }
-  .tile.is-blue { background: var(--blue-soft); }
-  .tile.is-yellow { background: var(--yellow-soft); }
-  .tile.is-green { background: var(--green-soft); }
-  .tile.is-ink { background: #eceef4; }
-
-  /* ---- session / student: a picked-answer quiz, shared markup ---- */
-  .ses { display: flex; align-items: center; gap: 16px; width: 100%; }
-  .ses-q, .stu { display: flex; flex-direction: column; gap: 8px; justify-content: center; }
-  .ses-q { flex: 1.15; }
-  .stu { width: 100%; }
-  .q-ln { height: 10px; width: 78%; border-radius: 5px; background: #dfe1ea; margin-bottom: 4px; }
-  .q-opt { height: 20px; border-radius: var(--r-pill); background: #eceef4; }
-  .q-opt.is-pick { background: var(--green-soft); box-shadow: inset 0 0 0 1.5px var(--green-deep); }
-
-  .ses-roster {
-    flex: .85;
+    padding: 12px 14px;
     display: flex;
     flex-direction: column;
-    gap: 9px;
-    justify-content: center;
-    border-left: 1px solid #eceef4;
-    padding-left: 14px;
+    gap: 8px;
+    font-size: 10.5px;
+    line-height: 1.3;
+    color: var(--ink-2);
+    text-align: left;
   }
-  .r-row { display: flex; align-items: center; gap: 7px; }
-  .r-av { width: 16px; height: 16px; border-radius: 50%; flex: none; }
-  .r-av.is-blue { background: var(--blue); }
-  .r-av.is-yellow { background: var(--yellow-deep); }
-  .r-av.is-green { background: var(--green-deep); }
-  .r-av.is-ink { background: var(--ink-4); }
-  .r-bar { flex: 1; height: 5px; border-radius: 3px; background: #eceef4; }
-  .r-ok { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--green); }
+  .mock i, .mock b { display: block; font-style: normal; }
+  /* round chips below are display:grid, which the rule above would otherwise win over */
+  .mock .av, .mock .td-a, .mock .td-sc { display: grid; }
+  .mock span, .mock b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mock ul { list-style: none; margin: 0; padding: 0; }
+  .mock img { display: block; }
 
-  /* ---- panel: a model on screen with two marker strokes over it ---- */
-  .pan { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-  .pan-obj {
-    width: 62px; height: 62px; border-radius: 50%;
-    background: radial-gradient(circle at 32% 28%, #a7b1ff 0%, var(--blue) 55%, var(--blue-deep) 100%);
+  .hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex: none;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--ink);
   }
-  .pan-mark { position: absolute; border-radius: var(--r-pill); }
-  .pan-mark.m1 { width: 46px; height: 8px; background: var(--yellow); top: 32%; left: 54%; rotate: -18deg; }
-  .pan-mark.m2 { width: 30px; height: 8px; background: var(--green); bottom: 30%; left: 24%; rotate: 12deg; }
-  .pan-tools { position: absolute; left: 0; bottom: 0; display: flex; gap: 6px; }
-  .pan-tools i { width: 11px; height: 11px; border-radius: 50%; }
-  .pan-tools i.is-blue { background: var(--blue); }
-  .pan-tools i.is-yellow { background: var(--yellow); }
-  .pan-tools i.is-green { background: var(--green); }
+  .muted { font-family: var(--font-body); font-size: 10px; font-weight: 600; color: var(--ink-4); }
+  .muted.is-dark { color: var(--ink-3); }
+  .pill {
+    flex: none;
+    padding: 2px 8px;
+    border-radius: var(--r-pill);
+    background: var(--blue-soft);
+    color: var(--blue-deep);
+    font-size: 9.5px;
+    font-weight: 700;
+  }
+  .col-t {
+    flex: none;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-4);
+  }
+  .tag { flex: none; padding: 1px 6px; border-radius: var(--r-pill); font-size: 8.5px; font-weight: 700; }
+  .tag.is-blue { background: var(--blue-soft); color: var(--blue-deep); }
+  .tag.is-green { background: var(--green-soft); color: var(--green-deep); }
+  .tag.is-yellow { background: var(--yellow-soft); color: #7a5a00; }
 
-  /* ---- analytics: a bar chart next to a few result rows ---- */
-  .an { display: flex; align-items: center; gap: 16px; width: 100%; }
-  .an-bars { flex: 1; display: flex; align-items: flex-end; gap: 8px; height: 58px; }
-  .an-bars i { flex: 1; height: var(--h); border-radius: 5px 5px 0 0; background: var(--blue-soft); }
-  .an-bars i.is-peak { background: var(--blue); }
-  .an-rows { flex: 1; display: flex; flex-direction: column; gap: 9px; }
-  .an-row { display: flex; align-items: center; gap: 8px; }
-  .an-row .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
-  .an-row .dot.is-blue { background: var(--blue); }
-  .an-row .dot.is-yellow { background: var(--yellow-deep); }
-  .an-row .dot.is-green { background: var(--green-deep); }
-  .an-row .bar { flex: 1; height: 6px; border-radius: 3px; background: #eceef4; }
+  .cta {
+    flex: none;
+    padding: 5px 12px;
+    border-radius: var(--r-pill);
+    background: var(--blue);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 800;
+  }
+  .ghost {
+    flex: none;
+    padding: 3px 9px;
+    border-radius: var(--r-pill);
+    box-shadow: inset 0 0 0 1px var(--ink-4);
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--ink-2);
+  }
+  .ft { display: flex; align-items: center; justify-content: center; gap: 10px; flex: none; margin-top: auto; }
+  .ft.is-split { justify-content: space-between; }
 
-  /* every coloured dot INSIDE a window is a hexagon (not the title-bar dots — those are browser chrome).
-     mask-image, not clip-path, keeps the hexagon's rounded corners; height is scaled by --hex-ratio
-     since the shape is 2/√3 taller than it is wide. */
-  .nav-dot, .r-av, .r-ok, .pan-tools i, .an-row .dot {
-    border-radius: 0;
+  /* ---- teacher's workspace: nav rail, class header, roster beside materials ---- */
+  .mock.is-web { flex-direction: row; gap: 12px; }
+  .side {
+    flex: 0 0 68px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding-right: 10px;
+    border-right: 1px solid var(--mk-line);
+  }
+  .brand {
+    width: 14px;
+    height: calc(14px * var(--hex-ratio));
+    margin-bottom: 4px;
+    background: var(--blue);
     -webkit-mask-image: var(--hex-mask);
     mask-image: var(--hex-mask);
     -webkit-mask-size: 100% 100%;
@@ -178,9 +310,184 @@ const { variant } = Astro.props;
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
   }
-  .nav-dot { height: calc(14px * var(--hex-ratio)); }
-  .r-av { height: calc(16px * var(--hex-ratio)); }
-  .r-ok { height: calc(10px * var(--hex-ratio)); }
-  .pan-tools i { height: calc(11px * var(--hex-ratio)); }
-  .an-row .dot { height: calc(8px * var(--hex-ratio)); }
+  .side-it { font-size: 10px; font-weight: 600; color: var(--ink-4); padding: 2px 0; }
+  .side-it.is-on { color: var(--ink); font-weight: 800; }
+
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px; }
+  .cols { display: flex; gap: 12px; flex: 1; min-height: 0; }
+  .col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+  .rows { display: flex; flex-direction: column; gap: 4px; }
+  .rows li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 7px;
+    background: var(--mk-soft);
+  }
+  .rows .nm { flex: 1; min-width: 0; font-weight: 600; color: var(--ink); }
+  .av {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    place-items: center;
+    font-family: var(--font-display);
+    font-size: 6.5px;
+    font-weight: 800;
+  }
+  .st { flex: none; font-size: 9px; font-weight: 600; color: var(--green-deep); }
+  .st::before { content: ''; display: inline-block; width: 5px; height: 5px; margin-right: 4px; border-radius: 50%; background: var(--green); vertical-align: middle; }
+  .st.is-far { color: var(--ink-4); }
+  .st.is-far::before { background: var(--ink-4); }
+  .ic {
+    flex: none;
+    width: 11px;
+    height: calc(11px * var(--hex-ratio));
+    -webkit-mask-image: var(--hex-mask);
+    mask-image: var(--hex-mask);
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+  .ic.is-blue { background: var(--blue); }
+  .ic.is-green { background: var(--green-deep); }
+  .ic.is-yellow { background: var(--yellow-deep); }
+
+  /* ---- student's workspace: only what the teacher has opened, one item still locked ---- */
+  .tiles { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .tile {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+    padding: 10px;
+    border-radius: 12px;
+  }
+  .tile.is-blue { background: var(--blue-soft); }
+  .tile.is-green { background: var(--green-soft); }
+  .tile.is-yellow { background: var(--yellow-soft); }
+  .tile img { width: 36px; height: 36px; filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .15)); }
+  /* titles get two lines (a book title needs them), then clamp */
+  .mock .tile b {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.25;
+    color: var(--ink);
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  .tile-ft { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: auto; }
+  .go { flex: none; font-size: 9px; font-weight: 800; color: var(--blue); }
+  .lock { flex: none; display: flex; align-items: center; gap: 3px; font-size: 9px; font-weight: 700; color: var(--ink-4); }
+  .lock svg { flex: none; width: 10px; height: 10px; }
+  .tile.is-locked img { filter: grayscale(1); opacity: .45; }
+  .mock .tile.is-locked b { color: var(--ink-4); }
+
+  /* ---- real-time testing (Figma Frame 5, left pane): the live answer table ---- */
+  .mock.is-session .hd { justify-content: flex-start; }
+  .tgl {
+    flex: none;
+    position: relative;
+    width: 26px;
+    height: 14px;
+    border-radius: var(--r-pill);
+    background: var(--blue);
+  }
+  .tgl::after { content: ''; position: absolute; top: 2px; right: 2px; width: 10px; height: 10px; border-radius: 50%; background: #fff; }
+  .eye { width: 15px; height: 15px; margin-left: auto; color: var(--ink-3); }
+  .tbl { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .tr { display: flex; align-items: center; gap: 4px; height: 21px; padding: 0 6px; border-bottom: 1px solid var(--mk-soft); }
+  .tr.is-head { height: 17px; background: var(--mk-soft); border-radius: 4px; color: var(--ink-4); font-size: 9px; font-weight: 600; }
+  .td-nm { flex: 1; min-width: 0; font-weight: 600; color: var(--ink); }
+  .tr.is-head .td-nm { color: var(--ink-4); }
+  .td { flex: none; width: 15px; text-align: center; }
+  .td-a {
+    height: 15px;
+    border-radius: 50%;
+    place-items: center;
+    background: var(--mk-soft);
+    color: var(--ink-4);
+    font-family: var(--font-display);
+    font-size: 8px;
+    font-weight: 800;
+  }
+  .td-a.is-ok { background: var(--green); color: #000; }
+  .td-md { flex: none; width: 15px; height: 15px; margin-left: 3px; }
+  .td-md img { width: 15px; height: 15px; }
+  .td-sc {
+    flex: none;
+    width: 26px;
+    height: 15px;
+    border-radius: var(--r-pill);
+    place-items: center;
+    background: var(--yellow);
+    font-family: var(--font-display);
+    font-size: 8.5px;
+    font-weight: 800;
+    color: #000;
+  }
+  .td-sc.is-ok { background: var(--green); }
+  .tr.is-head .td-sc { background: none; }
+
+  /* ---- interactive panel: a geometry page on the board, marked up by the teacher ---- */
+  .mock.is-panel { gap: 6px; }
+  .board { position: relative; flex: 1; min-height: 0; border-radius: 10px; background: var(--mk-soft); overflow: hidden; }
+  .bq {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    right: 10px;
+    font-family: var(--font-display);
+    font-size: 10.5px;
+    font-weight: 800;
+    color: var(--ink);
+  }
+  .tri { position: absolute; left: 10px; right: 30%; bottom: 8px; height: calc(100% - 34px); width: auto; }
+  .note {
+    position: absolute;
+    top: 42%;
+    right: 12px;
+    rotate: -8deg;
+    font-family: var(--font-display);
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #b98e00;
+  }
+  .hand { position: absolute; right: 18%; bottom: 14%; width: 22px; height: 22px; }
+  .tools { display: flex; gap: 6px; flex: none; }
+  .tool {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: var(--r-pill);
+    background: var(--mk-soft);
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--ink-3);
+  }
+  .tool.is-on { background: var(--ink); color: #fff; }
+  .sw { width: 8px; height: 8px; border-radius: 50%; }
+  .sw-0 { background: var(--blue); }
+  .sw-1 { background: var(--yellow); }
+  .sw-2 { background: #fff; box-shadow: inset 0 0 0 1px var(--ink-4); }
+
+  /* phone cards are ~300px wide: one pane per window (the roster without the materials
+     column, two shared items, five answer columns) instead of squeezed ones */
+  @media (max-width: 760px) {
+    .side { flex-basis: 56px; }
+    .col + .col { display: none; }
+    .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tile:nth-child(2) { display: none; }
+    .tr > .td:nth-of-type(n + 6) { display: none; }
+    .ft.is-split .cta { display: none; }
+    .tri { right: 12px; }
+    .note { top: 30%; }
+  }
 </style>

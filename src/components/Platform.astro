@@ -8,18 +8,17 @@ import PlatformMock from './PlatformMock.astro';
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 
-const items = tArray<{ icon: string; title: string; text: string; shot_alt?: string; wide?: boolean }>(
+const items = tArray<{ icon: string; title: string; text: string; shot_alt?: string }>(
   locale,
   'classroom_platform_items'
 );
 
 // Windows are drawn stand-ins, not real screenshots (see PlatformMock.astro).
 const shots: Record<string, { url: string }> = {
-  web: { url: 'classroom.eddygroup.eu/library' },
+  web: { url: 'classroom.eddygroup.eu/class' },
+  student: { url: 'classroom.eddygroup.eu/my' },
   session: { url: 'classroom.eddygroup.eu/session' },
-  student: { url: 'classroom.eddygroup.eu/quiz' },
-  panel: { url: 'classroom.eddygroup.eu/board' },
-  analytics: { url: 'classroom.eddygroup.eu/results' }
+  panel: { url: 'classroom.eddygroup.eu/board' }
 };
 
 // No hanging 3D objects on this band (see WhyUs for that treatment); only the games card keeps icons, as labeled content.
@@ -60,9 +59,7 @@ const roster = [
         const cls = [
           'card', 'plat-card', 'reveal',
           blocks[it.icon] || '',
-          it.wide ? 'is-wide' : '',
-          half.has(it.icon) ? 'is-half' : '',
-          it.icon === 'analytics' ? 'is-analytics' : ''
+          half.has(it.icon) ? 'is-half' : ''
         ].filter(Boolean).join(' ');
         return (
           <article class={cls} style={`--i:${i}`}>
@@ -77,8 +74,8 @@ const roster = [
                   <i class="d1"></i><i class="d2"></i><i class="d3"></i>
                   <span class="win-url">{shot.url}</span>
                 </span>
-                <span class="win-view">
-                  <PlatformMock variant={it.icon as 'web' | 'session' | 'student' | 'panel' | 'analytics'} />
+                <span class="win-view" role="img" aria-label={it.shot_alt}>
+                  <PlatformMock variant={it.icon as 'web' | 'session' | 'student' | 'panel'} locale={locale} />
                 </span>
               </div>
             )}
@@ -151,39 +148,29 @@ const roster = [
         rgba(var(--amb-green), 0) var(--amb-fade));
   }
 
-  /* wider gutter than the shared --gap-card: cards here hold a framed screenshot, which needs more air */
+  /* wider gutter than the shared --gap-card: cards here hold a framed screenshot, which needs more air.
+     Two columns, six cards, one type tier: every card is a product screen or state, none ranks above another. */
   .plat-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: clamp(18px, 1.8vw, 26px);
     margin-top: clamp(40px, 3.6vw, 56px);
   }
 
   /* extends .card (style.css); padding moves to .plat-body so the browser window below runs edge to edge */
   .plat-card {
-    grid-column: span 2;
     display: flex;
     flex-direction: column;
     padding: 0;
   }
 
-  .plat-body { padding: clamp(26px, 2.4vw, 34px) var(--pad-card) clamp(20px, 1.9vw, 28px); }
-  /* reserves 2 lines so 1- and 2-line titles still align body copy below (UA titles wrap unpredictably) */
-  .plat-card:not(.is-wide) h3 { min-height: calc(2 * 1.22em); }
-
-  /* three type tiers rank the cards: screens (26px) > states (22px) > features (19px) */
-  .plat-card:not(.is-wide):not(.is-half) h3 { font-size: clamp(1.0625rem, 1rem + .3vw, 1.1875rem); }
-  .plat-card:not(.is-wide):not(.is-half) p { font-size: .875rem; }
+  .plat-body { flex: none; padding: clamp(26px, 2.4vw, 34px) var(--pad-card) clamp(20px, 1.9vw, 28px); }
+  .plat-card h3 { font-size: clamp(1.25rem, 1.05rem + .55vw, 1.625rem); }
+  .plat-card p { font-size: .9375rem; max-width: 46ch; }
 
   /* the one blue card carries the page's only coloured shadow at rest */
   .plat-card.is-blue { box-shadow: var(--e-blue); }
   .plat-card.is-blue:hover { box-shadow: 0 18px 40px -14px rgba(64, 80, 255, .6); }
-
-  /* ---- wide cards: the two full product-screen cards, paired at half width each ---- */
-  .plat-card.is-wide { grid-column: span 3; }
-  .plat-card.is-wide .plat-body { flex: none; }
-  .plat-card.is-wide h3 { font-size: clamp(1.25rem, 1.05rem + .55vw, 1.625rem); }
-  .plat-card.is-wide p { font-size: .9375rem; max-width: 46ch; }
 
   /* one fixed window height across every card (wide included) so all five screens read as one product */
   .plat-win {
@@ -224,17 +211,15 @@ const roster = [
     white-space: nowrap;
     overflow: hidden;
   }
-  /* height kept per-card so the window ratio stays ~2:1 or wider, never a square */
+  /* one window height for all four screens so they read as one product; ~2.5:1, never a square */
   .win-view {
     display: block;
-    height: 152px;
+    height: clamp(176px, 14vw, 204px);
     overflow: hidden;
     background: #fff;
   }
-  .plat-card.is-wide .win-view { height: clamp(172px, 14vw, 204px); }
 
   /* ---- half cards: the two that show a product state instead of a crop ---- */
-  .plat-card.is-half { grid-column: span 3; }
   .plat-card.is-half .plat-body { flex: 1; }
   .plat-card.is-half p { max-width: 44ch; }
 
@@ -410,17 +395,8 @@ const roster = [
   .plat-roster .shot-live { margin-left: auto; flex: none; padding-block: 4px; }
 
   @media (max-width: 1000px) {
-    .plat-grid { grid-template-columns: repeat(4, 1fr); }
-    .plat-card { grid-column: span 2; }
-    /* below the desktop grid the screenshots need the whole row to stay
-       legible; everything else pairs up */
-    .plat-card.is-wide { grid-column: span 4; }
-    .plat-card.is-half { grid-column: span 2; }
-    /* five cards in pairs leave a hole; the analytics window is a wide
-       chart, so it is the one that takes a full row without stretching */
-    .plat-card.is-analytics { grid-column: span 4; }
-    .plat-card.is-analytics .win-view { height: 176px; }
-    /* the half card is 346px here and the roster's avatars and LIVE pill
+    .plat-card h3 { font-size: clamp(1.125rem, 1rem + .5vw, 1.375rem); }
+    /* the half card is ~346px here and the roster's avatars and LIVE pill
        leave the text 95px — "4 дистанційно · 22 на зв'язку" on one line
        was cut off after the 22 */
     .plat-roster .t2 { white-space: normal; }
@@ -446,20 +422,13 @@ const roster = [
     }
     .plat-grid::-webkit-scrollbar { display: none; }
 
-    .plat-card,
-    .plat-card.is-wide,
-    .plat-card.is-half,
-    .plat-card.is-analytics {
-      grid-column: auto;
+    .plat-card {
       flex: 0 0 min(86%, 360px);
       scroll-snap-align: start;
     }
     /* disable .reveal's transform here: an off-screen card stuck 20px low would wobble the strip's height */
     .plat-grid .reveal { transform: none; }
-    /* every card the same height, so the pager underneath does not jump */
-    .plat-card:not(.is-wide) h3 { min-height: 0; }
-    .win-view, .plat-card.is-wide .win-view { height: 168px; }
-    .plat-card.is-analytics .win-view img { width: var(--zoom); }
+    .win-view { height: 168px; }
     .plat-tool { padding: 12px 6px 10px; font-size: .75rem; }
     .plat-tool .obj, .plat-tool .tool-ic { width: 44px; height: 44px; }
     .plat-roster { gap: 10px; padding: 10px 12px 10px 10px; }

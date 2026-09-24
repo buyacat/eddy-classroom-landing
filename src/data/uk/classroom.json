@@ -129,8 +129,7 @@
       "text": "Проводьте заняття з учнями поза межами класу."
     }
   ],
-  "classroom_platform_virtual_remote": "дистанційно",
-  "classroom_platform_virtual_online": "на зв’язку",
+  "classroom_platform_virtual_joined": "з 24 учнів приєдналися",
   "classroom_library_badge": "3D об'єкти",
   "classroom_library_count": "1200+",
   "classroom_library_count_label": "моделей",

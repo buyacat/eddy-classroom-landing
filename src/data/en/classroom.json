@@ -129,8 +129,7 @@
       "text": "Run lessons with students outside the classroom."
     }
   ],
-  "classroom_platform_virtual_remote": "remote",
-  "classroom_platform_virtual_online": "online",
+  "classroom_platform_virtual_joined": "of 24 students joined",
   "classroom_library_badge": "3D objects",
   "classroom_library_count": "1200+",
   "classroom_library_count_label": "models",

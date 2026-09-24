@@ -107,16 +107,16 @@
       "shot_alt": "Student's workspace: only the materials the teacher has shared"
     },
     {
-      "icon": "session",
-      "title": "Real-time testing",
-      "text": "Students answer at the same time, and the teacher sees their answers right away.",
-      "shot_alt": "A shared test: every student's answer to every question, live"
-    },
-    {
       "icon": "panel",
       "title": "Interactive panel",
       "text": "Present materials and interact with them right on the screen: draw, write, flip pages by touch.",
       "shot_alt": "Marker notes over a geometry problem on the interactive panel"
+    },
+    {
+      "icon": "session",
+      "title": "Real-time testing",
+      "text": "Students answer at the same time, and the teacher sees their answers right away.",
+      "shot_alt": "A shared test: every student's answer to every question, live"
     },
     {
       "icon": "games",

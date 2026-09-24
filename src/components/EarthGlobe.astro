@@ -7,15 +7,11 @@ const { locale } = Astro.props;
 
 const layers = tArray<{ name: string; meta?: string }>(locale, 'classroom_hero_globe_layers');
 
-// Both labels are passed together: a drag can open the model too, not just this button,
-// so the label must be able to switch without a round trip for copy.
 const toggle = {
   open: t(locale, 'classroom_hero_globe_explode'),
   close: t(locale, 'classroom_hero_globe_collapse')
 };
 ---
-
-<!-- alt/role live on the canvas, not the wrapper, so the button below isn't marked presentational to screen readers -->
 <div class="globe" data-globe data-layers={JSON.stringify(layers)}
      data-toggle-copy={JSON.stringify(toggle)}>
   <canvas class="globe-canvas" role="img" aria-label={t(locale, 'classroom_hero_globe_alt')}></canvas>
@@ -25,7 +21,6 @@ const toggle = {
   <div class="globe-foot">
     <p class="globe-note">{t(locale, 'classroom_hero_globe_scale_note')}</p>
 
-    <!-- hidden until the model mounts -->
     <button class="globe-toggle" type="button" data-explode hidden>
       <span class="globe-toggle-ico" aria-hidden="true"><i></i><i></i><i></i></span>
       <span data-explode-label>{toggle.open}</span>
@@ -37,7 +32,6 @@ const toggle = {
   .globe {
     position: relative;
     aspect-ratio: 1080 / 1071;
-    /* soft halo behind the model — cheaper than a real light rig */
     background:
       radial-gradient(circle at 52% 46%,
         rgba(var(--amb-blue), var(--amb-1)) 0%,
@@ -59,14 +53,11 @@ const toggle = {
 
   .globe.is-live .globe-canvas { opacity: 1; }
 
-  /* the drag surface itself */
   .globe-canvas { touch-action: none; cursor: grab; }
   .globe.is-grabbed .globe-canvas { cursor: grabbing; }
 
-  /* ---- layer tags ---- */
   .globe-tags { position: absolute; inset: 0; pointer-events: none; }
 
-  /* leader line from shell to caption; kept 1px/faint so it connects without being seen */
   .globe-tags :global(.globe-lead) {
     position: absolute;
     top: 0;
@@ -111,7 +102,6 @@ const toggle = {
     font-variant-numeric: tabular-nums;
   }
   .globe-tags :global(.globe-tag em:empty) { display: none; }
-  /* the layer's place in the stack, counted from the surface down */
   .globe-tags :global(.globe-tag-dot) {
     width: 19px; height: 19px;
     border-radius: 50%;
@@ -126,7 +116,6 @@ const toggle = {
     font-variant-numeric: tabular-nums;
   }
 
-  /* ---- hint ---- */
   .globe-hint {
     position: absolute;
     left: 50%;
@@ -149,7 +138,6 @@ const toggle = {
 
   @keyframes hint-bob { 0%, 100% { translate: -50% 0; } 50% { translate: -50% -4px; } }
 
-  /* ---- everything that stacks along the bottom of the panel ---- */
   .globe-foot {
     position: absolute;
     left: 5%;
@@ -161,7 +149,6 @@ const toggle = {
     gap: 10px;
   }
 
-  /* ---- caveat note, shown once layers are open ---- */
   .globe-note {
     display: none;
     margin: 0;
@@ -176,7 +163,6 @@ const toggle = {
   }
   .globe.is-open .globe-note { display: block; opacity: 1; }
 
-  /* ---- toggle button ---- */
   .globe-toggle {
     display: inline-flex;
     align-items: center;
@@ -194,12 +180,10 @@ const toggle = {
     pointer-events: auto;
     transition: transform var(--t-hover) var(--ease-out), box-shadow var(--t-hover) var(--ease-out);
   }
-  /* [hidden] must override the display set above (attribute alone loses to the class rule) */
   .globe-toggle[hidden] { display: none; }
   .globe-toggle:hover { transform: translateY(-1px); box-shadow: var(--e4); }
   .globe-toggle:focus-visible { outline: none; box-shadow: var(--focus-ring), var(--e3); }
 
-  /* three bars that move apart on open; middle bar stays fixed */
   .globe-toggle-ico {
     position: relative;
     width: 17px;
@@ -222,7 +206,6 @@ const toggle = {
   .globe.is-open .globe-toggle-ico i:nth-child(1) { transform: translateY(-2px) scaleX(.72); }
   .globe.is-open .globe-toggle-ico i:nth-child(3) { transform: translateY(2px) scaleX(.72); }
 
-  /* mobile: hide the depth line (em) so captions don't pile up as the model shrinks */
   @media (max-width: 760px) {
     .globe-tags :global(.globe-tag) { gap: 4px; padding: 3px 9px 4px 3px; }
     .globe-tags :global(.globe-tag b) { font-size: 10.5px; }
@@ -231,7 +214,6 @@ const toggle = {
 
     .globe-note { font-size: 9.5px; }
     .globe-toggle { padding: 8px 15px 8px 12px; font-size: 12px; }
-    /* avoids Hero.astro's badge (top: 4%) on mobile */
     .globe-hint { top: 13%; }
   }
 
@@ -255,7 +237,6 @@ const toggle = {
 
   const host = document.querySelector<HTMLElement>('[data-globe]');
 
-  // reduced motion: model still mounts; only auto-motion (demo, see REDUCED in scripts/earth.ts) is skipped
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (host && hasWebGL()) {
@@ -266,7 +247,6 @@ const toggle = {
     const specs = JSON.parse(host.dataset.layers || '[]') as LayerSpec[];
     const copy = JSON.parse(host.dataset.toggleCopy || '{}') as { open: string; close: string };
 
-    // three.js only leaves the network once the hero is in view
     const io = new IntersectionObserver((entries) => {
       if (!entries.some((e) => e.isIntersecting)) return;
       io.disconnect();
@@ -275,7 +255,6 @@ const toggle = {
         .then(async (earth) => {
           const globe = await earth.mountGlobe(host, canvas, tags, specs);
 
-          // button label mirrors the model's actual state (onOpenChange) since a drag can open/close it too
           let open = false;
           globe.onOpenChange((next) => {
             open = next;
@@ -284,11 +263,9 @@ const toggle = {
           button.addEventListener('click', () => globe.open(!open));
           button.hidden = false;
 
-          // wait out the canvas fade (620ms, see CSS) before the one-time demo; demo() cancels on user interaction
           if (!reduced) window.setTimeout(() => globe.demo(), 900);
         })
         .catch((err) => {
-          // non-fatal: panel keeps its ambient background if the model fails to mount
           console.warn('[globe] not mounted:', err);
         });
     }, { rootMargin: '200px' });

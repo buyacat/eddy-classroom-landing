@@ -8,8 +8,6 @@ const { locale } = Astro.props;
 
 const items = tArray<{ icon: string; title: string; text: string }>(locale, 'classroom_why_items');
 
-// Custom-drawn icons (library/offline/devices/ai/journal/allInOne) live in src/assets/icon-src/,
-// rendered to 256px PNGs via `npm run icons`; `npm run check:icons` verifies they match the bought pack's style.
 const objects: Record<string, string> = {
   allInOne: 'document',
   journal: 'check',
@@ -19,10 +17,8 @@ const objects: Record<string, string> = {
   devices: 'devices'
 };
 
-// colour blocks fall on the three cards the client wants lit: all-in-one, panels, AI
 const blocks = ['is-green', '', 'is-yellow', '', 'is-blue', ''];
 ---
-
 <section class="band why" id="why">
   <div class="wrap">
     <div class="band-head reveal">
@@ -44,14 +40,11 @@ const blocks = ['is-green', '', 'is-yellow', '', 'is-blue', ''];
 </section>
 
 <style>
-  /* no background here — lets the page-wide ambient plane show through */
   .why::before {
     background:
-      /* green pool kept low so it passes under the first row of cards without tinting their 3D objects */
       radial-gradient(var(--amb-r-lg) calc(var(--amb-r-lg) * .62) at 2% 52%,
         rgba(var(--amb-green), var(--amb-2)) 0%,
         rgba(var(--amb-green), 0) var(--amb-fade)),
-      /* pool centre must stay within the band's own box (20%-80%); centres at 104% or 84% left a visible seam */
       radial-gradient(var(--amb-r-lg) calc(var(--amb-r-lg) * .58) at 94% 78%,
         rgba(var(--amb-blue), var(--amb-2)) 0%,
         rgba(var(--amb-blue), 0) var(--amb-fade));
@@ -61,14 +54,10 @@ const blocks = ['is-green', '', 'is-yellow', '', 'is-blue', ''];
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(clamp(258px, 30%, 340px), 1fr));
     gap: var(--gap-card);
-    /* the objects overhang the cards, so the grid needs headroom */
     margin-top: clamp(52px, 5vw, 76px);
   }
-  /* a one- and a two-line title in the same row must still align their
-     body copy — Ukrainian card titles wrap unpredictably */
   .why-grid h3 { min-height: calc(2 * 1.22em); }
 
-  /* ---- phones: 2-column grid instead of 6 stacked cards (was ~3000px of scroll) ---- */
   @media (max-width: 700px) {
     .why-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -81,13 +70,11 @@ const blocks = ['is-green', '', 'is-yellow', '', 'is-blue', ''];
       font-size: .9375rem;
       line-height: 1.2;
       margin-bottom: 7px;
-      /* 2-line min-height fits 5 of 6 titles; reserving 3 lines for the 6th left dead space on the rest */
       min-height: calc(2 * 1.2em);
     }
     .why-grid p { font-size: .8125rem; line-height: 1.45; }
   }
 
-  /* below 345px, single column instead of a squeezed two-column layout */
   @media (max-width: 344px) {
     .why-grid { grid-template-columns: minmax(0, 1fr); }
     .why-grid h3 { min-height: 0; font-size: 1rem; }

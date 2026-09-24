@@ -1,9 +1,4 @@
 ---
-// Drawn product windows: the real screens' structure (roster, shared materials, answer
-// table, board) rebuilt from the site's own palette and type, so each one reads as
-// "this is the teacher's workspace" / "this is a test in progress" without carrying a
-// screenshot that goes stale with every UI release. Session and board follow the
-// Figma "Classrom" file (Frame 5 group session, Frame 6 test editor).
 import { getLocaleData } from '../utils/i18n';
 import type { Locale } from '../utils/i18n';
 import { withBase } from '../utils/url';
@@ -47,7 +42,6 @@ const tagTints: Record<number, string> = { 0: 'is-blue', 1: 'is-green', 2: 'is-y
 const tileTints = ['is-blue', 'is-green', 'is-yellow'];
 const icon = (name: string) => withBase(`/assets/icons/${name}.png`);
 ---
-
 <div class={`mock is-${variant}`} aria-hidden="true">
   {variant === 'web' && (
     <>
@@ -166,7 +160,6 @@ const icon = (name: string) => withBase(`/assets/icons/${name}.png`);
       </header>
       <div class="board">
         <span class="bq">{m.panel_question}</span>
-        {/* Figma Frame 6's two triangles, redrawn; the marker strokes are the "teacher at the board" layer */}
         <svg class="tri" viewBox="0 0 260 96" aria-hidden="true">
           <g fill="none" stroke-linejoin="round">
             <path d="M14 84 L50 28 L92 84 Z" stroke="#4050ff" stroke-width="2" />
@@ -184,7 +177,6 @@ const icon = (name: string) => withBase(`/assets/icons/${name}.png`);
             <text x="28" y="79">50°</text><text x="64" y="79">70°</text>
             <text x="150" y="79">50°</text><text x="208" y="79">70°</text>
           </g>
-          {/* marker: loops round both 50° angles and a dotted stroke joining them */}
           <g fill="none" stroke-linecap="round" stroke-linejoin="round">
             <ellipse cx="30" cy="77" rx="17" ry="11" stroke="#f7de52" stroke-width="4" opacity=".9" />
             <ellipse cx="153" cy="76" rx="18" ry="11" stroke="#f7de52" stroke-width="4" opacity=".9" />
@@ -207,8 +199,6 @@ const icon = (name: string) => withBase(`/assets/icons/${name}.png`);
 </div>
 
 <style>
-  /* One type scale for every window: 10.5px body, 11px display for titles. Every text
-     node is nowrap + ellipsis, so a narrow card trims a name instead of wrapping the UI. */
   .mock {
     --mk-line: #e6e8f0;
     --mk-soft: #f3f4f8;
@@ -225,7 +215,6 @@ const icon = (name: string) => withBase(`/assets/icons/${name}.png`);
     text-align: left;
   }
   .mock i, .mock b { display: block; font-style: normal; }
-  /* round chips below are display:grid, which the rule above would otherwise win over */
   .mock .av, .mock .td-a, .mock .td-sc { display: grid; }
   .mock span, .mock b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mock ul { list-style: none; margin: 0; padding: 0; }
@@ -288,7 +277,6 @@ const icon = (name: string) => withBase(`/assets/icons/${name}.png`);
   .ft { display: flex; align-items: center; justify-content: center; gap: 10px; flex: none; margin-top: auto; }
   .ft.is-split { justify-content: space-between; }
 
-  /* ---- teacher's workspace: nav rail, class header, roster beside materials ---- */
   .mock.is-web { flex-direction: row; gap: 12px; }
   .side {
     flex: 0 0 68px;
@@ -356,7 +344,6 @@ const icon = (name: string) => withBase(`/assets/icons/${name}.png`);
   .ic.is-green { background: var(--green-deep); }
   .ic.is-yellow { background: var(--yellow-deep); }
 
-  /* ---- student's workspace: only what the teacher has opened, one item still locked ---- */
   .tiles { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .tile {
     display: flex;
@@ -370,7 +357,6 @@ const icon = (name: string) => withBase(`/assets/icons/${name}.png`);
   .tile.is-green { background: var(--green-soft); }
   .tile.is-yellow { background: var(--yellow-soft); }
   .tile img { width: 36px; height: 36px; filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .15)); }
-  /* titles get two lines (a book title needs them), then clamp */
   .mock .tile b {
     font-family: var(--font-display);
     font-size: 11px;
@@ -389,7 +375,6 @@ const icon = (name: string) => withBase(`/assets/icons/${name}.png`);
   .tile.is-locked img { filter: grayscale(1); opacity: .45; }
   .mock .tile.is-locked b { color: var(--ink-4); }
 
-  /* ---- real-time testing (Figma Frame 5, left pane): the live answer table ---- */
   .mock.is-session .hd { justify-content: flex-start; }
   .tgl {
     flex: none;
@@ -435,7 +420,6 @@ const icon = (name: string) => withBase(`/assets/icons/${name}.png`);
   .td-sc.is-ok { background: var(--green); }
   .tr.is-head .td-sc { background: none; }
 
-  /* ---- interactive panel: a geometry page on the board, marked up by the teacher ---- */
   .mock.is-panel { gap: 6px; }
   .board { position: relative; flex: 1; min-height: 0; border-radius: 10px; background: var(--mk-soft); overflow: hidden; }
   .bq {
@@ -478,8 +462,6 @@ const icon = (name: string) => withBase(`/assets/icons/${name}.png`);
   .sw-1 { background: var(--yellow); }
   .sw-2 { background: #fff; box-shadow: inset 0 0 0 1px var(--ink-4); }
 
-  /* phone cards are ~300px wide: one pane per window (the roster without the materials
-     column, two shared items, five answer columns) instead of squeezed ones */
   @media (max-width: 760px) {
     .side { flex-basis: 56px; }
     .col + .col { display: none; }

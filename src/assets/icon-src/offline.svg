@@ -1,27 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-  <!--
-    "Works without a stable connection" — a struck-through wifi fan. The
-    card's own headline is a negation too, so glyph and heading say the same
-    sentence. The ribs stay brand blue and the bar is ink rather than red:
-    this is a live product, not an error state.
-
-    The bar is not painted over the ribs. `ofCut` knocks a 16px groove out of
-    them along the bar's line, and the 10px bar sits inside it with 3px of
-    daylight on each side. Both use butt caps, not round — a flat-cut end
-    reads as a slash, a round one as a sausage. Seeing the card's background
-    through the glyph is what makes the two parts read as one object.
-
-    The ribs span 140°, not 90°: a 45° bar through a 90° fan grazes the rib
-    tips instead of cutting them, and the whole fan then appears to lean. At
-    140° the cut lands 25° in from each end, leaving a real stub on both
-    sides of the groove.
-
-    The bar's volume comes from a gradient laid ACROSS it (`ofBar` is
-    userSpaceOnUse, its axis perpendicular to the 45° run), plus a cream
-    specular on the lit flank and a dark line on the shaded one. It runs
-    corner to corner, which is what squares up a wide, shallow silhouette
-    inside `.obj`'s square box.
-  -->
   <defs>
     <linearGradient id="ofArc" x1="0.1" y1="0" x2="0.9" y2="1">
       <stop offset="0%" stop-color="#A7B1FF"/>
@@ -43,38 +20,26 @@
     <filter id="ofb7" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="7"/></filter>
     <filter id="ofb8" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="8"/></filter>
 
-    <!-- the groove. Coordinates are the icon's own, so this mask has to be
-         referenced from INSIDE the scaling wrapper, not outside it. -->
     <mask id="ofCut" maskUnits="userSpaceOnUse" x="-40" y="-40" width="340" height="340">
       <rect x="-40" y="-40" width="340" height="340" fill="#FFFFFF"/>
       <path d="M44 76 L179.2 211.2" fill="none" stroke="#000000" stroke-width="11" stroke-linecap="butt"/>
     </mask>
   </defs>
 
-  <!-- Scaled to fill the 256 box the way the bought objects do: they run
-       246px corner to corner, and an icon drawn to 195 sits visibly
-       smaller than its neighbours on the same row. -->
   <g transform="translate(128 128) scale(1.26) translate(-128 -145.5)">
 
     <g mask="url(#ofCut)">
-      <!-- three ribs and the base dot, drawn outside-in so the near ones
-           overlap the far ones the way stacked plastic would -->
       <g fill="none" stroke="url(#ofArc)" stroke-width="31" stroke-linecap="round">
         <path d="M41.6 136.5 A92 92 0 0 1 214.4 136.5"/>
         <path d="M66 145.4 A66 66 0 0 1 190 145.4"/>
         <path d="M90.4 154.3 A40 40 0 0 1 165.6 154.3"/>
       </g>
 
-      <!-- Specular. Short, bright and barely blurred — the bought objects
-           put one hot streak on the lit face and leave the rest of the
-           surface alone; a soft sheen spread over the whole rib is what
-           made this set read matte next to them. -->
       <g fill="none" stroke="#FFFFFF" stroke-linecap="round" filter="url(#ofb8)">
         <path d="M82 88.3 A92 92 0 0 1 136 76.4" stroke-opacity=".3" stroke-width="7"/>
         <path d="M95 110.8 A66 66 0 0 1 130.3 102" stroke-opacity=".26" stroke-width="6"/>
         <path d="M108 133.4 A40 40 0 0 1 128 128" stroke-opacity=".22" stroke-width="5"/>
       </g>
-      <!-- and the shaded flank, where each rib turns away from the light -->
       <g fill="none" stroke="#3742A8" stroke-opacity=".3" stroke-width="9" stroke-linecap="round" filter="url(#ofb4)">
         <path d="M187.2 97.5 A92 92 0 0 1 207.7 122"/>
         <path d="M170.4 117.4 A66 66 0 0 1 185.2 135"/>
@@ -84,8 +49,6 @@
       <ellipse cx="121.5" cy="161.5" rx="7.5" ry="5" transform="rotate(-32 121.5 161.5)" fill="#FFFFFF" opacity=".38" filter="url(#ofb2)"/>
     </g>
 
-    <!-- the bar casts into its own groove; kept weak so the daylight in the
-         gap stays daylight -->
     <path d="M44 76 L179.2 211.2" fill="none" stroke="url(#ofBar)" stroke-width="6" stroke-linecap="butt"/>
     <path d="M81 97 L161.5 193.5" fill="none" stroke="#FFFFFF" stroke-opacity=".42" stroke-width="2.5" stroke-linecap="butt" filter="url(#ofb2)"/>
   </g>

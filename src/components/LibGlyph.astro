@@ -1,13 +1,8 @@
 ---
-// Hand-drawn glyphs, one per model with a file — a photo/render of the model would be an unreadable blob at the 32px cell size.
-// Shared rules with src/assets/icon-src/: 256×256, object fills the frame; hard white capped at ~2% area (scripts/check-icons.mjs enforces this), so highlights go through blur; rim light on the shaded side (else it goes black at 32px); soft purple shadow under the object.
-// Hover animation lives next to the shape it drives and is fully disabled under prefers-reduced-motion.
 interface Props { id: string }
 const { id } = Astro.props;
 ---
-
 {id === 'red-blood-cell' && (
-  /* biconcave disc; hover: disc turns slightly, pit "breathes" (elasticity) */
   <svg class="hex-obj gl gl-rbc" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
     <defs>
       <radialGradient id="rbcBody" cx="32%" cy="22%" r="88%">
@@ -43,7 +38,6 @@ const { id } = Astro.props;
 )}
 
 {id === 'lipid-bilayer' && (
-  /* two rows of heads, tails inward — 3 balls per row, not 30 (would blur into a gray band at 32px); hover: rows separate/rejoin */
   <svg class="hex-obj gl gl-lb" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
     <defs>
       <radialGradient id="lbHead" cx="32%" cy="24%" r="86%">
@@ -100,7 +94,6 @@ const { id } = Astro.props;
 )}
 
 {id === 'pn-junction' && (
-  /* isometric cube split in half: warm=p, cool=n, seam between; hover: carriers cross the seam */
   <svg class="hex-obj gl gl-pn" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
     <defs>
       <linearGradient id="pnTopP" x1=".1" y1="0" x2=".85" y2="1">
@@ -150,11 +143,9 @@ const { id } = Astro.props;
         </g>
         <ellipse cx="108" cy="208" rx="46" ry="22" fill="#5E1C0C" opacity=".5" filter="url(#pnB12)" />
 
-        {/* junction: the depletion zone, where all the movement happens */}
         <path d="M128 36 L128 212" fill="none" stroke="#FFF6DC" stroke-opacity=".75" stroke-width="7" stroke-linecap="round" filter="url(#pnB6)" />
       </g>
 
-      {/* carriers: three across the junction and back — as many as read at 32px */}
       <g class="gl-pn-carriers" fill="#FFF3C0">
         <circle class="c1" cx="128" cy="96" r="9" opacity="0" />
         <circle class="c2" cx="128" cy="140" r="9" opacity="0" />
@@ -165,7 +156,6 @@ const { id } = Astro.props;
 )}
 
 {id === 'lithium-ion-cell' && (
-  /* 18650 can: body + positive cap + charge-level fill; hover: fill rises (charging) */
   <svg class="hex-obj gl gl-li" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
     <defs>
       <linearGradient id="liBody" x1="0" y1="0" x2="1" y2="0">
@@ -191,12 +181,10 @@ const { id } = Astro.props;
 
     <ellipse cx="128" cy="236" rx="66" ry="12" fill="#2A2140" opacity=".2" filter="url(#liB6)" />
 
-    {/* positive terminal */}
     <rect x="110" y="20" width="36" height="28" rx="10" fill="url(#liCap)" />
 
     <rect x="70" y="44" width="116" height="180" rx="26" fill="url(#liBody)" />
     <g clip-path="url(#liCan)">
-      {/* charge level — the moving part */}
       <rect class="gl-li-fill" x="70" y="44" width="116" height="180" fill="url(#liCharge)" />
       <ellipse cx="92" cy="130" rx="16" ry="78" fill="#FFFFFF" opacity=".28" filter="url(#liB12)" />
       <ellipse cx="180" cy="134" rx="9" ry="76" fill="#D6DEF5" opacity=".34" filter="url(#liB6)" />
@@ -204,14 +192,12 @@ const { id } = Astro.props;
       <ellipse cx="128" cy="46" rx="60" ry="16" fill="#FFFFFF" opacity=".22" filter="url(#liB12)" />
     </g>
 
-    {/* bolt: one solid shape, like the rest of the set */}
     <path class="gl-li-bolt" d="M142 76 L96 146 L124 146 L112 200 L162 124 L132 124 Z"
           fill="#FFD84D" stroke="#B97F0C" stroke-opacity=".35" stroke-width="3" stroke-linejoin="round" />
   </svg>
 )}
 
 {id === 'newtons-cradle' && (
-  /* frame + 3 balls; hover: end ball swings and strikes, impulse passes through to the far end */
   <svg class="hex-obj gl gl-nc" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
     <defs>
       <radialGradient id="ncBall" cx="32%" cy="26%" r="86%">
@@ -235,7 +221,6 @@ const { id } = Astro.props;
 
     <ellipse cx="128" cy="236" rx="96" ry="12" fill="#2A2140" opacity=".2" filter="url(#ncB6)" />
 
-    {/* frame */}
     <g fill="url(#ncFrame)">
       <rect x="34" y="34" width="188" height="20" rx="10" />
       <rect x="34" y="44" width="20" height="150" rx="10" />
@@ -244,7 +229,6 @@ const { id } = Astro.props;
     <rect x="22" y="192" width="212" height="30" rx="15" fill="url(#ncBase)" />
     <ellipse cx="96" cy="42" rx="46" ry="8" fill="#FFFFFF" opacity=".4" filter="url(#ncB10)" />
 
-    {/* outer balls are separate groups since only they swing */}
     <g class="gl-nc-left">
       <path d="M72 44 L72 140" stroke="#9AA3BB" stroke-width="5" stroke-linecap="round" />
       <circle cx="72" cy="162" r="30" fill="url(#ncBall)" />
@@ -261,7 +245,6 @@ const { id } = Astro.props;
 )}
 
 {id === 'pressure-gauge' && (
-  /* dial + needle + port; hover: needle sweeps the scale with slight overshoot */
   <svg class="hex-obj gl gl-pg" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
     <defs>
       <linearGradient id="pgBezel" x1=".2" y1="0" x2=".8" y2="1">
@@ -296,7 +279,6 @@ const { id } = Astro.props;
     </g>
     <ellipse cx="84" cy="48" rx="42" ry="18" transform="rotate(-30 84 48)" fill="#FFFFFF" opacity=".45" filter="url(#pgB12)" />
 
-    {/* scale: four ticks, not twelve — more than that merges at 32px */}
     <g stroke="#6B6350" stroke-width="8" stroke-linecap="round" opacity=".75">
       <path d="M66 76 L74 84" />
       <path d="M128 52 L128 63" />
@@ -314,7 +296,6 @@ const { id } = Astro.props;
 )}
 
 {id === 'radiation-dosimeter' && (
-  /* device + screen + trefoil; hover: bars fill on screen (counting); trefoil itself stays static */
   <svg class="hex-obj gl gl-rd" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
     <defs>
       <linearGradient id="rdBody" x1="0" y1="0" x2="1" y2=".4">
@@ -344,14 +325,12 @@ const { id } = Astro.props;
     <rect x="72" y="42" width="112" height="98" rx="16" fill="url(#rdScreen)" />
     <ellipse cx="100" cy="56" rx="30" ry="11" fill="#FFFFFF" opacity=".4" filter="url(#rdB6)" />
 
-    {/* bars light up in sequence rather than growing — a 3px height change is invisible at 32px, but the color change reads */}
     <g class="gl-rd-bars" fill="#183A1C">
       <rect class="b1" x="86" y="100" width="24" height="26" rx="8" />
       <rect class="b2" x="116" y="86" width="24" height="40" rx="8" />
       <rect class="b3" x="146" y="70" width="24" height="56" rx="8" />
     </g>
 
-    {/* trefoil: three blades and a core, as on the instrument itself */}
     <g fill="#FFCE33">
       <path d="M128 184 L107 147.6 A42 42 0 0 1 149 147.6 Z" />
       <path d="M128 184 L170 184 A42 42 0 0 1 149 220.4 Z" />
@@ -363,7 +342,6 @@ const { id } = Astro.props;
 )}
 
 {id === 'solar-panel' && (
-  /* angled panel + leg; hover: light sweep + cell flash (panel responds to light) */
   <svg class="hex-obj gl gl-sp" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
     <defs>
       <linearGradient id="spGlass" x1=".1" y1="0" x2=".9" y2="1">
@@ -388,25 +366,20 @@ const { id } = Astro.props;
 
     <ellipse cx="128" cy="238" rx="86" ry="12" fill="#2A2140" opacity=".2" filter="url(#spB6)" />
 
-    {/* mast under the panel */}
     <path d="M108 182 L148 182 L162 230 L94 230 Z" fill="url(#spEdge)" />
 
-    {/* edge face — without it the panel read as a flat rhombus; gives it visible thickness */}
     <path d="M6 122 L128 214 L250 122 L250 140 L128 232 L6 140 Z" fill="url(#spSide)" />
 
-    {/* frame and glass */}
     <path d="M128 30 L250 122 L128 214 L6 122 Z" fill="url(#spEdge)" />
     <path d="M128 50 L232 122 L128 194 L24 122 Z" fill="url(#spGlass)" />
 
     <g clip-path="url(#spFace)">
-      {/* cells: two seams per axis — more does not read at 32px */}
       <g stroke="#9EB4FF" stroke-opacity=".5" stroke-width="5">
         <path d="M76 86 L180 158 M180 86 L76 158" />
         <path d="M128 50 L128 194 M24 122 L232 122" />
       </g>
       <ellipse cx="72" cy="90" rx="52" ry="26" transform="rotate(35 72 90)" fill="#FFFFFF" opacity=".26" filter="url(#spB14)" />
       <ellipse cx="186" cy="162" rx="56" ry="26" transform="rotate(35 186 162)" fill="#000C4A" opacity=".34" filter="url(#spB14)" />
-      {/* cells catch the light one quarter at a time, left to right */}
       <g class="gl-sp-cells" fill="#FFE79A">
         <path class="q1" d="M128 50 L24 122 L128 122 Z" />
         <path class="q2" d="M128 50 L232 122 L128 122 Z" />
@@ -418,10 +391,8 @@ const { id } = Astro.props;
 )}
 
 <style>
-  /* transform-box:fill-box set per-element, not globally — it would override existing rotate(a cx cy) origins and break those rotations */
   .gl { overflow: visible; }
 
-  /* ---- red blood cell: a springy disc ---- */
   .gl-rbc .gl-spin, .gl-rbc .gl-pit { transform-box: fill-box; transform-origin: 50% 50%; }
   :global(.hex:hover) .gl-rbc .gl-spin { animation: rbc-turn calc(var(--glyph-t) * 1.6) var(--glyph-e); }
   :global(.hex:hover) .gl-rbc .gl-pit { animation: rbc-breathe calc(var(--glyph-t) * 1.6) var(--glyph-e); }
@@ -434,13 +405,11 @@ const { id } = Astro.props;
     42%      { transform: scale(.82); }
   }
 
-  /* ---- bilayer: the membrane breathes ---- */
   :global(.hex:hover) .gl-lb-top { animation: lb-up calc(var(--glyph-t) * 1.5) var(--glyph-e); }
   :global(.hex:hover) .gl-lb-bottom { animation: lb-down calc(var(--glyph-t) * 1.5) var(--glyph-e); }
   @keyframes lb-up   { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(-14px); } }
   @keyframes lb-down { 0%, 100% { transform: translateY(0); } 45% { transform: translateY(14px); } }
 
-  /* ---- p-n junction: carriers cross the seam ---- */
   .gl-pn-carriers circle { opacity: 0; }
   :global(.hex:hover) .gl-pn .c1 { animation: pn-cross var(--glyph-t) ease-out; }
   :global(.hex:hover) .gl-pn .c2 { animation: pn-cross var(--glyph-t) ease-out 180ms; }
@@ -452,7 +421,6 @@ const { id } = Astro.props;
     100% { transform: translate(30px, -18px); opacity: 0; }
   }
 
-  /* ---- cell: charge rises from below ---- */
   .gl-li-fill { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(0); }
   :global(.hex:hover) .gl-li-fill { animation: li-charge calc(var(--glyph-t) * 1.5) var(--glyph-e); }
   @keyframes li-charge {
@@ -467,12 +435,10 @@ const { id } = Astro.props;
     58%      { transform: scale(1.16); }
   }
 
-  /* ---- cradle: the impulse travels along the row ---- */
   .gl-nc-left  { transform-origin: 72px 44px; }
   .gl-nc-right { transform-origin: 184px 44px; }
   :global(.hex:hover) .gl-nc-left  { animation: nc-strike calc(var(--glyph-t) * 2.8) ease-in-out; }
   :global(.hex:hover) .gl-nc-right { animation: nc-fly calc(var(--glyph-t) * 2.8) ease-in-out; }
-  /* SVG y-axis points down, so a positive rotate() swings the ball left and negative swings right — signs must be opposite for the two balls or both would swing inward */
   @keyframes nc-strike {
     0%        { transform: rotate(0deg); }
     13%       { transform: rotate(30deg); }
@@ -486,7 +452,6 @@ const { id } = Astro.props;
     58%, 100% { transform: rotate(0deg); }
   }
 
-  /* ---- gauge: the needle answers the pressure ---- */
   .gl-pg-needle { transform-origin: 128px 114px; }
   :global(.hex:hover) .gl-pg-needle { animation: pg-sweep calc(var(--glyph-t) * 1.7) cubic-bezier(.3, 1.4, .5, 1); }
   @keyframes pg-sweep {
@@ -496,26 +461,21 @@ const { id } = Astro.props;
     100%     { transform: rotate(0deg); }
   }
 
-  /* ---- dosimeter: the scale fills, then resets ---- */
   .gl-rd-bars rect { opacity: .16; }
   :global(.hex:hover) .gl-rd-bars .b1 { animation: rd-bar calc(var(--glyph-t) * 1.9) steps(1, end); }
   :global(.hex:hover) .gl-rd-bars .b2 { animation: rd-bar calc(var(--glyph-t) * 1.9) steps(1, end) 170ms; }
   :global(.hex:hover) .gl-rd-bars .b3 { animation: rd-bar calc(var(--glyph-t) * 1.9) steps(1, end) 340ms; }
-  /* steps(1,end) — the bar switches on, it doesn't fade in */
   @keyframes rd-bar {
     0%       { opacity: .16; }
     18%, 68% { opacity: 1; }
     100%     { opacity: .16; }
   }
 
-  /* ---- solar panel: cells catch the light ----
-     a light streak across the glass wasn't visible at 32px (blurred white-on-blue); quarter-flashes read at both sizes */
   .gl-sp-cells path { opacity: 0; }
   :global(.hex:hover) .gl-sp-cells .q1 { animation: sp-lit calc(var(--glyph-t) * .55) ease-out; }
   :global(.hex:hover) .gl-sp-cells .q2 { animation: sp-lit calc(var(--glyph-t) * .55) ease-out 150ms; }
   :global(.hex:hover) .gl-sp-cells .q3 { animation: sp-lit calc(var(--glyph-t) * .55) ease-out 300ms; }
   :global(.hex:hover) .gl-sp-cells .q4 { animation: sp-lit calc(var(--glyph-t) * .55) ease-out 450ms; }
-  /* short flash with stagger — if all four glow at once the panel just looks washed out, not sunlit */
   @keyframes sp-lit {
     0%   { opacity: 0; }
     40%  { opacity: .5; }

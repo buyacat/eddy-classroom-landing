@@ -1,20 +1,3 @@
-/**
- * Ambient light pools must fade out inside their own box (see the comment above
- * .band::before in style.css), checked rather than promised in a comment — the
- * same idea as check-earth-layout.mjs for the globe.
- *
- * Pools are sized in vw while band height follows content, so a band that gets
- * shorter breaks the contract silently: the gradient runs out of room and is
- * clipped along a straight line.
- *
- * Horizontal clipping is not counted: the box always spans the viewport, so
- * whatever leaves sideways is off-screen anyway.
- *
- * Needs the dev server and a headless Chrome:
- *   npm run dev
- *   chrome --headless=new --remote-debugging-port=9333 --user-data-dir=<temp> about:blank
- *   npm run check:ambient
- */
 const PORT = 9333;
 const PAGE = process.env.AMB_URL || 'http://localhost:5178/';
 const WIDTHS = (process.env.AMB_W || '1440,1920,2560,1280,900,700').split(',').map(Number);

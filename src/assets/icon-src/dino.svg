@@ -48,20 +48,16 @@
   </defs>
 
   <g transform="translate(128 128) scale(1.06) translate(-128 -128)">
-  <!-- ground shadow -->
   <ellipse cx="116" cy="216" rx="72" ry="13" fill="#1F3A2C" opacity=".22" filter="url(#db6)"/>
 
-  <!-- tail -->
   <path d="M104 190 C78 194 52 178 30 150 C23 141 33 128 43 136 C64 153 84 161 106 158 Z" fill="url(#dTail)"/>
   <g clip-path="url(#dTailClip)">
     <path d="M40 140 C58 156 78 166 100 168 L100 178 C74 178 52 166 34 148 Z" fill="#166A46" opacity=".35" filter="url(#db3)"/>
     <path d="M44 134 C62 148 80 155 100 156 L98 149 C78 148 60 141 44 129 Z" fill="#FFFFFF" opacity=".22" filter="url(#db3)"/>
   </g>
 
-  <!-- back leg -->
   <path d="M68 152 h26 a14 14 0 0 1 14 14 v18 a22 22 0 0 1 -22 22 h-10 a22 22 0 0 1 -22 -22 v-18 a14 14 0 0 1 14 -14 z" fill="url(#dLegBack)"/>
 
-  <!-- body -->
   <ellipse cx="108" cy="150" rx="56" ry="46" fill="url(#dBody)"/>
   <g clip-path="url(#dBodyClip)">
     <path d="M56 158 C70 180 90 190 112 190 C136 190 155 178 166 158 L168 200 L52 200 Z" fill="url(#dBelly)"/>
@@ -72,16 +68,13 @@
     <ellipse cx="108" cy="106" rx="46" ry="12" fill="#C8FBE0" opacity=".35" filter="url(#db6)"/>
   </g>
 
-  <!-- neck -->
   <path d="M134 178 C128 142 134 106 156 80 C165 69 185 74 182 89 C168 112 162 142 166 176 Z" fill="url(#dNeck)"/>
   <path d="M142 172 C138 140 145 108 161 88 C165 83 172 84 174 88 C158 110 150 140 153 172 Z" fill="#FFFFFF" opacity=".2" filter="url(#db3)"/>
   <path d="M163 176 C160 142 166 112 180 90 L182 89 C168 112 162 142 166 176 Z" fill="#1B7048" opacity=".35" filter="url(#db3)"/>
 
-  <!-- front leg -->
   <path d="M128 158 h26 a14 14 0 0 1 14 14 v16 a22 22 0 0 1 -22 22 h-10 a22 22 0 0 1 -22 -22 v-16 a14 14 0 0 1 14 -14 z" fill="url(#dLegFront)"/>
   <ellipse cx="141" cy="204" rx="16" ry="6" fill="#1B7048" opacity=".3" filter="url(#db3)"/>
 
-  <!-- back spikes -->
   <g fill="url(#dSpike)">
     <path d="M74 132 C77 122 82 116 89 112 C87 120 86 126 86 134 Z"/>
     <path d="M97 114 C100 104 105 98 112 95 C110 103 109 109 109 117 Z"/>
@@ -89,7 +82,6 @@
     <path d="M143 84 C146 75 151 69 158 66 C155 74 154 79 154 87 Z"/>
   </g>
 
-  <!-- head -->
   <path d="M156 74 C156 58 170 46 188 46 C208 46 222 58 222 74 C222 90 208 102 188 102 C170 102 156 90 156 74 Z" fill="url(#dHead)"/>
   <g clip-path="url(#dHeadClip)">
     <path d="M190 92 C199 98 212 99 226 96 L228 108 L186 108 Z" fill="url(#dBelly)" opacity=".8" filter="url(#db3)"/>

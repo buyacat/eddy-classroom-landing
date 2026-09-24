@@ -1,12 +1,5 @@
 ---
-/*
- * Arms are real logarithmic spirals (r = a·e^(b·θ), squashed/tilted for a disc-at-an-angle look),
- * generated once and frozen into static path data — nothing computed at runtime.
- * Static on purpose (no rotation): the rocket/dinosaur badges next to it are still PNGs.
- * Bottom-left stars are Orion's belt.
- */
 ---
-
 <svg class="gx" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
   <defs>
     <radialGradient id="gx-sky" cx="38%" cy="30%" r="78%">
@@ -43,11 +36,9 @@
     </filter>
   </defs>
 
-  <!-- the sphere of sky -->
   <circle cx="128" cy="128" r="100" fill="url(#gx-sky)"/>
 
   <g clip-path="url(#gx-clip)">
-    <!-- disc glow, then the wheel itself -->
     <ellipse cx="128" cy="128" rx="86" ry="56" transform="rotate(-20 128 128)" fill="url(#gx-halo)" filter="url(#gx-wide)"/>
 
     <g class="gx-wheel" filter="url(#gx-soft)">
@@ -60,7 +51,6 @@
     <ellipse cx="128" cy="128" rx="34" ry="21" transform="rotate(-20 128 128)" fill="url(#gx-core)"/>
     <circle class="gx-nucleus" cx="128" cy="128" r="11" fill="#FFFBEA"/>
 
-    <!-- foreground sky -->
     <g class="gx-stars">
     <circle cx="92.8" cy="58.2" r="1.9" fill="#EAF1FF" opacity="0.39"/>
     <circle cx="39.6" cy="129.5" r="1.0" fill="#EAF1FF" opacity="0.61"/>
@@ -115,7 +105,6 @@
     <circle cx="88" cy="90" r="2.6" fill="#FFFFFF"/>
     </g>
 
-    <!-- clay-pack gloss: the same top-left key light as the rocket and the dino -->
     <ellipse cx="92" cy="76" rx="58" ry="40" transform="rotate(-28 92 76)" fill="url(#gx-gloss)"/>
   </g>
 

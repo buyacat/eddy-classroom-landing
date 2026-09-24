@@ -1,23 +1,8 @@
-/* ==========================================================================
-   Eddy Classroom — landing design system
-   Pure-black type on a #F5F5F5 canvas, white cards with large radii, and three
-   saturated blocks of colour — electric blue #4050FF, yellow #F7DE52, green #5AE3A8.
-
-   Two rules this file keeps:
-   1. Depth comes from COLOUR BLOCKING, not shadows. Elevation is almost
-      flat; a card is a shape, not a floating pane.
-   2. The 3D icons are objects, not decorations — they break out of their
-      card's edge instead of sitting politely inside a tinted plate.
-   ========================================================================== */
-
 :root {
   --font-display: "Manrope", system-ui, sans-serif;
-  /* the group header on eddygroup.eu is set in Montserrat — the shared
-     Eddy Group bar keeps that face on every sibling site */
   --font-group: "Montserrat", "Manrope", system-ui, sans-serif;
   --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  /* ---------- palette, sampled from the mock ---------- */
   --blue: #4050ff;
   --blue-deep: #2c39d6;
   --blue-soft: #e5e7ff;
@@ -30,17 +15,13 @@
   --green-deep: #1ccf8e;
   --green-soft: #e2fbf0;
 
-  /* violet from the client's colour sheet — the one deep note, used only
-     where a second dark is needed */
   --violet: #5700ff;
 
-  /* ---------- surfaces ---------- */
   --bg-page: #f5f5f5;
   --surface: #fff;
   --surface-sunken: #ececec;
   --ink-block: #0d0d0f;
 
-  /* ---------- ink ---------- */
   --ink: #000;
   --ink-2: #43434d;
   --ink-3: #76767f;
@@ -53,38 +34,22 @@
 
   --focus-ring: 0 0 0 3px rgba(64, 80, 255, .35);
 
-  /* ---------- ambient light ----------
-     One plane of light behind the whole document; every band drops one or two
-     pools into it. Stored as raw channel triplets, not colours, so a pool picks
-     its own alpha via rgba() without needing a second colour token per strength. */
   --amb-yellow: 247, 222, 82;
   --amb-green: 90, 227, 168;
   --amb-blue: 64, 80, 255;
   --amb-violet: 87, 0, 255;
 
-  /* four opacity tiers, each with a defined role:
-       --amb-4  hero only — where light enters the page
-       --amb-3  at most one per band: the band's own colour event
-       --amb-2  the working pool
-       --amb-1  a trace; you only notice it when it is missing
-     .08 is the floor where #f5f5f5 still visibly shifts hue; .42 is the ceiling
-     before the wash competes with the flat colour blocks behind it. */
   --amb-4: .5;
   --amb-3: .34;
   --amb-2: .22;
   --amb-1: .12;
 
-  /* pools fade out at 62% of their radius; the margin beyond that is where
-     neighbouring pools cross-fade instead of ending at a hard band edge */
   --amb-fade: 62%;
 
-  /* vw-based so a pool keeps the same apparent size on a laptop and a 27";
-     clamped so it neither vanishes on a phone nor swallows a 2560px canvas */
   --amb-r-xl: clamp(560px, 66vw, 1180px);
   --amb-r-lg: clamp(440px, 52vw, 900px);
   --amb-r-md: clamp(340px, 40vw, 680px);
 
-  /* ---------- radii — the mock is very round ---------- */
   --r-sm: 12px;
   --r-md: 18px;
   --r-lg: 26px;
@@ -92,22 +57,15 @@
   --r-2xl: 40px;
   --r-pill: 999px;
 
-  /* shared hexagon mask (library pickers + hero source badge, so both stay identical).
-     Rounded via a fat round-joined stroke rather than arcs — one polygon serves every
-     size; the polygon is 78% of the full width, the stroke the other 22%. */
   --hex-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 115.47' preserveAspectRatio='none'%3E%3Cpolygon points='50,12.7 89,35.22 89,80.25 50,102.77 11,80.25 11,35.22' fill='%23000' stroke='%23000' stroke-width='22' stroke-linejoin='round'/%3E%3C/svg%3E");
-  /* height / width of that hexagon — 2 / √3 */
   --hex-ratio: 1.1547;
 
-  /* ---------- elevation — deliberately almost flat ---------- */
   --e1: 0 1px 2px rgba(0, 0, 0, .04);
   --e2: 0 2px 10px rgba(0, 0, 0, .05);
   --e3: 0 8px 26px -12px rgba(0, 0, 0, .18);
   --e4: 0 24px 60px -28px rgba(0, 0, 0, .3);
-  /* the only coloured shadow on the page */
   --e-blue: 0 12px 30px -12px rgba(64, 80, 255, .55);
 
-  /* ---------- spacing ---------- */
   --gap-card: clamp(14px, 1.4vw, 20px);
   --pad-band: clamp(64px, 8vw, 124px);
   --gap-block: clamp(112px, 12vw, 176px);
@@ -116,7 +74,6 @@
   --maxw: 1240px;
   --nav-h: 68px;
 
-  /* ---------- motion ---------- */
   --t-micro: 120ms;
   --t-hover: 180ms;
   --t-card: 260ms;
@@ -125,14 +82,8 @@
   --ease-out: cubic-bezier(.22, .61, .36, 1);
   --ease-in-out: cubic-bezier(.65, 0, .35, 1);
   --ease-spring: cubic-bezier(.34, 1.42, .5, 1);
-  /* slow-start ease-in-out, no overshoot — for moves the eye tracks all the way
-     (a spring reads as a twitch here) */
   --ease-glide: cubic-bezier(.45, .03, .25, 1);
 }
-
-/* ==========================================================================
-   base
-   ========================================================================== */
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -156,7 +107,6 @@ body {
 }
 
 img, svg { display: block; max-width: 100%; }
-/* UA default is `margin: 1em 40px` — it silently insets every framed shot. */
 figure, figcaption { margin: 0; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; }
@@ -194,12 +144,8 @@ h3 {
 
 p { margin: 0; }
 
-/* Ukrainian runs 30–40% longer than English: hyphenate paragraphs, never
-   headings — a broken Ukrainian heading reads as a rendering bug. */
 html[lang="uk"] p { hyphens: auto; }
 
-/* In this system the highlight is a marker stroke behind the words, not a
-   gradient fill — it matches the mock's flat colour blocking. */
 .hl {
   background: linear-gradient(transparent 56%, var(--yellow) 56%);
   padding-inline: .06em;
@@ -248,34 +194,16 @@ html[lang="uk"] p { hyphens: auto; }
   padding-inline: var(--gutter);
 }
 
-/* grid/flex items default to min-width:auto — without this, oversized content (e.g.
-   .lib-head's 452px of nowrap tab labels) widens its track and pushes the page past
-   the viewport on narrow screens */
 .hero-grid > *, .why-grid > *, .plat-grid > *, .lib-grid > *, .lib-head > *,
 .cta-grid > *, .footer-top > *, .plat-card > * { min-width: 0; }
 
-/* every block-to-block gap on the page is --gap-block: each band carries half of it on
-   either side, so any two bands meet at exactly one gap */
 .band { padding-block: calc(var(--gap-block) / 2); position: relative; }
 
-/* ==========================================================================
-   ambient light — one plane behind the entire document
-   ========================================================================== */
-
-/* pools use z-index:-1 inside sections that are deliberately not stacking contexts, so
-   they all paint on this one shared plane (body) instead of per-band layers. Keep `main`
-   unpositioned/untransformed and `overflow` off the bands, or pools get clipped to their
-   band and the seams come back. */
 body {
   position: relative;
   isolation: isolate;
 }
 
-/* pool box overhangs its band top/bottom on purpose (where neighbouring bands' light mixes)
-   but must never overhang the BOTTOM of the last section — absolutely positioned boxes count
-   toward the scrollable area. Constraint: centre_y × box_height >= last_stop% × vertical_radius,
-   top and bottom both; verified by scripts/check-ambient.mjs since pools are vw-sized while
-   bands are content-sized. */
 .band::before,
 .cta-band::before {
   content: "";
@@ -285,9 +213,6 @@ body {
   pointer-events: none;
 }
 
-/* On a phone a pool covers proportionally far more screen than it does on
-   a desktop, so the whole scale steps down one notch rather than each
-   band being re-tuned by hand. */
 @media (max-width: 700px) {
   :root {
     --amb-4: .30;
@@ -296,10 +221,6 @@ body {
     --amb-1: .09;
   }
 }
-
-/* ==========================================================================
-   buttons — chunky pills, black outline or solid colour, no soft shadows
-   ========================================================================== */
 
 .btn {
   display: inline-flex;
@@ -313,7 +234,6 @@ body {
   font-weight: 800;
   font-size: .9375rem;
   line-height: 1.2;
-  /* Ukrainian CTA copy runs to 42 chars — it must be allowed to wrap. */
   white-space: normal;
   text-align: center;
   cursor: pointer;
@@ -330,17 +250,12 @@ body {
 .btn-dark { background: var(--ink); color: #fff; }
 .btn-dark:hover { transform: translateY(-2px); }
 
-/* the mock's "переглянути →" button: no fill, hairline black ring */
 .btn-ghost { background: transparent; color: var(--ink); border-color: var(--ink); }
 .btn-ghost:hover { background: var(--ink); color: #fff; transform: translateY(-2px); }
 
 .btn:active { transform: scale(.98); }
 
 :focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--r-sm); }
-
-/* ==========================================================================
-   chips — a yellow status label, black bold text
-   ========================================================================== */
 
 .chip {
   display: inline-flex;
@@ -372,10 +287,6 @@ body {
   100% { transform: scale(2.2); opacity: 0; }
 }
 
-/* ==========================================================================
-   .shot — our own chrome around a real product screenshot
-   ========================================================================== */
-
 .shot {
   position: relative;
   background: #fff;
@@ -392,8 +303,6 @@ body {
   background: #fff;
   border-bottom: 1px solid var(--line);
 }
-/* the three window dots — direct children only, so the LIVE pill's own dot
-   further in does not inherit a traffic-light colour by position */
 .shot-bar > i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
 .shot-bar > i:nth-child(1) { background: var(--blue); }
 .shot-bar > i:nth-child(2) { background: var(--yellow); }
@@ -403,9 +312,6 @@ body {
 .shot img { width: 100%; height: auto; }
 .shot.is-hero { border-radius: var(--r-2xl); box-shadow: var(--e4); }
 
-/* The LIVE pill. Not nested under .shot-bar on purpose: the platform band's
-   roster panel wears the same pill, and one rule here beats two copies that
-   drift apart by a pixel of padding. */
 .shot-live {
   display: inline-flex; align-items: center; gap: 6px;
   background: var(--green); color: var(--ink);
@@ -414,14 +320,9 @@ body {
   transition: background var(--t-card) var(--ease-out), color var(--t-card) var(--ease-out);
 }
 .shot-live i { width: 6px; height: 6px; border-radius: 50%; background: var(--ink); position: relative; flex: none; }
-/* the hero lesson drops the line on purpose — green is for LIVE, not for down */
 .shot-live.is-down { background: var(--ink-block); color: var(--ink-inv); letter-spacing: .02em; }
 .shot-live.is-down i { background: var(--ink-inv); animation: none; }
 
-/* The body while the mobile sheet is open. position: fixed is the only lock
-   iOS Safari honours — overflow: hidden there still lets the page scroll
-   under the sheet. `top` is set inline by app.js to the parked offset, so
-   the page does not visibly jump to zero while it is locked. */
 body.menu-open {
   position: fixed;
   left: 0;
@@ -429,10 +330,6 @@ body.menu-open {
   width: 100%;
   overflow: hidden;
 }
-
-/* ==========================================================================
-   cards + the 3D object system
-   ========================================================================== */
 
 .card {
   position: relative;
@@ -445,7 +342,6 @@ body.menu-open {
 .card h3 { margin-bottom: 10px; }
 .card p { font-size: .9375rem; line-height: 1.55; color: var(--ink-3); }
 
-/* colour-blocked variants */
 .card.is-blue { background: var(--blue); }
 .card.is-blue h3 { color: #fff; }
 .card.is-blue p { color: var(--ink-inv-2); }
@@ -454,13 +350,10 @@ body.menu-open {
 .card.is-green { background: var(--green); }
 .card.is-green p { color: rgba(0, 0, 0, .68); }
 
-/* .obj — a 3D icon hanging off the card's top edge, not sitting inside a tinted plate */
 .obj {
   display: block;
   width: var(--obj, 88px);
   height: var(--obj, 88px);
-  /* -.46 makes ~half the object hang above the card edge; -.33 read as a misplaced icon
-     rather than an object hanging off it */
   margin: calc(var(--obj, 88px) * -.46) 0 12px calc(var(--obj, 88px) * -.14);
   filter: drop-shadow(0 12px 16px rgba(0, 0, 0, .18));
   transition: transform var(--t-card) var(--ease-spring);
@@ -470,22 +363,12 @@ body.menu-open {
 .card:hover .obj { transform: translateY(-6px) rotate(-5deg) scale(1.05); }
 .obj.is-inline { margin: 0; }
 
-/* ==========================================================================
-   scroll reveal
-   ========================================================================== */
-
-/* A slide, never a fade: content stays fully opaque, so a stalled observer
-   cannot leave a section blank. Only applied once JS is known to run. */
 .js .reveal {
   transform: translateY(20px);
   transition: transform var(--t-reveal) var(--ease-out);
   transition-delay: calc(min(var(--i, 0), 7) * 60ms);
 }
 .js .reveal.is-visible { transform: none; }
-
-/* ==========================================================================
-   form
-   ========================================================================== */
 
 .form-card {
   background: #fff;
@@ -552,23 +435,14 @@ body.menu-open {
 .form-ok .ic { width: 96px; height: 96px; margin: 0 auto 18px; }
 .form-ok .sub { color: var(--ink-3); font-size: .9375rem; margin-top: 8px; }
 
-/* iOS Safari zooms the whole page in when a focused field is set under
-   16px, and does not zoom back out on blur. 15px is the desktop size for a
-   reason (the labels are 11px and the ratio matters), so only the touch
-   widths go up. */
 @media (max-width: 760px) {
   .field input,
   .field select,
   .field textarea { font-size: 16px; }
-  /* stack at the same breakpoint the touch sizing above kicks in, instead of staying
-     two-per-row down to 560px */
   .field.row { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
-  /* long floating labels (e.g. Ukrainian "Назва навчального закладу...") wrap to 2 lines
-     and overlap the input value at narrow widths — ellipsis instead; the placeholder
-     underneath still explains the field */
   .field > label,
   .field.row > div > label {
     max-width: calc(100% - 28px);
@@ -577,10 +451,6 @@ body.menu-open {
     text-overflow: ellipsis;
   }
 }
-
-/* ==========================================================================
-   reduced motion
-   ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -592,13 +462,7 @@ body.menu-open {
   .js .reveal { transform: none !important; }
 }
 
-/* ==========================================================================
-   print
-   ========================================================================== */
-
 @media print {
-  /* ambient light is a screen effect — on paper it prints as a grey blotch and
-     wastes toner; the flat colour blocks carry the layout on their own */
   .blob,
   .band::before,
   .cta-band::before { display: none !important; }

@@ -1,12 +1,3 @@
-/**
- * Rasterises the hand-drawn objects (src/assets/icon-src/*.svg) to 256px PNGs
- * in public/assets/icons/. Licensed pack icons ship as PNGs and are not touched.
- *
- *   npm run icons            all of them
- *   npm run icons -- cube3d  one by name
- *
- * `npm run check:icons` verifies the result against the pack's style budget.
- */
 import sharp from 'sharp';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';

@@ -7,16 +7,6 @@ import geometry from '../data/models.json';
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 
-/**
- * Lazy-loaded 3D model panel: nothing (model, three.js, loader) is fetched
- * until the panel scrolls near the viewport; then the first model loads on
- * its own, with no button to press. The structure list works without
- * WebGL/JS — it's plain HTML content, not a control panel for the 3D.
- * Runtime copy is passed as one `data-copy` payload so strings stay
- * translatable and the module stays copy-agnostic.
- */
-/* Per-model copy comes from locale data; numbers (hotspots, explode) from
-   models.json, since those are language-independent. Merged here once. */
 type Geometry = Record<string, { file: string; explode: unknown; parts: unknown }>;
 const geo = geometry as Geometry;
 
@@ -36,8 +26,6 @@ const models = tArray<{
     geometry: geo[m.id].parts
   }));
 
-/* Opens on the first model, rendered server-side so the page is complete
-   before script runs. */
 const first = models[0];
 const parts = first?.parts ?? [];
 const alt = t(locale, 'classroom_library_model_alt');
@@ -45,29 +33,23 @@ const alt = t(locale, 'classroom_library_model_alt');
 const copy = {
   loading: t(locale, 'classroom_library_model_loading'),
   error: t(locale, 'classroom_library_model_error'),
-  /* For cells with no file yet (see the "soon" state below). */
   soonBadge: t(locale, 'classroom_library_soon_badge'),
   soonDesc: t(locale, 'classroom_library_soon_desc')
 };
 ---
-
 <section class="mv reveal" data-model-viewer
          data-models={JSON.stringify(models)}
          data-copy={JSON.stringify(copy)}
          data-alt={alt}
          data-nowebgl={t(locale, 'classroom_library_model_nowebgl')}>
-  <!-- Controls are a sibling of the stage: floated over it on desktop,
-       moved below it on mobile via one `position` switch. -->
   <div class="mv-view">
     <div class="mv-stage" data-stage>
       <canvas class="mv-canvas" role="img" aria-label={`${alt} — ${first?.title ?? ''}`}></canvas>
 
-      <!-- Only shown without WebGL: the weight line carries the explanation then. -->
       <div class="mv-gate" data-gate hidden>
         <p class="mv-weight" data-weight>{first?.weight}</p>
       </div>
 
-      <!-- Visible from the server render: the model starts fetching as soon as the panel nears the viewport. -->
       <div class="mv-load is-unknown" data-load>
         <span class="mv-track"><i data-bar></i></span>
         <p class="mv-load-txt" data-load-txt>{copy.loading}… · {first?.weight}</p>
@@ -80,13 +62,11 @@ const copy = {
         </button>
       </div>
 
-      {/* Shown when a cell with no .glb behind it is picked; toggled via `.mv.is-soon`. */}
       <div class="mv-soon" data-soon>
         <img class="mv-soon-ic" data-soon-icon src="" width="120" height="120" alt="" />
         <p class="mv-soon-badge">{copy.soonBadge}</p>
       </div>
 
-      <!-- Callout for the picked structure: dot on the geometry, leader line, name clear of the model. -->
       <span class="mv-marker" data-marker hidden aria-hidden="true">
         <i class="mv-marker-dot"></i>
         <i class="mv-marker-line"></i>
@@ -134,7 +114,6 @@ const copy = {
         </li>
       ))}
     </ul>
-    {/* Server-rendered with the first structure's text so the live region below has content to replace, not announce. */}
     <p class="mv-part-desc" data-part-desc aria-live="polite">{parts[0]?.desc}</p>
   </div>
 </section>
@@ -152,14 +131,11 @@ const copy = {
     box-shadow: var(--e3);
   }
 
-  /* ---- the stage ---- */
-  /* 4:3, not square — a square stage left ~150px of empty white under the side column. */
   .mv-stage {
     position: relative;
     aspect-ratio: 4 / 3;
     border-radius: var(--r-xl);
     overflow: hidden;
-    /* Same two-pool gradient as the hero panel's lighting. */
     background:
       radial-gradient(circle at 50% 48%,
         rgba(var(--amb-blue), var(--amb-2)) 0%,
@@ -183,7 +159,6 @@ const copy = {
   .mv.is-live .mv-canvas { opacity: 1; }
   .mv-canvas:active { cursor: grabbing; }
 
-  /* ---- cover / loading / failure / soon: one box, four states ---- */
   .mv-gate, .mv-load, .mv-fail, .mv-soon {
     position: absolute;
     inset: 0;
@@ -197,7 +172,6 @@ const copy = {
   }
   .mv-gate[hidden], .mv-load[hidden], .mv-fail[hidden] { display: none; }
 
-  /* ---- the "soon" state: one root class swaps the whole stage ---- */
   .mv-soon { display: none; gap: 16px; }
   .mv.is-soon .mv-soon { display: flex; }
   .mv.is-soon .mv-gate, .mv.is-soon .mv-load, .mv.is-soon .mv-fail,
@@ -232,8 +206,6 @@ const copy = {
     max-width: 30ch;
   }
 
-  /* Progress bar rather than spinner; falls back to an indeterminate sweep
-     when the server doesn't declare a content length. */
   .mv-track {
     width: min(220px, 70%);
     height: 6px;
@@ -258,10 +230,6 @@ const copy = {
     100% { transform: translateX(260%); }
   }
 
-  /* ---- the callout ----
-     Row: dot, hairline, name. Module sets `transform` to the projected point;
-     `translate` (applied before `transform`) offsets the row so the dot lands
-     on it. `is-left` reverses the row to hang off its own right edge instead. */
   .mv-marker {
     position: absolute;
     top: 0;
@@ -286,7 +254,6 @@ const copy = {
     box-shadow: 0 0 0 3px rgba(255, 255, 255, .85);
   }
 
-  /* Length written by the module; shortened rather than letting the name run off the stage. */
   .mv-marker-line {
     width: var(--lead, 92px);
     height: 1px;
@@ -296,7 +263,6 @@ const copy = {
   }
 
   .mv-marker b {
-    /* it may wrap, and at two lines the leader still meets it in the middle */
     max-width: 44%;
     padding: 4px 11px;
     border-radius: var(--r-pill);
@@ -309,14 +275,10 @@ const copy = {
     color: var(--ink);
   }
 
-  /* `.is-jumped` (set by initSnap in app.js when a reader jumps straight to
-     this section) disables the reveal transition so the card just appears. */
   .reveal.mv.is-jumped { transition: none; }
 
-  /* the stage's positioning context, and the toolbar's */
   .mv-view { position: relative; }
 
-  /* ---- controls ---- */
   .mv-tools {
     position: absolute;
     left: 14px;
@@ -342,7 +304,6 @@ const copy = {
     color: var(--ink);
     white-space: nowrap;
   }
-  /* Track/thumb spelled out twice: WebKit and Firefox use different pseudo-elements. */
   .mv-slider input {
     flex: 1 1 auto;
     min-width: 0;
@@ -406,10 +367,8 @@ const copy = {
     pointer-events: none;
   }
   .mv-hint[hidden] { display: none; }
-  /* it has said its piece by the time a hand has been on the model */
   .mv.is-touched .mv-hint { opacity: 0; transition: opacity 300ms var(--ease-out); }
 
-  /* ---- the side: what the thing actually is ---- */
   .mv-side { padding: clamp(6px, 1vw, 16px) clamp(4px, 1vw, 14px); }
   .mv-ttl { margin-top: 16px; font-size: clamp(1.375rem, 1.05rem + 1.1vw, 1.875rem); }
   .mv-meta {
@@ -431,7 +390,6 @@ const copy = {
     text-transform: uppercase;
     color: var(--ink);
   }
-  /* Grid, not a flow layout — long structure names caused ragged wrapping in a flow. */
   .mv-parts {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(186px, 1fr));
@@ -460,7 +418,6 @@ const copy = {
   .mv-part.is-on { background: var(--ink); color: #fff; }
   .mv-part:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
-  /* Reserved height — a resizing box would shift the buttons under the pointer. */
   .mv-part-desc {
     margin-top: 14px;
     min-height: 6.4em;
@@ -471,17 +428,12 @@ const copy = {
 
   @media (max-width: 900px) {
     .mv { grid-template-columns: 1fr; }
-    /* stacked, the stage has the full column to itself and the height it
-       gives back would only be white space — so it takes the room */
     .mv-stage { aspect-ratio: 1 / 1; }
     .mv-part-desc { min-height: 0; }
 
-    /* No room for leader + name at this width; the picked structure's button
-       in the list below shows the name instead. Dot says WHERE, list says WHAT. */
     .mv-marker-line, .mv-marker b { display: none; }
   }
   @media (max-width: 560px) {
-    /* Moved below the stage — two rows of controls over it covered the model. */
     .mv-tools {
       position: static;
       margin-top: 10px;
@@ -509,7 +461,6 @@ const copy = {
     ViewerHandle
   } from '../scripts/model-viewer';
 
-  /** A model with a file behind it: the copy, and the numbers beside the .glb. */
   interface ModelSpec {
     id: string;
     name: string;
@@ -563,17 +514,14 @@ const copy = {
     const hint = q('[data-hint]');
     const range = q<HTMLInputElement>('[data-explode-range]');
 
-    /* Captured before showSoon() can overwrite the description paragraph. */
     const aboutModels = desc.textContent ?? '';
 
     const webgl = hasWebGL();
     let active = models[0];
     let viewer: ViewerHandle | null = null;
-    /* Matches the first structure already chosen in the server-rendered markup. */
     let current = active?.parts[0]?.node ?? null;
     markerLabel.textContent = active?.parts[0]?.label ?? '';
 
-    /* Works with or without a mounted viewer — 3D calls are guarded. */
     function pick(node: string | null, fromClick: boolean) {
       current = node;
       const spec = active?.parts.find((p) => p.node === node) ?? null;
@@ -587,7 +535,6 @@ const copy = {
       markerLabel.textContent = spec?.label ?? '';
       viewer?.select(node);
 
-      /* Auto-opens the model so a highlighted-but-sealed part is visible. */
       if (fromClick && viewer && Number(range.value) < 35) {
         range.value = '100';
         viewer.setExplode(1);
@@ -598,9 +545,6 @@ const copy = {
       b.addEventListener('click', () => pick(b.dataset.part ?? null, true));
     }
 
-    /* Rebuilt by cloning the server-rendered row, not `createElement` —
-       Astro's scoped-CSS `data-astro-cid-…` attribute only exists on the
-       original markup, so a fresh element would render unstyled. */
     const rowTemplate = partsList.querySelector('li')?.cloneNode(true) as HTMLLIElement | undefined;
 
     function renderParts() {
@@ -620,8 +564,6 @@ const copy = {
     }
 
     function progress(fraction: number) {
-      // -1 means the server never said how big the file is; sweep instead
-      // of printing a percentage that would be a guess
       load.classList.toggle('is-unknown', fraction < 0);
       if (fraction < 0) {
         loadTxt.textContent = copy.loading + '… · ' + active.weight;
@@ -631,8 +573,6 @@ const copy = {
       loadTxt.textContent = copy.loading + ' · ' + Math.round(fraction * 100) + '% · ' + active.weight;
     }
 
-    /* Stamps each mount so a stale in-flight fetch (switched cells mid-download)
-       is discarded on arrival instead of replacing the current model. */
     let generation = 0;
     let fetching = false;
     function fetchModel() {
@@ -645,7 +585,6 @@ const copy = {
       bar.style.width = '0%';
       progress(-1);
 
-      /* three.js, the loader and the model file are all fetched from here. */
       import('../scripts/model-viewer')
         .then((mod) =>
           mod.mountViewer({
@@ -672,13 +611,10 @@ const copy = {
           tools.hidden = false;
           hint.hidden = false;
           root.classList.add('is-live');
-          // reflect the selection the page already made, WITHOUT the
-          // auto-open above: nobody asked for the model to be apart yet
           handle.select(current);
         })
         .catch(async (err) => {
           if (mine !== generation) return;
-          /* Console gets the specific cause (network vs WebGL); panel shows one generic message. */
           let reach = 'not probed';
           try {
             const probe = await fetch(active.url, { method: 'HEAD', cache: 'no-store' });
@@ -696,7 +632,6 @@ const copy = {
         });
     }
 
-    /* Releases everything the stage holds: model, canvas state, active cover. */
     function clearStage() {
       generation += 1;
       fetching = false;
@@ -710,7 +645,6 @@ const copy = {
       root.classList.remove('is-live', 'is-touched');
     }
 
-    /** A cell with a file behind it: this panel becomes that model. */
     function showModel(id: string) {
       const next = models.find((m) => m.id === id);
       if (!next) return;
@@ -719,8 +653,6 @@ const copy = {
       root.classList.remove('is-soon');
 
       if (next === active) {
-        // the same model, coming back from the "soon" state that borrowed its
-        // headings — the model itself was never unloaded, so nothing else here
         if (leavingSoon) {
           ttl.textContent = next.title;
           meta.textContent = next.meta;
@@ -734,16 +666,13 @@ const copy = {
       ttl.textContent = next.title;
       meta.textContent = next.meta;
       desc.textContent = aboutModels;
-      /* No-WebGL browsers show the explanation here instead of a file weight — leave it alone. */
       if (webgl) weight.textContent = next.weight;
       canvas.setAttribute('aria-label', alt + ' — ' + next.title);
       renderParts();
 
-      /* A pick from the strip is as good as a scroll-in: it downloads at once. */
       if (webgl) fetchModel();
     }
 
-    /** A cell with no file behind it yet: say so, rather than mime a load. */
     function showSoon(name: string, label: string, icon?: string) {
       root.classList.add('is-soon');
       ttl.textContent = name;
@@ -752,7 +681,6 @@ const copy = {
       if (soonIcon && icon) soonIcon.src = icon;
     }
 
-    /* One custom event decouples this panel from the strip above's markup. */
     root.addEventListener('mv:select', (event) => {
       const pickEvent = event as CustomEvent<{
         model?: string;
@@ -766,8 +694,6 @@ const copy = {
     });
 
     if (!webgl) {
-      /* Weight line reused for the no-WebGL explanation — a fresh <p> would
-         lack the scoped-CSS attribute and render unstyled. */
       load.hidden = true;
       weight.textContent = root.dataset.nowebgl || '';
       gate.hidden = false;
@@ -775,9 +701,6 @@ const copy = {
       const retry = q<HTMLButtonElement>('[data-retry]');
       retry.addEventListener('click', fetchModel);
 
-      /* The model starts downloading ~600px before the panel enters the
-         viewport, so by the time the visitor scrolls to it the eye is
-         already turning. One-shot: once triggered the observer is dropped. */
       const near = new IntersectionObserver((entries) => {
         if (!entries.some((e) => e.isIntersecting)) return;
         near.disconnect();
@@ -797,7 +720,6 @@ const copy = {
 
       q<HTMLButtonElement>('[data-reset]').addEventListener('click', () => viewer?.resetView());
 
-      // the hint has done its job the moment a hand lands on the model
       q('[data-stage]').addEventListener('pointerdown', () => {
         root.classList.add('is-touched');
       }, { once: true });

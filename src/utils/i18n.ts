@@ -28,7 +28,6 @@ export function tArray<T>(locale: Locale, key: string): T[] {
   return Array.isArray(val) ? (val as T[]) : [];
 }
 
-/** Path of the same page in the other locale. */
 export function altPath(locale: Locale): string {
   return withBase(locale === 'uk' ? '/en/' : '/');
 }

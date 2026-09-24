@@ -8,7 +8,6 @@ import LibGlyph from './LibGlyph.astro';
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 
-// `model` is a src/data/models.json id; a card without one has no model yet.
 const cards = tArray<{
   subject: string;
   label: string;
@@ -17,7 +16,6 @@ const cards = tArray<{
   model?: string;
 }>(locale, 'classroom_library_cards');
 
-// Subjects are contiguous in `cards`, so slicing at each subject's start index yields exact, non-overlapping pages.
 const SUBJECT_ORDER = ['biology', 'chemistry', 'physics', 'geography'] as const;
 const starts = SUBJECT_ORDER
   .map((subject) => cards.findIndex((c) => c.subject === subject))
@@ -27,7 +25,6 @@ const groups = starts.map((start, i) => ({
   label: cards[start].label
 }));
 
-// Viewport width is sized to the busiest subject (physics=4) so no cell bleeds onto the next page.
 const widest = Math.max(...groups.map((g) => g.items.length), 1);
 
 const subjectBlock: Record<string, string> = {
@@ -37,7 +34,6 @@ const subjectBlock: Record<string, string> = {
   geography: 'is-ink'
 };
 ---
-
 <section class="band lib" id="library">
   <div class="wrap">
     <div class="lib-top">
@@ -69,8 +65,7 @@ const subjectBlock: Record<string, string> = {
                   <span class="hex-face">
                     <span class="hex-art">
                   {c.glyph === 'eye' ? (
-                    /* check-icons: glass-ok — wet corneal gloss, not polished clay */
-                    <svg class="hex-obj hex-eye" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                    <svg class="hex-obj hex-eye" data-glass-ok="wet corneal gloss, not polished clay" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
                       <defs>
                         <radialGradient id="eyeball" cx="33%" cy="25%" r="85%">
                           <stop offset="0" stop-color="#FFFFFF" />
@@ -111,7 +106,6 @@ const subjectBlock: Record<string, string> = {
                       <circle cx="128" cy="130" r="96" fill="url(#eye-bounce)" />
 
                       <g clip-path="url(#eye-clip)">
-                        {/* upper-lid shadow: what stops the ball reading as a flat disc */}
                         <rect x="-10" y="18" width="280" height="62" fill="url(#eye-lid)" filter="url(#eye-b6)" />
 
                         <g class="eye-gaze">
@@ -121,7 +115,6 @@ const subjectBlock: Record<string, string> = {
                           <ellipse class="eye-pupil" cx="104" cy="134" rx="18" ry="21" fill="url(#eye-pupil)" />
                         </g>
 
-                        {/* cornea: a faint rise plus the wet rim below it */}
                         <ellipse cx="104" cy="132" rx="56" ry="62" fill="#FFFFFF" opacity=".07" />
                         <path d="M58 158 Q104 206 152 156" fill="none" stroke="#FFFFFF" stroke-opacity=".4"
                               stroke-width="8" stroke-linecap="round" filter="url(#eye-b3)" />
@@ -198,14 +191,11 @@ const subjectBlock: Record<string, string> = {
         rgba(var(--amb-blue), 0) var(--amb-fade));
   }
 
-
-  /* title and strip share a row; description gets its own full-width line below */
   .lib-top {
     display: grid;
-    /* auto (not 1fr) keeps the strip its own compact width instead of stretching to fill the row */
     grid-template-columns: auto auto;
     justify-content: space-between;
-    align-items: end; /* aligns strip bottom with the description's last line */
+    align-items: end;
     gap: clamp(20px, 3vw, 44px);
     margin-bottom: clamp(16px, 2.2vw, 28px);
   }
@@ -223,14 +213,11 @@ const subjectBlock: Record<string, string> = {
     font-size: 1.0625rem; line-height: 1.55; color: var(--ink-2); max-width: 60ch;
   }
 
-  /* strip is paged by subject: each subject is a full-viewport-width page, track slides one page per click */
   .lib-comb {
     --hex-w: 64px;
     --hex-h: calc(var(--hex-w) * 1.1547);
     --hex-cell: calc(var(--hex-w) + 22px);
-    /* --comb-count is set from the frontmatter data (busiest subject) so no page can spill onto the next */
     --comb-count: 3;
-    /* + 4px for the page's own side padding, which is inside this width */
     --comb-w: calc(var(--comb-count) * var(--hex-cell) + (var(--comb-count) - 1) * 8px + 4px);
     min-width: 0;
   }
@@ -269,8 +256,6 @@ const subjectBlock: Record<string, string> = {
   .lib-comb-arrow:hover { background: var(--line); color: var(--ink); }
   .lib-comb-arrow:disabled { opacity: .35; cursor: default; background: var(--surface-sunken); color: var(--ink-2); }
 
-  /* one dot per subject, its name underneath so the dot is a destination
-     rather than an abstract page marker */
   .lib-comb-dots {
     display: flex;
     justify-content: center;
@@ -323,11 +308,9 @@ const subjectBlock: Record<string, string> = {
     transition: transform 260ms var(--ease-spring), background 160ms linear;
   }
   .hex:hover { z-index: 3; background: var(--surface-sunken); transform: translateY(-3px); }
-  /* a picked cell stays lit whether or not the pointer is still on it */
   .hex.is-active { z-index: 2; background: var(--surface-sunken); transform: translateY(-3px); }
   .hex.is-active:hover { transform: translateY(-4px); }
 
-  /* unmasked, so its drop-shadow filter isn't clipped by .hex-face's mask */
   .hex-shadow {
     display: block;
     width: var(--hex-w);
@@ -369,12 +352,10 @@ const subjectBlock: Record<string, string> = {
     height: auto;
   }
 
-  /* per-asset scale correction: each clay render had different empty canvas around it at source */
   .hex-obj.ic-crust { transform: scale(1.02); }
   .hex-obj.ic-volcano { transform: scale(1.02); }
   .hex-eye { transform: scale(1.13); }
 
-  /* specular highlight stays fixed (on the cornea, not the iris) — if it moved with the pupil it'd read as a sticker */
   .hex-eye .eye-pupil { transform-box: fill-box; transform-origin: 50% 50%; }
   .hex:hover .hex-eye .eye-gaze  { animation: eye-gaze calc(var(--glyph-t) * 1.7) cubic-bezier(.5, 0, .15, 1); }
   .hex:hover .hex-eye .eye-pupil { animation: eye-dilate calc(var(--glyph-t) * 1.7) ease-in-out; }
@@ -433,7 +414,6 @@ const subjectBlock: Record<string, string> = {
   }
   .hex:hover .nm, .hex.is-active .nm { color: var(--ink); }
 
-  /* browsers differ on whether a click counts as "visible focus"; drop the outline on :focus and draw our own on :focus-visible (keyboard only) */
   .hex:focus, .lib-comb-arrow:focus, .lib-comb-dot:focus { outline: none; }
   .hex:focus-visible, .lib-comb-arrow:focus-visible, .lib-comb-dot:focus-visible {
     outline: none;
@@ -448,23 +428,18 @@ const subjectBlock: Record<string, string> = {
     .hex:hover .hex-fx, .hex:hover .hex-fx path { animation: none; }
   }
 
-  /* 900px breakpoint: strip's fixed width (4 cells ~86px + gaps ≈ 372px) plus headline column + gutter needs ~900px; below that it wraps */
   @media (max-width: 900px) {
     .lib-top { grid-template-columns: 1fr; gap: 16px; justify-items: center; }
     .lib-head-l { justify-self: stretch; }
     .lib-comb-row { justify-content: center; }
-    .lib-count .stat-num { font-size: clamp(2.25rem, 1.4rem + 5vw, 3rem); } /* smaller stacked so it doesn't overpower the nav below */
+    .lib-count .stat-num { font-size: clamp(2.25rem, 1.4rem + 5vw, 3rem); }
   }
 
-  /* Below 560px arrows move into the pager row (dots carry subject names and read better on a phone; strip also swipes, see script).
-     Hex width: page holds 4 cells + 3×6px gaps inside a 16px gutter; cell = hexagon + 22px label gutter -> hexagon = 25vw - 39px
-     (extra slack vs. the derived 34.5px accounts for a narrowed desktop window, where 100vw includes an unused scrollbar). */
   @media (max-width: 560px) {
     .lib-comb {
       --hex-w: clamp(40px, calc(25vw - 39px), 64px);
       --comb-w: 100%;
       width: 100%;
-      /* display:contents lets one DOM order serve both layouts — arrows sit beside dots here, beside the strip on desktop */
       display: grid;
       grid-template-columns: auto minmax(0, 1fr) auto;
       grid-template-areas:
@@ -493,19 +468,14 @@ const subjectBlock: Record<string, string> = {
       font-size: clamp(.625rem, 2.9vw, .75rem);
       white-space: nowrap;
     }
-    /* arrows align to the dots' optical baseline (dot-over-word sits higher than row center), not the row's own center */
     .lib-comb-arrow { align-self: center; margin-top: 12px; }
   }
 </style>
 
 <script>
-  // click a cell -> dispatch mv:select with model/name/label/icon; the panel decides what to render (incl. "no model yet")
   const cells = document.querySelectorAll<HTMLButtonElement>('.hex');
   const panel = document.querySelector<HTMLElement>('.mv');
 
-  /* The panel sits a screen below the strip. A pick that leaves the viewer
-     out of view reads as "nothing happened", so the page rolls down to it —
-     unless most of it is already on screen (then a scroll would only jitter). */
   function revealPanel() {
     if (!panel) return;
     const r = panel.getBoundingClientRect();
@@ -533,11 +503,10 @@ const subjectBlock: Record<string, string> = {
   if (panel && cells.length) {
     cells.forEach((btn) => btn.addEventListener('click', () => pickCell(btn)));
 
-    // the panel opens on its first model; the matching cell is lit from the start
     try {
       const firstId = (JSON.parse(panel.dataset.models || '[]') as { id: string }[])[0]?.id;
       cells.forEach((b) => b.classList.toggle('is-active', !!firstId && b.dataset.model === firstId));
-    } catch { /* no models: nothing to light */ }
+    } catch {}
   }
 
   const track = document.querySelector<HTMLElement>('[data-comb-track]');
@@ -561,8 +530,6 @@ const subjectBlock: Record<string, string> = {
       render();
     }
 
-    /* A subject is a destination, not a page marker: picking one opens that
-       subject's first model in the panel and rolls down to it. */
     dots.forEach((d, i) => d.addEventListener('click', () => {
       goTo(i);
       const lead = (track!.children[i] as HTMLElement | undefined)?.querySelector<HTMLButtonElement>('.hex');
@@ -571,7 +538,6 @@ const subjectBlock: Record<string, string> = {
     prevBtn?.addEventListener('click', () => goTo(page - 1));
     nextBtn?.addEventListener('click', () => goTo(page + 1));
 
-    // track is transform-driven (not a native scroller), so swipe is manual: 42px horizontal drag pages; a mostly-vertical drag is left alone so page scroll isn't eaten
     let x0 = 0;
     let y0 = 0;
     let axis: '' | 'x' | 'y' = '';

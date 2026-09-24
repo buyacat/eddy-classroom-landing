@@ -11,8 +11,6 @@ interface Props {
 
 const { locale, path = '/' } = Astro.props;
 
-/* canonical / og:url / hreflang are emitted only when the deploy domain is
-   known: `SITE_URL=https://… npm run build`. */
 const siteUrl = (import.meta.env.SITE_URL || '').replace(/\/$/, '');
 
 const title = t(locale, 'classroom_meta_title');
@@ -51,19 +49,15 @@ const schema = JSON.stringify({
   }
 }).replace(/</g, '\\u003c');
 ---
-
 <!DOCTYPE html>
 <html lang={locale}>
 <head>
   <meta charset="UTF-8" />
-  <!-- Google Tag Manager (shared Eddy Group container). is:inline keeps Astro
-       from bundling and deferring it, which would lose the first events. -->
   <script is:inline>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
   new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
   j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
   })(window,document,'script','dataLayer','GTM-M9JXZ4RN');</script>
-  <!-- End Google Tag Manager -->
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{title}</title>
   <meta name="description" content={description} />
@@ -105,7 +99,6 @@ const schema = JSON.stringify({
   <script is:inline>document.documentElement.classList.add('js');</script>
 </head>
 <body>
-  <!-- GTM noscript fallback — must stay the first node in <body>. -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M9JXZ4RN"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 

@@ -1,19 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-  <!--
-    "One app for every device" card: laptop, tablet and phone, all three
-    carrying the SAME yellow app tile — that repetition is the card's point.
-
-    Device classes are told apart by silhouette, not scale: landscape
-    wide-bezel tablet, 1:2 portrait phone with a speaker slot and home line,
-    laptop with a keyboard deck. Scale alone does not survive 88px. Thick
-    bezels and small screens keep the object chunky next to the licensed
-    pack, and the cream rim holds the silhouette against #4050FF without
-    costing the height a floor plinth would.
-
-    Baselines read as depth: the laptop is furthest and sits highest, the
-    phone is nearest and sits lowest, each with the faint contact shadow the
-    rest of the set uses.
-  -->
   <defs>
     <linearGradient id="dvBody" x1="0.15" y1="0" x2="0.85" y2="1">
       <stop offset="0%" stop-color="#606B92"/>
@@ -25,12 +10,6 @@
       <stop offset="50%" stop-color="#4A5374"/>
       <stop offset="100%" stop-color="#333B58"/>
     </linearGradient>
-    <!-- Warm, like the cream the rest of the set uses for detail; the old
-         one ran to a cool #CED4E2 and read as a different material. Kept
-         off pure white on purpose: with the plinth gone the screens are the
-         biggest surfaces here, and at #FFFEF8 they made the object read as
-         a pale blob on #4050FF — 38% of its pixels sat at the white point,
-         where the bought objects hold 0–28%. Paper, not backlight. -->
     <linearGradient id="dvScreen" x1="0.1" y1="0" x2="0.9" y2="1">
       <stop offset="0%" stop-color="#F3EFE2"/>
       <stop offset="52%" stop-color="#E4DFCE"/>
@@ -46,7 +25,6 @@
     <filter id="dvb10" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="10"/></filter>
   </defs>
 
-  <!-- tablet: back, landscape, and the one that carries the mark -->
   <g>
     <ellipse cx="141" cy="180" rx="100" ry="10" fill="#0E1330" opacity=".2" filter="url(#dvb10)"/>
     <rect x="34" y="18" width="214" height="162" rx="26" fill="#FFFFFF"/>
@@ -62,8 +40,6 @@
     <path d="M46 30 L236 30 L233 39 L49 39 Z" fill="#FFFFFF" opacity=".24" filter="url(#dvb4)"/>
   </g>
 
-  <!-- Phone: nearest, so lowest. Same body colour as the tablet — silhouette
-       and the white rim tell them apart, not paint. -->
   <g>
     <ellipse cx="47" cy="250" rx="42" ry="10" fill="#0E1330" opacity=".22" filter="url(#dvb10)"/>
     <rect x="8" y="112" width="78" height="140" rx="27" fill="#FFFFFF"/>

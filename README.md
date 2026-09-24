@@ -30,7 +30,13 @@ npm run dev        # http://localhost:5178
 | `npm run check:ambient` | Verifies ambient light pools fade out inside their own band          |
 
 `check:ambient` needs the dev server plus a headless Chrome with remote
-debugging on port 9333; the script header explains the invocation.
+debugging on port 9333:
+
+```bash
+npm run dev
+chrome --headless=new --remote-debugging-port=9333 --user-data-dir=<temp> about:blank
+npm run check:ambient
+```
 
 ## Layout
 
@@ -62,9 +68,8 @@ works both at a domain root and under the GitHub Pages sub-path.
 
 Three visual rules are expensive to keep by eye, so they are scripted instead
 of described: the globe's explode cascade, the ambient light pools, and the
-icon set's material language. Each `check:*` script's header states the rule it
-enforces and the numbers behind it. Run them after touching the globe, the band
-backgrounds, or the icons.
+icon set's material language. Run the `check:*` scripts after touching the
+globe, the band backgrounds, or the icons.
 
 ## Lead form
 
@@ -82,10 +87,7 @@ The API key is read from the `MANDRILL_KEY` environment variable, or from a
 
 ## Conventions
 
-- Comments explain constraints that are not visible in the code — a measured
-  threshold, a browser quirk, a rule the layout depends on. Code that speaks
-  for itself gets none.
-- Code, comments and dev-script output are in English; Ukrainian lives in
+- Code and dev-script output are in English; Ukrainian lives in
   `src/data/uk/` and in user-facing copy only.
 - Components are self-contained: markup, scoped styles and any script in one
   file. Only genuinely shared primitives belong in `style.css`.

@@ -6,7 +6,6 @@ import { withBase } from '../utils/url';
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 
-// Menu targets and the #1F2C2E link ink match the live eddygroup.eu header.
 const links = [
   { href: 'https://trade.eddygroup.eu/', label: 'Trade' },
   { href: 'https://1vision.eddygroup.eu/', label: '1-Vision' },
@@ -23,11 +22,9 @@ const links = [
 ];
 const alt = altPath(locale);
 ---
-
 <header class="gnav" id="nav">
   <div class="gnav-bar">
    <div class="gnav-inner">
-    <!-- Group mark links out to eddygroup.eu; product mark links to #top -->
     <div class="gnav-brand">
       <a href="https://eddygroup.eu/" class="gnav-group" target="_blank" rel="noopener">
         <img class="gnav-eddy" src={withBase('/assets/brand/eddy-black.svg')}
@@ -57,8 +54,6 @@ const alt = altPath(locale);
    </div>
   </div>
 
-  <!-- The stack: three sheet edges fanned out under the bar at rest, closing
-       into one 3px tri-colour line the moment the header sticks. -->
   <div class="gnav-stack" aria-hidden="true">
     <span class="sheet sheet-y"></span>
     <span class="sheet sheet-g"></span>
@@ -66,7 +61,6 @@ const alt = altPath(locale);
   </div>
 </header>
 
-<!-- Full-screen sheet, not a dropdown: CTA + language switch sit at the bottom, in thumb reach -->
 <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true"
      aria-label={t(locale, 'nav_menu_open')}>
   <div class="mm-scroll">
@@ -106,13 +100,12 @@ const alt = altPath(locale);
 </div>
 
 <style>
-  /* Three coloured sheet edges fanned out in 3D under the bar; on scroll they close into one 3px line */
   .gnav {
     position: fixed;
     inset: 0 0 auto;
     z-index: 60;
     perspective: 900px;
-    perspective-origin: 50% 100%; /* vanishing point on the stack line */
+    perspective-origin: 50% 100%;
     transition: filter 200ms var(--ease-out);
   }
   .gnav-bar {
@@ -120,8 +113,6 @@ const alt = altPath(locale);
     transition: box-shadow 220ms var(--ease-out);
   }
   .gnav.is-stuck .gnav-bar { box-shadow: 0 4px 10px rgba(0, 0, 0, .05); }
-
-  /* Bar itself never transforms (avoids distorting its text) — all motion lives in the sheets below */
 
   .gnav-stack {
     position: absolute;
@@ -137,14 +128,12 @@ const alt = altPath(locale);
     border-radius: 0 0 3px 3px;
     clip-path: inset(0 0 0 0);
     will-change: transform, clip-path;
-    /* order matters: the per-state rules below address these four transitions by index */
     transition:
       transform 1050ms var(--ease-glide),
       clip-path 850ms var(--ease-glide),
       opacity 380ms var(--ease-out),
       height 650ms var(--ease-glide);
   }
-  /* scaleX steps the fan predictably at any width; translateZ keeps layers genuinely apart in 3D */
   .sheet-y { background: var(--yellow); z-index: 3; }
   .sheet-g {
     background: var(--green);
@@ -159,11 +148,8 @@ const alt = altPath(locale);
     transition-delay: 120ms;
   }
 
-  /* Closed until page ready, so the stack fans open on load via the transition above (no keyframes) */
   html:not(.is-loaded) .sheet { transform: none; }
 
-  /* Closing: sheets rise into one row, staggered back to front, each clipped to its own third.
-     Synced with the hero's blob fade via html.nav-stuck (see Hero.astro). */
   .gnav.is-stuck .sheet { height: 5px; }
   .gnav.is-stuck .sheet-y {
     clip-path: inset(0 66.67% 0 0);
@@ -182,7 +168,7 @@ const alt = altPath(locale);
 
   .gnav-inner {
     height: var(--nav-h);
-    padding-inline: clamp(16px, 4.6vw, 70px); /* eddygroup.eu's 70px gutter, not a centred column */
+    padding-inline: clamp(16px, 4.6vw, 70px);
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
@@ -190,7 +176,6 @@ const alt = altPath(locale);
   }
 
   .gnav-brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
-  /* min-width: 0 also needed on these flex children (their content-size floor otherwise overflows into the burger) */
   .gnav-group, .gnav-product { display: flex; min-width: 0; }
   .gnav-group img, .gnav-product img { object-fit: contain; object-position: left center; }
   .gnav-eddy { height: 26px; width: auto; display: block; }
@@ -211,8 +196,6 @@ const alt = altPath(locale);
   }
   .gnav-link:hover { color: var(--blue); }
 
-  /* flex: none — the actions column is the one that must never be squeezed:
-     it holds the only two controls in the bar. */
   .gnav-actions { display: flex; flex: none; align-items: center; justify-content: flex-end; gap: 8px; }
 
   .gnav-lang {
@@ -230,8 +213,6 @@ const alt = altPath(locale);
   }
   .gnav-lang:hover { border-color: var(--ink); background: var(--ink); color: #fff; }
 
-  /* place-content (not place-items) — place-items only sets align-items, leaving rows to stretch
-     and the bars misaligned, so the open state crossed off-centre and drew a chevron instead of an X. */
   .gnav-burger {
     display: none;
     width: 44px; height: 36px;
@@ -264,7 +245,7 @@ const alt = altPath(locale);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    clip-path: inset(0 0 100% 0); /* wipes up from under the bar rather than fading in place */
+    clip-path: inset(0 0 100% 0);
     transition:
       clip-path 420ms var(--ease-glide),
       opacity 200ms var(--ease-out),
@@ -283,7 +264,6 @@ const alt = altPath(locale);
 
   .mm-scroll {
     height: 100%;
-    /* content is centred to a max measure, not full-bleed like the sheet itself */
     width: 100%;
     max-width: 620px;
     margin-inline: auto;
@@ -341,7 +321,6 @@ const alt = altPath(locale);
   .mm-link:active .mm-arrow { color: var(--blue); transform: translateX(4px); }
   .mm-link:active .mm-idx { color: var(--blue); }
 
-  /* ---- the foot: what a thumb can reach ---- */
   .mm-foot { margin-top: auto; padding-top: clamp(22px, 6vw, 34px); }
   .mm-cta { width: 100%; justify-content: center; }
 
@@ -360,7 +339,6 @@ const alt = altPath(locale);
     text-transform: uppercase;
     color: var(--ink-4);
   }
-  /* bold half = current locale, plain half = the tap target */
   .mm-lang {
     display: inline-flex;
     align-items: center;
@@ -391,7 +369,6 @@ const alt = altPath(locale);
   }
   .mm-contacts a:active { color: var(--blue); }
 
-  /* rows stagger in top-to-bottom via --i */
   .mobile-menu .mm-link,
   .mobile-menu .mm-foot { opacity: 0; transform: translateY(14px); }
   .mobile-menu.open .mm-link,
@@ -413,8 +390,6 @@ const alt = altPath(locale);
   }
 
   @media (max-width: 1180px) {
-    /* a tablet on its side still shows the full menu, and 30px links are
-       a mouse target, not a finger's — the bar has 68px, use it */
     .gnav-link { padding: 8px 10px; font-size: .875rem; }
     .gnav-lang { height: 40px; }
   }
@@ -422,11 +397,7 @@ const alt = altPath(locale);
     .gnav-inner { grid-template-columns: minmax(0, 1fr) auto; }
     .gnav-links { display: none; }
     .gnav-burger { display: grid; }
-    /* the sheet covers the page but never the bar: the brand stays put and
-       the burger stays where the thumb last touched it, now as the close */
     .gnav { z-index: 60; }
-    /* the two controls left in the bar are now tapped, not clicked —
-       36px was under the 40px a thumb needs */
     .gnav-lang, .gnav-burger { height: 40px; }
   }
   @media (max-width: 620px) {
@@ -435,7 +406,6 @@ const alt = altPath(locale);
     .gnav-mark { height: 21px; }
     .gnav-vline { height: 19px; }
   }
-  /* below 430px the global img{max-width:100%} would otherwise squash the group mark instead of shrinking height */
   @media (max-width: 430px) {
     .gnav-inner { gap: 12px; }
     .gnav-brand { gap: 8px; }
@@ -443,7 +413,6 @@ const alt = altPath(locale);
     .gnav-mark { height: 18px; }
     .gnav-vline { height: 16px; }
   }
-  /* below 340px the product mark is dropped; group mark stays */
   @media (max-width: 340px) {
     .gnav-vline, .gnav-product { display: none; }
   }

@@ -1,11 +1,5 @@
 ---
-/*
- * .wh-seg (the eight wedges) rotates; .wh-pin (the flapper) does not — it only flicks via wh-flick.
- * wh-spin and wh-flick share keyframe percentages (22.5 + 45k degrees, one per wedge edge) so the
- * flick reads as caused by the passing wedge. Two full turns so it rests where it started.
- */
 ---
-
 <svg class="obj is-inline wh" viewBox="0 0 256 256" width="256" height="256"
      aria-hidden="true" focusable="false">
   <defs>
@@ -31,10 +25,8 @@
   </defs>
 
   <g transform="translate(-18.55 -15.46) scale(1.145)">
-    <!-- rim: static, so its gradient keeps facing the same light -->
     <circle cx="128" cy="140" r="92" fill="url(#whRim)"/>
 
-    <!-- the wedges, and only the wedges, turn -->
     <g class="wh-seg">
       <path d="M128 140 L96.62 64.24 A82 82 0 0 1 159.38 64.24 Z" fill="#4050FF"/>
       <path d="M128 140 L159.38 64.24 A82 82 0 0 1 203.76 108.62 Z" fill="#FFF7E2"/>
@@ -46,7 +38,6 @@
       <path d="M128 140 L52.24 108.62 A82 82 0 0 1 96.62 64.24 Z" fill="#F7DE52"/>
     </g>
 
-    <!-- one light source over the whole disc, rim included -->
     <g clip-path="url(#whDisc)">
       <ellipse cx="84" cy="90" rx="60" ry="42" transform="rotate(-28 84 90)" fill="#FFFFFF" opacity=".4" filter="url(#whb16)"/>
       <path d="M56.7 90.1 A87 87 0 0 1 105.5 55.9" fill="none" stroke="#FFFFFF" stroke-opacity=".9" stroke-width="9" stroke-linecap="round" filter="url(#whb4)"/>
@@ -55,12 +46,10 @@
       <circle cx="128" cy="140" r="88" fill="none" stroke="#FFFFFF" stroke-opacity=".7" stroke-width="5" filter="url(#whb4)"/>
     </g>
 
-    <!-- hub: it hides the eight wedge tips, which always converge into mush -->
     <circle cx="128" cy="140" r="19" fill="url(#whHub)"/>
     <circle cx="128" cy="140" r="8.5" fill="#4050FF"/>
     <ellipse cx="121" cy="132" rx="6.5" ry="4" transform="rotate(-32 121 132)" fill="#FFFFFF" opacity=".95"/>
 
-    <!-- flapper: hinged at its wide end, so the knock swings the tip -->
     <g class="wh-pin">
       <path d="M128 68 L107 34 Q128 17 149 34 Z" fill="#0B0E1A" opacity=".3" filter="url(#whb10)"/>
       <path d="M128 66 L107 32 Q128 15 149 32 Z" fill="url(#whPin)"/>
@@ -70,14 +59,10 @@
 </svg>
 
 <style>
-  /* the global .obj{width:var(--obj,88px)} rule (style.css) doesn't reach this inline <svg>;
-     state the real size here to match the 52px every other tool icon gets */
   .wh { display: block; width: 52px; height: 52px; }
   .wh-seg { transform-origin: 128px 140px; }
-  /* hinge at the wide end of the flapper, not at its tip */
   .wh-pin { transform-origin: 128px 22px; }
 
-  /* `:global` because the tile that owns the hover lives in Platform.astro */
   :global(.plat-tool.is-wheel:hover) .wh-seg {
     animation: wh-spin 2s linear both;
   }
@@ -85,8 +70,6 @@
     animation: wh-flick 2s linear both;
   }
 
-  /* the shared .card:hover .obj rule (style.css) doesn't reach this inline <svg> either;
-     give it the same straight-up hover lift explicitly, at higher specificity */
   :global(.plat-card:hover .plat-tool) .wh {
     transform: translateY(-3px);
   }

@@ -13,7 +13,6 @@ const items = tArray<{ icon: string; title: string; text: string; shot_alt?: str
   'classroom_platform_items'
 );
 
-// Windows are drawn stand-ins, not real screenshots (see PlatformMock.astro).
 const shots: Record<string, { url: string }> = {
   web: { url: 'classroom.eddygroup.eu/class' },
   student: { url: 'classroom.eddygroup.eu/my' },
@@ -21,24 +20,19 @@ const shots: Record<string, { url: string }> = {
   panel: { url: 'classroom.eddygroup.eu/board' }
 };
 
-// No hanging 3D objects on this band (see WhyUs for that treatment); only the games card keeps icons, as labeled content.
-
 const blocks: Record<string, string> = {
   student: 'is-yellow',
   virtual: 'is-blue'
 };
 
-// games/virtual show a product state instead of a screen crop (in-lesson tools; live roster).
 const half = new Set(['games', 'virtual']);
 
-// Wheel icon is custom-drawn (src/assets/icon-src/wheel.svg); clock/megaphone are from the icon pack.
 const tools = [
   { key: 'wheel', title: t(locale, 'classroom_hero_wheel_title'), tint: 'is-yellow' },
   { key: 'clock', title: t(locale, 'classroom_hero_timer_title'), tint: 'is-blue' },
   { key: 'megaphone', title: t(locale, 'classroom_hero_noise_title'), tint: 'is-green' }
 ];
 
-// same four students as the teacher's cabinet and the live session — one class across every mock
 const rosterTints = [
   { bg: 'var(--blue)', fg: '#fff' },
   { bg: 'var(--yellow)', fg: '#000' },
@@ -48,7 +42,6 @@ const rosterTints = [
 const mockStudents = (getLocaleData(locale).classroom_platform_mock as { students: { ini: string }[] }).students;
 const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTints[i] }));
 ---
-
 <section class="band platform" id="platform">
   <div class="wrap">
     <div class="band-head reveal">
@@ -124,7 +117,6 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
       })}
     </div>
 
-    {/* Phone pager: only visible below 760px, where the grid becomes a swipe strip */}
     <div class="plat-dots" data-plat-dots>
       {items.map((it, i) => (
         <button class="plat-dot" type="button" data-plat-dot={i} aria-label={it.title}></button>
@@ -134,25 +126,19 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
 </section>
 
 <style>
-  /* see WhyUs — the band is transparent so the ambient plane shows through */
   .platform::before {
     background:
-      /* blue: top-right, echoes the product's own colour */
       radial-gradient(var(--amb-r-xl) calc(var(--amb-r-xl) * .58) at 98% 22%,
         rgba(var(--amb-blue), var(--amb-2)) 0%,
         rgba(var(--amb-blue), 0) var(--amb-fade)),
-      /* yellow: bottom-left, under the colour-block cards */
       radial-gradient(var(--amb-r-md) calc(var(--amb-r-md) * .62) at 2% 82%,
         rgba(var(--amb-yellow), var(--amb-2)) 0%,
         rgba(var(--amb-yellow), 0) var(--amb-fade)),
-      /* green: wide and weak through the middle, fills the long band's bare centre column */
       radial-gradient(var(--amb-r-xl) calc(var(--amb-r-xl) * .44) at 46% 56%,
         rgba(var(--amb-green), var(--amb-1)) 0%,
         rgba(var(--amb-green), 0) var(--amb-fade));
   }
 
-  /* wider gutter than the shared --gap-card: cards here hold a framed screenshot, which needs more air.
-     Two columns, six cards, one type tier: every card is a product screen or state, none ranks above another. */
   .plat-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -160,7 +146,6 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
     margin-top: clamp(40px, 3.6vw, 56px);
   }
 
-  /* extends .card (style.css); padding moves to .plat-body so the browser window below runs edge to edge */
   .plat-card {
     display: flex;
     flex-direction: column;
@@ -171,11 +156,9 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
   .plat-card h3 { font-size: clamp(1.25rem, 1.05rem + .55vw, 1.625rem); }
   .plat-card p { font-size: .9375rem; max-width: 46ch; }
 
-  /* the one blue card carries the page's only coloured shadow at rest */
   .plat-card.is-blue { box-shadow: var(--e-blue); }
   .plat-card.is-blue:hover { box-shadow: 0 18px 40px -14px rgba(64, 80, 255, .6); }
 
-  /* one fixed window height across every card (wide included) so all five screens read as one product */
   .plat-win {
     --win-inset: clamp(18px, 1.7vw, 28px);
     margin: auto var(--win-inset) var(--win-inset);
@@ -214,7 +197,6 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
     white-space: nowrap;
     overflow: hidden;
   }
-  /* one window height for all four screens so they read as one product; ~2.5:1, never a square */
   .win-view {
     display: block;
     height: clamp(176px, 14vw, 204px);
@@ -222,11 +204,9 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
     background: #fff;
   }
 
-  /* ---- half cards: the two that show a product state instead of a crop ---- */
   .plat-card.is-half .plat-body { flex: 1; }
   .plat-card.is-half p { max-width: 44ch; }
 
-  /* each tool tinted separately; the label is what makes this read as UI, not just icons */
   .plat-tools {
     list-style: none;
     margin: 0;
@@ -253,7 +233,6 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
   .plat-tool.is-blue { background: var(--blue-soft); }
   .plat-tool.is-green { background: var(--green-soft); }
 
-  /* card hover lifts all three tools ("pressable"); each tool's own animation only plays on its own hover */
   .plat-tool {
     transition: transform var(--t-hover) var(--ease-out),
                 box-shadow var(--t-hover) var(--ease-out);
@@ -270,19 +249,12 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
   .plat-tool .obj {
     width: 52px;
     height: 52px;
-    /* the wheel is an inline <svg> now, so it needs the box stated twice */
     flex: none;
     filter: drop-shadow(0 8px 10px rgba(0, 0, 0, .14));
     transition: transform var(--t-card) var(--ease-spring);
   }
-  /* the card-level hover lifts all three objects together — the shared
-     "these are pressable" cue — while the specific animation below still
-     only fires on the one tile actually under the pointer */
   .plat-card:hover .plat-tool .obj { transform: translateY(-3px); }
 
-  /* wheel spin animation lives in WheelIcon.astro (only the wedges turn) */
-
-  /* tremble kept small/fast (2.5deg, 14Hz) so it reads as a buzz, not a pendulum swing */
   @keyframes tool-tremble {
     0%, 100% { transform: translate(0, -3px) rotate(0deg); }
     20%      { transform: translate(-.8px, -3px) rotate(-2.5deg); }
@@ -290,13 +262,11 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
     60%      { transform: translate(-.7px, -2.8px) rotate(-2deg); }
     80%      { transform: translate(.7px, -3.2px) rotate(1.8deg); }
   }
-  /* two 4.5-cycle rings (~0.5s each) with a ~0.15s pause between, instead of one continuous shake */
   .plat-card .plat-tool.is-clock:hover .obj {
     animation: tool-tremble .11s linear 4.5,
                tool-tremble .11s linear 4.5 .65s;
   }
 
-  /* positioned off the bells (not the clock centre) so the arcs read as leaving the bell */
   .plat-tool.is-clock .buzz {
     position: absolute;
     top: -5px;
@@ -322,7 +292,6 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
     35%  { opacity: 1; scale: 1; }
     100% { opacity: 0; scale: 1.25; }
   }
-  /* timed to the same two-ring shape as the tremble above (second pair at .65s) */
   .plat-tool.is-clock:hover .buzz-l {
     animation: tool-buzz .4s ease-out,
                tool-buzz .4s ease-out .65s;
@@ -332,13 +301,10 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
                tool-buzz .4s ease-out .85s;
   }
 
-  /* noise meter: arcs leaving the horn. Two of them, half a beat apart, so
-     it reads as sound coming out rather than one ring pulsing. */
   .plat-tool.is-megaphone .tool-ic::before,
   .plat-tool.is-megaphone .tool-ic::after {
     content: '';
     position: absolute;
-    /* tipped to match the horn's opening (up-right); square to the tile it reads as a loading spinner */
     top: 34%;
     right: -9px;
     width: 20px;
@@ -366,8 +332,6 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
     .plat-tool.is-megaphone:hover .tool-ic::after { animation: none; opacity: 0; }
   }
 
-  /* a roster with a LIVE chip: the hero's badge grammar, sitting inside the
-     blue card as a white panel */
   .plat-roster {
     margin: 0 var(--pad-card) var(--pad-card);
     padding: 12px 14px 12px 12px;
@@ -393,22 +357,14 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
   .plat-roster .t1 { font-family: var(--font-display); font-weight: 800; font-size: 13.5px; color: var(--ink); }
   .plat-roster .t2 { font-size: 11.5px; font-weight: 600; color: var(--ink-3); white-space: nowrap; }
   .plat-roster .t2 b { color: var(--ink); font-variant-numeric: tabular-nums; }
-  /* the LIVE pill itself is the shared `.shot-live` from style.css; the
-     roster only pins it to the right and gives it a pixel more height */
   .plat-roster .shot-live { margin-left: auto; flex: none; padding-block: 4px; }
 
   @media (max-width: 1000px) {
     .plat-card h3 { font-size: clamp(1.125rem, 1rem + .5vw, 1.375rem); }
-    /* the half card is ~346px here and the roster's avatars and LIVE pill
-       leave the text 95px — "4 дистанційно · 22 на зв'язку" on one line
-       was cut off after the 22 */
     .plat-roster .t2 { white-space: normal; }
   }
-  /* the pager is a phone control; above 760px the grid is a grid */
   .plat-dots { display: none; }
 
-  /* ---- phones: swipe strip (scroll-snap) instead of stacked full-width cards ----
-     Negative margin + matching padding bleeds the strip to both viewport edges so the next card peeks in. */
   @media (max-width: 760px) {
     .plat-grid {
       display: flex;
@@ -429,7 +385,6 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
       flex: 0 0 min(86%, 360px);
       scroll-snap-align: start;
     }
-    /* disable .reveal's transform here: an off-screen card stuck 20px low would wobble the strip's height */
     .plat-grid .reveal { transform: none; }
     .win-view { height: 168px; }
     .plat-tool { padding: 12px 6px 10px; font-size: .75rem; }
@@ -444,7 +399,6 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
       gap: 10px;
       margin-top: 4px;
     }
-    /* 26px tap target around a 7px visible dot */
     .plat-dot {
       width: 26px; height: 26px;
       border: 0;
@@ -468,8 +422,6 @@ const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTi
 </style>
 
 <script>
-  // Syncs the pager dots with the scroll-snap carousel below 760px (no-op on desktop).
-  // Active card = nearest to strip centre, not computed from card width (cards are min(86%, 360px), variable per phone).
   const strip = document.querySelector<HTMLElement>('.plat-grid');
   const dots = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-plat-dot]'));
   const cards = strip ? Array.from(strip.children) as HTMLElement[] : [];

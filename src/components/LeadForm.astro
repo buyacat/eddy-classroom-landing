@@ -19,7 +19,6 @@ const commentField = by('comment');
 const roleOptions = tArray<{ value: string; label: string }>(locale, 'classroom_form_role_options');
 const stats = tArray<{ text: string; offline?: boolean }>(locale, 'classroom_stats');
 ---
-
 <section class="cta-band" id="demo">
   <div class="wrap">
     <div class="cta">
@@ -44,7 +43,6 @@ const stats = tArray<{ text: string; offline?: boolean }>(locale, 'classroom_sta
           >
             <h3>{t(locale, 'classroom_form_title')}</h3>
 
-            {/* honeypot — real users never fill this (see public/send.php) */}
             <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"
                    style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" />
 
@@ -105,16 +103,11 @@ const stats = tArray<{ text: string; offline?: boolean }>(locale, 'classroom_sta
 </section>
 
 <style>
-  /* `position: relative` gives the pool below a containing block; the
-     background is gone so the ambient plane shows through. */
   .cta-band {
     position: relative;
-    /* the footer has no padding of its own on top, so the bottom side carries the whole gap */
     padding-block: calc(var(--gap-block) / 2) var(--gap-block);
   }
 
-  /* -14% bottom overhang bridges the grey gap to the footer's ink block; only safe because
-     the footer follows — an overhang on the actual last section would grow the scrollable area */
   .cta-band::before {
     inset: -30% 0 -14%;
     background: radial-gradient(var(--amb-r-xl) calc(var(--amb-r-xl) * .62) at 50% 50%,
@@ -123,8 +116,6 @@ const stats = tArray<{ text: string; offline?: boolean }>(locale, 'classroom_sta
       rgba(var(--amb-blue), 0) var(--amb-fade));
   }
 
-  /* One giant rounded blue block on the canvas — the mock builds its
-     hierarchy out of shapes like this, not out of full-bleed bands. */
   .cta {
     position: relative;
     background: var(--blue);
@@ -156,7 +147,6 @@ const stats = tArray<{ text: string; offline?: boolean }>(locale, 'classroom_sta
 
   @media (max-width: 900px) {
     .cta-grid { grid-template-columns: 1fr; }
-    /* form first on mobile — the ask is the point of the section */
     .cta-copy { order: 2; }
     .form-card { order: 1; }
   }

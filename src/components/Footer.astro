@@ -6,27 +6,19 @@ import { withBase } from '../utils/url';
 interface Props { locale: Locale }
 const { locale } = Astro.props;
 
-/* Contact block is the Eddy Group HQ one used verbatim on the sibling
-   Eddy sites — not invented here. */
 const email = t(locale, 'footer_email');
 const phone = t(locale, 'footer_phone');
 const phoneHref = 'tel:' + phone.replace(/\s/g, '');
 
-/* Cross-brand "family" row — same pattern as the sibling Eddy sites
-   (e.g. drstem.eu): a row of links out to the rest of the group. */
 const familyLinks = tArray<{ label: string; url: string }>(locale, 'footer_family_links');
 
-/* entries with an empty `url` in site.json render as plain text instead of a link;
-   fill in the URL there and it becomes a link, no code change needed. */
 const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_links');
 ---
-
 <footer class="footer" itemscope itemtype="https://schema.org/Organization">
   <div class="wrap">
     <div class="footer-inner">
       <div class="footer-top">
         <div class="footer-brand">
-          <!-- the header's lockup, in its white cut for the dark footer -->
           <span class="footer-lockup">
             <a href="https://eddygroup.eu/" target="_blank" rel="noopener">
               <img class="f-eddy" src={withBase('/assets/brand/eddy-white.svg')}
@@ -91,8 +83,6 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
 
       <div class="footer-bottom">
         <div class="cp">{t(locale, 'footer_copyright')}</div>
-        {/* the hero's dino, standing under the social icons and looking back at the page;
-            press it and it hops, then drops out of the footer and pops back up a moment later */}
         <div class="dino-spot">
           <button class="dino" type="button" aria-label={t(locale, 'footer_dino_label')} data-dino>
             <img class="dino-img" src={withBase('/assets/icons/dino.png')}
@@ -105,14 +95,9 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
 </footer>
 
 <style>
-  /* no pool of its own — light here comes from the CTA band's overhang above;
-     anchoring one here would overhang the page's last section */
   .footer { padding-bottom: clamp(16px, 2vw, 28px); }
-  /* the footer is a rounded black block on the canvas, matching the
-     wordmark's tag and the library's fourth colour */
   .footer-inner {
     background-color: var(--ink-block);
-    /* --violet is used only here on the site, layered over the flat black fill, not replacing it */
     background-image:
       radial-gradient(130% 100% at 8% 0%,
         rgba(var(--amb-violet), .34) 0%,
@@ -138,7 +123,6 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
     padding-bottom: 34px;
   }
   .footer-brand p { margin-top: 18px; font-size: .875rem; line-height: 1.55; max-width: 42ch; }
-  /* a footer entry that has no destination yet: stated, not linked */
   .fcol .soon { opacity: .7; }
 
   .fcol { display: flex; flex-direction: column; gap: 10px; }
@@ -154,8 +138,6 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
   .fcol a, .fcol span { font-size: .875rem; line-height: 1.5; font-weight: 500; transition: color var(--t-hover) var(--ease-out); }
   .fcol a:hover { color: #fff; }
 
-  /* family row — cross-links to the rest of the Eddy Group sites,
-     same pattern as the sibling landings (e.g. drstem.eu) */
   .footer-family {
     display: flex;
     align-items: center;
@@ -201,8 +183,6 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
     .footer-top { grid-template-columns: 1fr 1fr 1fr; }
   }
   @media (max-width: 1024px) {
-    /* padding + negative margin grows tap targets to ~41px without changing layout height;
-       1024 breakpoint covers tablets held sideways */
     .fcol a, .fl a { padding-block: 10px; margin-block: -10px; }
     .soc a { width: 42px; height: 42px; }
   }
@@ -211,14 +191,10 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
     .footer-brand { grid-column: span 1; }
     .footer-family { flex-direction: column; align-items: flex-start; }
   }
-  /* ---- the dino: stands under the social icons, facing left; press = hop and fall ---- */
-  /* clip, not hidden: the falling dino vanishes at the footer's rounded edge without
-     turning the footer into a scroll container */
   .footer-inner { overflow: clip; }
   .dino-spot {
     --dino: 46px;
     position: absolute;
-    /* centred under the two 38px social buttons (gap 10px) */
     right: calc(43px - var(--dino) / 2);
     bottom: 0;
   }
@@ -231,7 +207,6 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
     background: none;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
-    /* the PNG faces right; the page is to the left */
     transform: scaleX(-1);
   }
   .dino:focus { outline: none; }
@@ -249,14 +224,12 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
     0%, 100% { scale: 1 1; }
     50%      { scale: 1.03 .97; }
   }
-  /* squash, hop up, then drop past the footer's bottom edge (clipped there) */
   @keyframes dino-fall {
     0%   { transform: none; animation-timing-function: ease-out; }
     12%  { transform: scale(1.1, .86); animation-timing-function: ease-out; }
     40%  { transform: translateY(-34px) rotate(-10deg); animation-timing-function: cubic-bezier(.5, 0, .9, .4); }
     100% { transform: translateY(160px) rotate(-60deg); }
   }
-  /* back up from below with a small overshoot */
   @keyframes dino-back {
     0%   { transform: translateY(70px); }
     70%  { transform: translateY(-6px); }
@@ -266,7 +239,6 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
   .dino.is-back .dino-img { animation: dino-back .5s var(--ease-out, ease-out); }
 
   @media (max-width: 760px) {
-    /* the social buttons sit left on phones; the dino keeps the empty right corner */
     .dino-spot { --dino: 40px; right: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -276,7 +248,6 @@ const docsLinks = tArray<{ label: string; url: string }>(locale, 'footer_docs_li
 </style>
 
 <script>
-  // Press: hop, drop out of the footer, reappear from below after a pause.
   const dino = document.querySelector<HTMLButtonElement>('[data-dino]');
   if (dino && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
     let busy = false;

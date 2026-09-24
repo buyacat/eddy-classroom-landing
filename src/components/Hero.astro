@@ -10,14 +10,12 @@ const { locale } = Astro.props;
 
 const stats = tArray<{ text: string; offline?: boolean }>(locale, 'classroom_stats');
 
-// Rocket/dino icons are custom-drawn (src/assets/icon-src/); galaxy is a live component (see Galaxy.astro).
 const tools = [
   { key: 'rocket', title: t(locale, 'classroom_hero_space_title'), cls: 'tool-a' },
   { key: 'dino', title: t(locale, 'classroom_hero_dino_title'), cls: 'tool-b' },
   { key: 'galaxy', title: t(locale, 'classroom_hero_galaxy_title'), cls: 'tool-c' }
 ];
 ---
-
 <section class="hero" id="top">
   <span class="blob blob-y" aria-hidden="true"></span>
   <span class="blob blob-g" aria-hidden="true"></span>
@@ -47,14 +45,12 @@ const tools = [
           <i></i><i></i><i></i>
           <span class="shot-meta">
             <span class="shot-ttl">{t(locale, 'classroom_hero_panel_title')}</span>
-            {/* Not the shared .shot-live pill (green pulsing dot = live session) */}
             <span class="shot-kind">{t(locale, 'classroom_hero_panel_tag')}</span>
           </span>
         </figcaption>
         <EarthGlobe locale={locale} />
       </figure>
 
-      {/* Same geometry as --hex-mask: polygon at 78% width, stroke 22%; removed wedge is a 60° sector */}
       <div class="badge badge-model enter" style="--d:420ms">
         <span class="badge-mark" aria-hidden="true">
           <svg viewBox="0 0 32 36.95" width="29.4" height="34" focusable="false">
@@ -62,7 +58,6 @@ const tools = [
             <polygon class="m2" points="16,8.39 24.74,13.43 24.74,23.52 16,28.56 7.26,23.52 7.26,13.43" stroke-width="4.93" />
             <polygon class="m3" points="16,11.99 21.62,15.23 21.62,21.72 16,24.96 10.38,21.72 10.38,15.23" stroke-width="3.17" />
             <polygon class="m4" points="16,15.59 18.5,17.03 18.5,19.92 16,21.36 13.5,19.92 13.5,17.03" stroke-width="1.41" />
-            {/* wedge overshoots the outer ring so the cut clears the rounded corner too */}
             <path class="m0" d="M16 18.475 L16 1.18 L30.98 9.83 Z" />
           </svg>
         </span>
@@ -72,8 +67,6 @@ const tools = [
         </span>
       </div>
 
-      {/* No loading="lazy": these are always in the first viewport */}
-      {/* Two elements per badge: mask clips the shape (inner), shadow lives on the outer element */}
       {tools.map((tool, i) => (
         <div class={`badge badge-tool ${tool.cls} enter`} style={`--d:${500 + i * 80}ms`} title={tool.title}>
           <span class="tool-face">
@@ -90,23 +83,19 @@ const tools = [
 <style>
   .hero {
     position: relative;
-    /* bottom is half the block gap; the next band's top half completes it (see .band) */
     padding: calc(var(--nav-h) + clamp(32px, 5vw, 72px)) 0 calc(var(--gap-block) / 2);
-    /* overflow-x: clip (not hidden) — clips only the X axis so the Y-bleeding blobs aren't affected */
     overflow-x: clip;
   }
 
-  /* Same 3 brand colors as the header sheets; green/blue fade out in sync with html.nav-stuck (app.js) */
   .blob {
     position: absolute;
-    z-index: -1; /* shares the page-wide ambient plane with other bands (style.css) */
+    z-index: -1;
     border-radius: 50%;
     pointer-events: none;
     transition:
       opacity 620ms var(--ease-out),
       transform 760ms var(--ease-out);
   }
-  /* Offsets are calc'd off each pool's own size (not hero height) so they don't drift between UK/EN copy lengths */
   .blob-y {
     --h: min(68vw, 1020px);
     width: var(--h); height: calc(var(--h) * .82);
@@ -142,11 +131,8 @@ const tools = [
     transition-delay: 120ms;
   }
 
-  /* load: the light comes up with the same stagger as the stack fanning open */
   html.js:not(.is-loaded) .blob { opacity: 0; transform: scale(.9); }
 
-  /* stuck: green and blue leave — drifting the way their sheets do — and the
-     yellow that remains opens out a little to take the room */
   html.nav-stuck .blob-g { opacity: 0; transform: translateX(7vw) scale(.94); transition-delay: 110ms; }
   html.nav-stuck .blob-b { opacity: 0; transform: translateX(7vw) scale(.94); transition-delay: 0ms; }
   html.nav-stuck .blob-y { transform: scale(1.07); }
@@ -170,7 +156,6 @@ const tools = [
   .hero-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
   .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
 
-  /* min-width: 0 lets the title shrink/ellipsis instead of overflowing the 42px chrome strip; pill keeps full width */
   .shot-bar .shot-meta { min-width: 0; }
   .shot-bar .shot-ttl {
     min-width: 0;
@@ -179,7 +164,6 @@ const tools = [
     text-overflow: ellipsis;
   }
 
-  /* Same pill geometry as .shot-live, deliberately not the same color (green pulse = live) */
   .shot-kind {
     flex: none;
     white-space: nowrap;
@@ -194,7 +178,6 @@ const tools = [
     letter-spacing: .05em;
   }
 
-  /* ---- stage ---- */
   .hero-stage { position: relative; }
   .badge {
     position: absolute;
@@ -212,8 +195,6 @@ const tools = [
     gap: 11px;
   }
   .badge-mark { display: block; flex: none; line-height: 0; }
-  /* every ring strokes itself: the stroke IS the corner rounding, so it has
-     to carry the ring's own colour rather than sit on top of it */
   .badge-mark polygon { stroke: inherit; stroke-linejoin: round; }
   .badge-mark .m1 { fill: var(--blue); stroke: var(--blue); }
   .badge-mark .m2 { fill: var(--yellow); stroke: var(--yellow); }
@@ -224,7 +205,6 @@ const tools = [
   .badge-model .t1 { font-family: var(--font-display); font-weight: 800; font-size: 13.5px; color: var(--ink); }
   .badge-model .t2 { font-size: 11.5px; font-weight: 600; color: var(--ink-3); font-variant-numeric: tabular-nums; }
 
-  /* No shared .badge plate: white surface/rounding come from the mask, so shadow must be drop-shadow, not box-shadow */
   .badge-tool {
     width: 74px;
     height: calc(74px * var(--hex-ratio));
@@ -248,22 +228,18 @@ const tools = [
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
   }
-  /* sized under the hexagon's full width so it doesn't clip the top corners */
   .badge-tool .obj { width: 50px; height: 50px; }
-  /* :global needed to size the Galaxy component's own root element */
   .badge-tool :global(.gx) { width: 50px; height: 50px; }
   .tool-a { top: 70px; }
   .tool-b { top: 250px; }
   .tool-c { top: 430px; }
 
-  /* ambient bob — deliberately non-harmonic periods so they never sync */
   .badge-model { animation: bob 5.2s var(--ease-in-out) infinite; }
   .tool-a { animation: bob 6.1s var(--ease-in-out) infinite; }
   .tool-b { animation: bob 7s var(--ease-in-out) infinite; }
   .tool-c { animation: bob 6.6s var(--ease-in-out) infinite; }
   @keyframes bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -5px; } }
 
-  /* ---- entrance ---- */
   :global(.js) .enter { opacity: 0; transform: translateY(18px); }
   :global(.is-loaded) .enter {
     opacity: 1;
@@ -276,7 +252,6 @@ const tools = [
     transition: opacity 520ms var(--ease-out) var(--d), transform 520ms var(--ease-spring) var(--d);
   }
 
-  /* .hero-copy: display: contents lets children be reordered as flex items directly (no duplicate markup) */
   @media (max-width: 1080px) {
     .hero-grid {
       display: flex;
@@ -295,7 +270,6 @@ const tools = [
     .badge-tool { right: -10px; }
   }
   @media (max-width: 700px) {
-    /* the chip row carries 20px of its own air below on phones; take it back so this gap matches the rest */
     .hero { padding-bottom: calc(var(--gap-block) / 2 - 20px); }
     .badge-model { top: 4%; left: -2%; padding: 8px 12px 8px 9px; }
     .badge-model .t1 { font-size: 12px; }

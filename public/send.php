@@ -1,28 +1,16 @@
 <?php
 declare(strict_types=1);
 
-/**
- * Lead form endpoint for the Eddy Classroom landing.
- *
- * Delivers through the Mandrill HTTP API over curl, so the host needs no MTA.
- * Guards: POST only, body size cap, honeypot, per-IP rate limit, field
- * validation and header-injection stripping. The API key is read from the
- * environment or from a file kept outside the webroot — never from git.
- *
- * Responds with {"ok":true} or {"ok":false,"error":"<code>"}.
- */
-
 header('Content-Type: application/json; charset=UTF-8');
 header('X-Content-Type-Options: nosniff');
 
 const TO_EMAIL    = 'office@llcise.com';
-const FROM_EMAIL  = 'no-reply@eddy.org.ua';   // must be a domain verified in Mandrill
+const FROM_EMAIL  = 'no-reply@eddy.org.ua';
 const FROM_NAME   = 'Eddy Classroom';
 const SUBJECT     = 'Нова заявка — Eddy Classroom';
-const MAX_BODY    = 20000;                    // bytes
-const THROTTLE_S  = 10;                       // min seconds between requests from one IP
+const MAX_BODY    = 20000;
+const THROTTLE_S  = 10;
 
-// Key file sits next to the deployed dist/, one level above the webroot.
 $apiKey = getenv('MANDRILL_KEY')
     ?: trim((string) @file_get_contents(__DIR__ . '/../mandrill.key'));
 
@@ -37,7 +25,6 @@ function ok(): never {
     exit;
 }
 
-/** Strips line breaks and truncates — the result may end up in a mail header. */
 function clean(string $value, int $max): string {
     $value = str_replace(["\r", "\n", "\0"], ' ', $value);
     return mb_substr(trim(strip_tags($value)), 0, $max);
@@ -59,7 +46,6 @@ if (is_file($throttleFile) && ($now - (int) @file_get_contents($throttleFile)) <
 }
 @file_put_contents($throttleFile, (string) $now);
 
-// Honeypot: report success so a bot learns nothing from the response.
 if (trim((string) ($_POST['website'] ?? '')) !== '') {
     ok();
 }
@@ -70,7 +56,6 @@ $role     = clean((string) ($_POST['role'] ?? ''), 40);
 $students = clean((string) ($_POST['students'] ?? ''), 80);
 $phone    = clean((string) ($_POST['phone'] ?? ''), 40);
 $email    = clean((string) ($_POST['email'] ?? ''), 200);
-// Kept multi-line on purpose: it goes in the body, never in a header.
 $comment  = mb_substr(trim(strip_tags((string) ($_POST['comment'] ?? ''))), 0, 2000);
 
 if ($name === '') {
@@ -123,12 +108,10 @@ if ($response === false) {
 
 $data = json_decode((string) $response, true);
 
-// API-level rejection: bad key, unverified sending domain, and so on.
 if ($httpCode !== 200 || (isset($data['status']) && $data['status'] === 'error')) {
     fail(502, 'mail_rejected');
 }
 
-// On success Mandrill returns one entry per recipient, each with its status.
 if (in_array($data[0]['status'] ?? '', ['sent', 'queued', 'scheduled'], true)) {
     ok();
 }

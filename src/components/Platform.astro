@@ -1,5 +1,5 @@
 ---
-import { t, tArray } from '../utils/i18n';
+import { t, tArray, getLocaleData } from '../utils/i18n';
 import type { Locale } from '../utils/i18n';
 import { withBase } from '../utils/url';
 import WheelIcon from './WheelIcon.astro';
@@ -38,12 +38,15 @@ const tools = [
   { key: 'megaphone', title: t(locale, 'classroom_hero_noise_title'), tint: 'is-green' }
 ];
 
-const roster = [
-  { ini: 'АК', bg: 'var(--blue)', fg: '#fff' },
-  { ini: 'МІ', bg: 'var(--yellow)', fg: '#000' },
-  { ini: 'ОП', bg: 'var(--green)', fg: '#000' },
-  { ini: 'ДС', bg: 'var(--ink)', fg: '#fff' }
+// same four students as the teacher's cabinet and the live session — one class across every mock
+const rosterTints = [
+  { bg: 'var(--blue)', fg: '#fff' },
+  { bg: 'var(--yellow)', fg: '#000' },
+  { bg: 'var(--green)', fg: '#000' },
+  { bg: 'var(--ink)', fg: '#fff' }
 ];
+const mockStudents = (getLocaleData(locale).classroom_platform_mock as { students: { ini: string }[] }).students;
+const roster = mockStudents.slice(0, 4).map((s, i) => ({ ini: s.ini, ...rosterTints[i] }));
 ---
 
 <section class="band platform" id="platform">

@@ -1,9 +1,3 @@
-/**
- * Eddy Classroom — landing interactions.
- * Vanilla ES5, no build step, no dependencies; loaded as a plain <script> from
- * Layout.astro. Component-local behaviour lives in its own component instead
- * (Library3D.astro, ModelViewer.astro, EarthGlobe.astro).
- */
 (function () {
   "use strict";
 
@@ -13,7 +7,6 @@
     return [].slice.call((root || document).querySelectorAll(sel));
   }
 
-  /** Cubic ease-out over `dur` ms: `write` receives the eased 0..1 each frame. */
   function tween(dur, write, done) {
     var t0 = null;
     requestAnimationFrame(function step(now) {
@@ -24,14 +17,12 @@
     });
   }
 
-  /* ---------- hero entrance ---------- */
   function initEnter() {
     requestAnimationFrame(function () {
       document.documentElement.classList.add("is-loaded");
     });
   }
 
-  /* ---------- scroll reveal ---------- */
   function initReveal() {
     var els = $all(".reveal");
     if (!els.length) return;
@@ -49,13 +40,10 @@
     els.forEach(function (el) { io.observe(el); });
   }
 
-  /* ---------- sticky nav shadow ---------- */
   function initNavScroll() {
     var nav = document.getElementById("nav");
     if (!nav) return;
     var on = false;
-    // Hysteresis: a single threshold flips state on every wheel notch when the
-    // scroll position hovers around it.
     var SHUT = 96, OPEN = 32;
     function check() {
       var y = window.scrollY;
@@ -63,18 +51,12 @@
       if (next === on) return;
       on = next;
       nav.classList.toggle("is-stuck", on);
-      // the hero's coloured light reacts to the same flag (Hero.astro)
       document.documentElement.classList.toggle("nav-stuck", on);
     }
     check();
     window.addEventListener("scroll", check, { passive: true });
   }
 
-  /* ---------- mobile menu ----------
-     The sheet is full-screen, so the body is locked while it is open. The lock
-     is `position: fixed` (see body.menu-open in style.css) rather than
-     `overflow: hidden`, which iOS Safari ignores; the scroll offset is parked
-     on open and restored on close. */
   function initMenu() {
     var burger = document.getElementById("nav-burger");
     var menu = document.getElementById("mobile-menu");
@@ -107,8 +89,6 @@
     burger.addEventListener("click", function () {
       if (menu.classList.contains("open")) close(); else open();
     });
-    /* Any link closes the sheet. An in-page one (#demo) is scrolled to by hand
-       after the close, since the body is still scroll-locked while open. */
     $all("a", menu).forEach(function (a) {
       a.addEventListener("click", function (e) {
         var href = a.getAttribute("href") || "";
@@ -130,7 +110,6 @@
     window.addEventListener("resize", function () { if (window.innerWidth > 1000) close(); });
   }
 
-  /* ---------- count-up on numerals ---------- */
   function initCountUp() {
     var els = $all("[data-countup]");
     if (!els.length || reduce || !("IntersectionObserver" in window)) return;
@@ -158,7 +137,6 @@
     els.forEach(function (el) { io.observe(el); });
   }
 
-  /* ---------- lead form ---------- */
   function initForm() {
     var f = document.getElementById("demo-form");
     if (!f) return;
